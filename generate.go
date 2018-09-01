@@ -70,11 +70,10 @@ func createAtomRow(value interface{}, prefix string, keysToDescriptions map[stri
                 Description: description,
             }
         case int:
-            fmt.Printf(ROW_FORMAT, prefix, INT_TYPE, fmt.Sprintf("%d", value), description)
             return ValueRow {
                 Key: prefix,
                 Type: INT_TYPE,
-                Default: string(value.(int)),
+                Default: fmt.Sprintf("%d", value),
                 Description: description,
             }
         case string:
@@ -127,7 +126,7 @@ func createListRows(values []interface{}, prefix string, keysToDescriptions map[
                 valueRows = append(valueRows, createAtomRow(v, nextPrefix, keysToDescriptions))
             case float64:
                 valueRows = append(valueRows, createAtomRow(v, nextPrefix, keysToDescriptions))
-            case int64:
+            case int:
                 valueRows = append(valueRows, createAtomRow(v, nextPrefix, keysToDescriptions))
             case string:
                 valueRows = append(valueRows, createAtomRow(v, nextPrefix, keysToDescriptions))
@@ -171,7 +170,7 @@ func createValueRows(values ChartValues, prefix string, keysToDescriptions map[s
                 valueRows = append(valueRows, createAtomRow(v, nextPrefix, keysToDescriptions))
             case float64:
                 valueRows = append(valueRows, createAtomRow(v, nextPrefix, keysToDescriptions))
-            case int64:
+            case int:
                 valueRows = append(valueRows, createAtomRow(v, nextPrefix, keysToDescriptions))
             case string:
                 valueRows = append(valueRows, createAtomRow(v, nextPrefix, keysToDescriptions))

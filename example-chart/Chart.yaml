@@ -1,0 +1,10 @@
+apiVersion: v1
+name: nginx-ingress
+description: A simple wrapper around the stable/nginx-ingress chart that adds a few of our conventions
+version: "18.0901-dev"
+home: "https://github.com/norwoodj/helm-docs"
+sources: ["https://github.com/norwoodj/helm-docs"]
+engine: gotpl
+maintainers:
+  - email: norwood.john.m@gmail.com
+    name: John Norwood

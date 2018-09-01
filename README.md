@@ -19,33 +19,18 @@ $ helm-docs --dry-run # dry-run prints output to stdout rather than modifying th
 ## values.yaml metadata
 This tool can parse descriptions and defaults of values from values.yaml. The defaults is done automatically by simply
 parsing the yaml in the file. Descriptions can be added for parameters by specifying the full path of the value and
-a particular format:
+a particular format. I invite you to check out the example-chart to see how this is done in practice. In order to add
+a description for a parameter you need only put a comment somewhere in the file of the format:
 
-```hcl-terraform
+```yaml
 controller:
-  name: controller
-  image:
-    repository: nginx-ingress-controller
-    tag: "18.0831"
-
-  # controller.ingressClass -- Name of the ingress class to route through this controller
-  ingressClass: nginx
-
-  # controller.podLabels -- The labels to be applied to instances of the controller pod
-  podLabels: {}
-
   publishService:
     # controller.publishService.enabled -- Whether to expose the ingress controller to the public world
     enabled: false
+
+  # controller.replicas -- Number of nginx-ingress pods to load balance between
+  replicas: 2
 ```
 
-This would produce the following table:
-```
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| controller.name | string | "controller" |  |
-| controller.image.repository | string | "nginx-ingress-controller" |  |
-| controller.image.tag | string | "18.0831" |  |
-| controller.ingressClass | string | "nginx" | Name of the ingress class to route through this controller |
-| controller.podLabels | object | {} | The labels to be applied to instances of the controller pod |
-| ingresses.applicationBaseUrl | string | "sre.rmneng.com" | The base URL to use
+And the descriptions will be picked up and put in the table in the README. The comment need not be near the parameter it
+explains, although this is probably preferable.
