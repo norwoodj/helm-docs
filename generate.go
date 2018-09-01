@@ -121,13 +121,14 @@ func createListRows(values []interface{}, prefix string, keysToDescriptions map[
         switch v.(type) {
             case ChartValues:
                 valueRows = append(valueRows, createValueRows(v.(ChartValues), nextPrefix, keysToDescriptions)...)
-                break
             case []interface{}:
                 valueRows = append(valueRows, createListRows(v.([]interface{}), nextPrefix, keysToDescriptions)...)
-                break
             case bool:
+                valueRows = append(valueRows, createAtomRow(v, nextPrefix, keysToDescriptions))
             case float64:
+                valueRows = append(valueRows, createAtomRow(v, nextPrefix, keysToDescriptions))
             case int64:
+                valueRows = append(valueRows, createAtomRow(v, nextPrefix, keysToDescriptions))
             case string:
                 valueRows = append(valueRows, createAtomRow(v, nextPrefix, keysToDescriptions))
                 break
