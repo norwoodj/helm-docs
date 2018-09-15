@@ -6,8 +6,11 @@ import (
     "io/ioutil"
     "log"
     "os"
+    "path"
     "regexp"
 )
+
+var valuesDescriptionRegex = regexp.MustCompile("# (.*) -- (.*)")
 
 type ChartMetaMaintainer struct {
     Email string
@@ -38,9 +41,9 @@ type ChartRequirements struct {
 type ChartValues map[interface{}]interface{}
 
 
-func getYamlFileContents(filename string, debug bool) []byte {
+func getYamlFileContents(filename string, debug bool) ([]byte, error) {
     if _, err := os.Stat(filename); os.IsNotExist(err) {
-        log.Fatalf("ERROR: No %s file exists!", filename)
+        return nil, err
     }
 
     yamlFileContents, err := ioutil.ReadFile(filename)
@@ -53,7 +56,7 @@ func getYamlFileContents(filename string, debug bool) []byte {
         log.Printf("Reading %s file contents:\n%s\n", filename, yamlFileContents)
     }
 
-    return []byte(yamlFileContents)
+    return []byte(yamlFileContents), nil
 }
 
 func yamlLoadAndCheck(yamlFileContents []byte, out interface{}) {
@@ -64,50 +67,83 @@ func yamlLoadAndCheck(yamlFileContents []byte, out interface{}) {
     }
 }
 
-func parseValuesFile(debug bool) ChartValues {
-    yamlFileContents := getYamlFileContents("values.yaml", debug)
-    values := make(ChartValues)
-    yamlLoadAndCheck(yamlFileContents, &values)
-    return values
-}
-
-func parseChartFile(debug bool) ChartMeta {
-    yamlFileContents := getYamlFileContents("Chart.yaml", debug)
-    chartMeta := ChartMeta{}
-    yamlLoadAndCheck(yamlFileContents, &chartMeta)
-    return chartMeta
-}
-
-func parseChartRequirementsFile(debug bool) ChartRequirements {
-    if _, err := os.Stat("requirements.yaml"); os.IsNotExist(err) {
-        return ChartRequirements{Dependencies: []ChartRequirementsItem{}}
+func isErrorInReadingNecessaryFile(filePath string, loadError error) bool {
+    if loadError != nil {
+        if os.IsNotExist(loadError) {
+            log.Printf("Required chart file %s missing. Skipping documentation for chart", filePath)
+            return true
+        } else {
+            log.Printf("Error occurred in reading chart file %s. Skipping documentation for chart", filePath)
+            return true
+        }
     }
 
-    yamlFileContents := getYamlFileContents("requirements.yaml", debug)
-    chartRequirements := ChartRequirements{}
-    yamlLoadAndCheck(yamlFileContents, &chartRequirements)
-    return chartRequirements
+    return false
 }
 
-func parseValuesFileComments() map[string]string {
-    valuesFile, err := os.Open("values.yaml")
-    if err != nil {
-        log.Fatal(err)
+func parseChartFile(chartDirectory string, debug bool) (ChartMeta, error) {
+    chartYamlPath := path.Join(chartDirectory, "Chart.yaml")
+    chartMeta := ChartMeta{}
+    yamlFileContents, err := getYamlFileContents(chartYamlPath, debug)
+
+    if isErrorInReadingNecessaryFile(chartYamlPath, err) {
+        return chartMeta, err
+    }
+
+    yamlLoadAndCheck(yamlFileContents, &chartMeta)
+    return chartMeta, nil
+}
+
+func parseChartRequirementsFile(chartDirectory string, debug bool) (ChartRequirements, error) {
+    requirementsPath := path.Join(chartDirectory, "requirements.yaml")
+    if _, err := os.Stat(requirementsPath); os.IsNotExist(err) {
+        return ChartRequirements{Dependencies: []ChartRequirementsItem{}}, nil
+    }
+
+    chartRequirements := ChartRequirements{}
+    yamlFileContents, err := getYamlFileContents(requirementsPath, debug)
+
+    if isErrorInReadingNecessaryFile(requirementsPath, err) {
+        return chartRequirements, err
+    }
+
+    yamlLoadAndCheck(yamlFileContents, &chartRequirements)
+    return chartRequirements, nil
+}
+
+func parseValuesFile(chartDirectory string, debug bool) (ChartValues, error) {
+    valuesPath := path.Join(chartDirectory, "values.yaml")
+    values := ChartValues{}
+    yamlFileContents, err := getYamlFileContents(valuesPath, debug)
+
+    if isErrorInReadingNecessaryFile(valuesPath, err) {
+        return values, err
+    }
+
+    yamlLoadAndCheck(yamlFileContents, &values)
+    return values, nil
+}
+
+func parseValuesFileComments(chartDirectory string) (map[string]string, error) {
+    valuesPath := path.Join(chartDirectory, "values.yaml")
+    valuesFile, err := os.Open(valuesPath)
+
+    if isErrorInReadingNecessaryFile(valuesPath, err) {
+        return map[string]string{}, err
     }
 
     defer valuesFile.Close()
 
     keyToDescriptions := make(map[string]string)
     scanner := bufio.NewScanner(valuesFile)
-    re := regexp.MustCompile("# (.*) -- (.*)")
 
     for scanner.Scan() {
-        match := re.FindStringSubmatch(scanner.Text())
+        match := valuesDescriptionRegex.FindStringSubmatch(scanner.Text())
 
         if len(match) > 2 {
             keyToDescriptions[match[1]] = match[2]
         }
     }
 
-    return keyToDescriptions
+    return keyToDescriptions, nil
 }

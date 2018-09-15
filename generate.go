@@ -2,10 +2,13 @@ package main
 
 import (
     "fmt"
+    "log"
+    "os"
+    "path/filepath"
+    "sort"
     "strings"
     "strconv"
-    "sort"
-    "os"
+    "sync"
 )
 
 type ValueRow struct {
@@ -195,31 +198,53 @@ func withNewline(s string) string {
     return fmt.Sprintln(s)
 }
 
-func getOutputFile(dryRun bool) *os.File {
+func getOutputFile(chartDirectory string, dryRun bool) (*os.File, error) {
     if dryRun {
-        return os.Stdout
+        return os.Stdout, nil
     }
 
-    f, err := os.Create("README.md")
+    f, err := os.Create(fmt.Sprintf("%s/README.md", chartDirectory))
 
     if err != nil {
-        panic(err)
+        return nil, err
     }
 
-    return f
+    return f, err
 }
 
-func printDocumentation(debug bool, dryRun bool) {
-    outputFile := getOutputFile(dryRun)
-    defer outputFile.Close()
-    chartMeta := parseChartFile(debug)
+func printDocumentation(chartDirectory string, debug bool, dryRun bool, waitGroup *sync.WaitGroup) {
+    defer waitGroup.Done()
+    log.Printf("Generating README Documentation for chart %s", chartDirectory)
+
+    outputFile, err := getOutputFile(chartDirectory, dryRun)
+    if err != nil {
+        log.Printf("Could not open chart README file %s, skipping chart", filepath.Join(chartDirectory, "README.md"))
+        return
+    }
+
+    if !dryRun {
+        defer outputFile.Close()
+    }
+
+    chartMeta, err := parseChartFile(chartDirectory, debug)
+    if err != nil { return }
+
+    chartRequirements, err := parseChartRequirementsFile(chartDirectory, debug)
+    if err != nil { return }
+
+    values, err := parseValuesFile(chartDirectory, debug)
+    if err != nil { return }
+
+    keysToDescriptions, err := parseValuesFileComments(chartDirectory)
+    if err != nil { return }
 
     outputFile.WriteString(withNewline(chartMeta.Name))
     outputFile.WriteString(withNewline(strings.Repeat("=", len(chartMeta.Name))))
     outputFile.WriteString(withNewline(chartMeta.Description))
-    outputFile.WriteString(fmt.Sprintf("\nThis chart's source code can be found [here](%s)\n\n\n", chartMeta.Home))
 
-    chartRequirements := parseChartRequirementsFile(debug)
+    if chartMeta.Home != "" {
+        outputFile.WriteString(fmt.Sprintf("\nThis chart's source code can be found [here](%s)\n\n\n", chartMeta.Home))
+    }
 
     if len(chartRequirements.Dependencies) > 0 {
         outputFile.WriteString("## Chart Requirements\n\n")
@@ -228,8 +253,6 @@ func printDocumentation(debug bool, dryRun bool) {
     }
 
     outputFile.WriteString("## Chart Values\n\n")
-    values := parseValuesFile(debug)
     printValuesHeader(outputFile)
-    keysToDescriptions := parseValuesFileComments()
     printValueRows(outputFile, values, keysToDescriptions)
 }

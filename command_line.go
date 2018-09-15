@@ -13,10 +13,9 @@ type HelmDocArgs struct {
 }
 
 
-const DEBUG_HELP = "Print debug output"
-const DRY_RUN_HELP = "Don't actually render any markdown files with docs, juts print to stdout"
-const HELP_HELP = "Print this help menu, then exist"
-
+const debugHelp = "Print debug output"
+const dryRunHelp = "Don't actually render any markdown files with docs, juts print to stdout"
+const helpHelp = "Print this help menu, then exist"
 
 func printHelp() {
     fmt.Println("Usage:")
@@ -25,17 +24,17 @@ func printHelp() {
     fmt.Println("helm-doc reads the values file of a chart in the root of your repository and creates a table of the values")
     fmt.Println()
     fmt.Println("Options:")
-    fmt.Println(fmt.Sprintf("  --debug         %s", DEBUG_HELP))
-    fmt.Println(fmt.Sprintf("  --dry-run       %s", DRY_RUN_HELP))
-    fmt.Println(fmt.Sprintf("  --help          %s", HELP_HELP))
+    fmt.Println(fmt.Sprintf("  --debug         %s", debugHelp))
+    fmt.Println(fmt.Sprintf("  --dry-run       %s", dryRunHelp))
+    fmt.Println(fmt.Sprintf("  --help          %s", helpHelp))
 }
 
 func parseCommandLine() HelmDocArgs {
     var args HelmDocArgs
 
-    flag.BoolVar(&args.debug, "debug", false, DEBUG_HELP)
-    flag.BoolVar(&args.dryRun, "dry-run", false, DRY_RUN_HELP)
-    flag.BoolVar(&args.help, "help", false, HELP_HELP)
+    flag.BoolVar(&args.debug, "debug", false, debugHelp)
+    flag.BoolVar(&args.dryRun, "dry-run", false, dryRunHelp)
+    flag.BoolVar(&args.help, "help", false, helpHelp)
     flag.Parse()
 
     if args.help {
