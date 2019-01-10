@@ -6,7 +6,8 @@ optional description parsed from comments.
 
 To build:
 ```bash
-$ make
+cd cmd/helm-docs
+go build
 ```
 
 The tool can be invoked on its own, but it must be done in a chart directory containing `values.yaml` and `Chart.yaml`
