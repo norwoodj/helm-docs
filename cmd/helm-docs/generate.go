@@ -122,7 +122,7 @@ func parseNilValueType(prefix string, description string) ValueRow {
 	return ValueRow{
 		Key:         prefix,
 		Type:        t,
-		Default:     "<nil>",
+		Default:     "\\<nil\\>",
 		Description: description,
 	}
 }

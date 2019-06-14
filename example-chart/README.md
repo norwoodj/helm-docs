@@ -25,4 +25,4 @@ This chart's source code can be found [here](https://github.com/norwoodj/helm-do
 | controller.persistentVolumeClaims | list | [] | List of persistent volume claims to create |
 | controller.podLabels | object | {} | The labels to be applied to instances of the controller pod |
 | controller.publishService.enabled | bool | false | Whether to expose the ingress controller to the public world |
-| controller.replicas | int | nil | Number of nginx-ingress pods to load balance between |
+| controller.replicas | int | \<nil\> | Number of nginx-ingress pods to load balance between |
