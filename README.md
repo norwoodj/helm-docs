@@ -35,3 +35,12 @@ controller:
 
 And the descriptions will be picked up and put in the table in the README. The comment need not be near the parameter it
 explains, although this is probably preferable.
+
+### nil values
+If you would like to define a key for a value, but leave the default empty, you can still specify a description for it as well as a type. Like so:
+```yaml
+controller:
+  # controller.replicas -- (int) Number of nginx-ingress pods to load balance between
+  replicas:
+```
+This could be useful when wanting to enforce user-defined values for the chart, where there are no sensible defaults.

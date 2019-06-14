@@ -23,5 +23,5 @@ controller:
     # controller.publishService.enabled -- Whether to expose the ingress controller to the public world
     enabled: false
 
-  # controller.replicas -- Number of nginx-ingress pods to load balance between
-  replicas: 2
+  # controller.replicas -- (int) Number of nginx-ingress pods to load balance between
+  replicas:
