@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -99,9 +100,31 @@ func createAtomRow(value interface{}, prefix string, keysToDescriptions map[stri
 			Default:     "{}",
 			Description: description,
 		}
+	case nil:
+		return parseNilValueType(prefix, description)
 	}
 
 	return ValueRow{}
+}
+
+func parseNilValueType(prefix string, description string) ValueRow {
+	// Grab whatever's in between the parentheses of the description and treat it as the type
+	r, _ := regexp.Compile("^\\(.*?\\)")
+	t := r.FindString(description)
+
+	if len(t) > 0 {
+		t = t[1 : len(t)-1]
+		description = description[len(t)+3:]
+	} else {
+		t = STRING_TYPE
+	}
+
+	return ValueRow{
+		Key:         prefix,
+		Type:        t,
+		Default:     "<nil>",
+		Description: description,
+	}
 }
 
 func createListRows(values []interface{}, prefix string, keysToDescriptions map[string]string) []ValueRow {
@@ -175,6 +198,8 @@ func createValueRows(values ChartValues, prefix string, keysToDescriptions map[s
 		case int:
 			valueRows = append(valueRows, createAtomRow(v, nextPrefix, keysToDescriptions))
 		case string:
+			valueRows = append(valueRows, createAtomRow(v, nextPrefix, keysToDescriptions))
+		default:
 			valueRows = append(valueRows, createAtomRow(v, nextPrefix, keysToDescriptions))
 		}
 	}
