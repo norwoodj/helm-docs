@@ -12,8 +12,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var Version string
-
 func retrieveInfoAndPrintDocumentation(chartDirectory string, waitGroup *sync.WaitGroup) {
 	defer waitGroup.Done()
 	chartDocumentationInfo, err := helm.ParseChartInformation(chartDirectory)

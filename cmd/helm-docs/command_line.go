@@ -10,6 +10,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+var version string
+
 func possibleLogLevels() []string {
 	levels := make([]string, 0)
 
@@ -36,7 +38,7 @@ func newHelmDocsCommand(run func(cmd *cobra.Command, args []string)) (*cobra.Com
 	command := &cobra.Command{
 		Use:     "helm-docs",
 		Short:   "helm-docs automatically generates markdown documentation for helm charts from requirements and values files",
-		Version: Version,
+		Version: version,
 		Run:     run,
 	}
 
