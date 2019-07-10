@@ -61,8 +61,6 @@ func getYamlFileContents(filename string) ([]byte, error) {
 		panic(err)
 	}
 
-	log.Debugf("Reading %s file contents:\n%s\n", filename, yamlFileContents)
-
 	return []byte(yamlFileContents), nil
 }
 

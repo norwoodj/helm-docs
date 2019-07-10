@@ -28,7 +28,6 @@ const objectType = "object"
 const stringType = "string"
 const rowFormat = "| %s | %s | %s | %s |\n"
 
-
 func printRequirementsHeader(f *os.File) {
 	f.WriteString("| Repository | Name | Version |\n")
 	f.WriteString("|------------|------|---------|\n")
