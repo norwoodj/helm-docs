@@ -1,15 +1,16 @@
-package main
+package document
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
+
+	"github.com/norwoodj/helm-docs/pkg/helm"
+	log "github.com/sirupsen/logrus"
 )
 
 type ValueRow struct {
@@ -19,25 +20,25 @@ type ValueRow struct {
 	Description string
 }
 
-const BOOL_TYPE = "bool"
-const FLOAT_TYPE = "float"
-const INT_TYPE = "int"
-const LIST_TYPE = "list"
-const OBJECT_TYPE = "object"
-const STRING_TYPE = "string"
+const boolType = "bool"
+const floatType = "float"
+const intType = "int"
+const listType = "list"
+const objectType = "object"
+const stringType = "string"
+const rowFormat = "| %s | %s | %s | %s |\n"
 
-const ROW_FORMAT = "| %s | %s | %s | %s |\n"
 
 func printRequirementsHeader(f *os.File) {
 	f.WriteString("| Repository | Name | Version |\n")
 	f.WriteString("|------------|------|---------|\n")
 }
 
-func requirementKey(requirement ChartRequirementsItem) string {
+func requirementKey(requirement helm.ChartRequirementsItem) string {
 	return fmt.Sprintf("%s/%s", requirement.Repository, requirement.Name)
 }
 
-func printRequirementsRows(outputFile *os.File, requirements ChartRequirements) {
+func printRequirementsRows(outputFile *os.File, requirements helm.ChartRequirements) {
 	sort.Slice(requirements.Dependencies[:], func(i, j int) bool {
 		return requirementKey(requirements.Dependencies[i]) < requirementKey(requirements.Dependencies[j])
 	})
@@ -61,42 +62,42 @@ func createAtomRow(value interface{}, prefix string, keysToDescriptions map[stri
 	case bool:
 		return ValueRow{
 			Key:         prefix,
-			Type:        BOOL_TYPE,
+			Type:        boolType,
 			Default:     fmt.Sprintf("%t", value),
 			Description: description,
 		}
 	case float64:
 		return ValueRow{
 			Key:         prefix,
-			Type:        FLOAT_TYPE,
+			Type:        floatType,
 			Default:     strconv.FormatFloat(value.(float64), 'f', -1, 64),
 			Description: description,
 		}
 	case int:
 		return ValueRow{
 			Key:         prefix,
-			Type:        INT_TYPE,
+			Type:        intType,
 			Default:     fmt.Sprintf("%d", value),
 			Description: description,
 		}
 	case string:
 		return ValueRow{
 			Key:         prefix,
-			Type:        STRING_TYPE,
+			Type:        stringType,
 			Default:     fmt.Sprintf("\"%s\"", value),
 			Description: description,
 		}
 	case []interface{}:
 		return ValueRow{
 			Key:         prefix,
-			Type:        LIST_TYPE,
+			Type:        listType,
 			Default:     "[]",
 			Description: description,
 		}
-	case ChartValues:
+	case helm.ChartValues:
 		return ValueRow{
 			Key:         prefix,
-			Type:        OBJECT_TYPE,
+			Type:        objectType,
 			Default:     "{}",
 			Description: description,
 		}
@@ -116,7 +117,7 @@ func parseNilValueType(prefix string, description string) ValueRow {
 		t = t[1 : len(t)-1]
 		description = description[len(t)+3:]
 	} else {
-		t = STRING_TYPE
+		t = stringType
 	}
 
 	return ValueRow{
@@ -143,8 +144,8 @@ func createListRows(values []interface{}, prefix string, keysToDescriptions map[
 		}
 
 		switch v.(type) {
-		case ChartValues:
-			valueRows = append(valueRows, createValueRows(v.(ChartValues), nextPrefix, keysToDescriptions)...)
+		case helm.ChartValues:
+			valueRows = append(valueRows, createValueRows(v.(helm.ChartValues), nextPrefix, keysToDescriptions)...)
 		case []interface{}:
 			valueRows = append(valueRows, createListRows(v.([]interface{}), nextPrefix, keysToDescriptions)...)
 		case bool:
@@ -162,7 +163,7 @@ func createListRows(values []interface{}, prefix string, keysToDescriptions map[
 	return valueRows
 }
 
-func createValueRows(values ChartValues, prefix string, keysToDescriptions map[string]string) []ValueRow {
+func createValueRows(values helm.ChartValues, prefix string, keysToDescriptions map[string]string) []ValueRow {
 	if len(values) == 0 {
 		return []ValueRow{createAtomRow(values, prefix, keysToDescriptions)}
 	}
@@ -187,8 +188,8 @@ func createValueRows(values ChartValues, prefix string, keysToDescriptions map[s
 		}
 
 		switch v.(type) {
-		case ChartValues:
-			valueRows = append(valueRows, createValueRows(v.(ChartValues), nextPrefix, keysToDescriptions)...)
+		case helm.ChartValues:
+			valueRows = append(valueRows, createValueRows(v.(helm.ChartValues), nextPrefix, keysToDescriptions)...)
 		case []interface{}:
 			valueRows = append(valueRows, createListRows(v.([]interface{}), nextPrefix, keysToDescriptions)...)
 		case bool:
@@ -211,10 +212,10 @@ func createValueRows(values ChartValues, prefix string, keysToDescriptions map[s
 	return valueRows
 }
 
-func printValueRows(f *os.File, values ChartValues, keysToDescriptions map[string]string) {
+func printValueRows(f *os.File, values helm.ChartValues, keysToDescriptions map[string]string) {
 	valueRows := createValueRows(values, "", keysToDescriptions)
 	for _, valueRow := range valueRows {
-		f.WriteString(fmt.Sprintf(ROW_FORMAT, valueRow.Key, valueRow.Type, valueRow.Default, valueRow.Description))
+		f.WriteString(fmt.Sprintf(rowFormat, valueRow.Key, valueRow.Type, valueRow.Default, valueRow.Description))
 	}
 }
 
@@ -236,13 +237,12 @@ func getOutputFile(chartDirectory string, dryRun bool) (*os.File, error) {
 	return f, err
 }
 
-func printDocumentation(chartDirectory string, debug bool, dryRun bool, waitGroup *sync.WaitGroup) {
-	defer waitGroup.Done()
-	log.Printf("Generating README Documentation for chart %s", chartDirectory)
+func PrintDocumentation(chartDocumentationInfo helm.ChartDocumentationInfo, dryRun bool) {
+	log.Infof("Generating README Documentation for chart %s", chartDocumentationInfo.ChartDirectory)
 
-	outputFile, err := getOutputFile(chartDirectory, dryRun)
+	outputFile, err := getOutputFile(chartDocumentationInfo.ChartDirectory, dryRun)
 	if err != nil {
-		log.Printf("Could not open chart README file %s, skipping chart", filepath.Join(chartDirectory, "README.md"))
+		log.Warnf("Could not open chart README file %s, skipping chart", filepath.Join(chartDocumentationInfo.ChartDirectory, "README.md"))
 		return
 	}
 
@@ -250,26 +250,7 @@ func printDocumentation(chartDirectory string, debug bool, dryRun bool, waitGrou
 		defer outputFile.Close()
 	}
 
-	chartMeta, err := parseChartFile(chartDirectory, debug)
-	if err != nil {
-		return
-	}
-
-	chartRequirements, err := parseChartRequirementsFile(chartDirectory, debug)
-	if err != nil {
-		return
-	}
-
-	values, err := parseValuesFile(chartDirectory, debug)
-	if err != nil {
-		return
-	}
-
-	keysToDescriptions, err := parseValuesFileComments(chartDirectory)
-	if err != nil {
-		return
-	}
-
+	chartMeta := chartDocumentationInfo.ChartMeta
 	outputFile.WriteString(withNewline(chartMeta.Name))
 	outputFile.WriteString(withNewline(strings.Repeat("=", len(chartMeta.Name))))
 	outputFile.WriteString(withNewline(chartMeta.Description))
@@ -278,6 +259,7 @@ func printDocumentation(chartDirectory string, debug bool, dryRun bool, waitGrou
 		outputFile.WriteString(fmt.Sprintf("\nThis chart's source code can be found [here](%s)\n\n\n", chartMeta.Home))
 	}
 
+	chartRequirements := chartDocumentationInfo.ChartRequirements
 	if len(chartRequirements.Dependencies) > 0 {
 		outputFile.WriteString("## Chart Requirements\n\n")
 		printRequirementsHeader(outputFile)
@@ -286,5 +268,5 @@ func printDocumentation(chartDirectory string, debug bool, dryRun bool, waitGrou
 
 	outputFile.WriteString("## Chart Values\n\n")
 	printValuesHeader(outputFile)
-	printValueRows(outputFile, values, keysToDescriptions)
+	printValueRows(outputFile, chartDocumentationInfo.ChartValues, chartDocumentationInfo.ChartValuesDescriptions)
 }

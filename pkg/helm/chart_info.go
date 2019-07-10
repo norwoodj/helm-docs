@@ -1,13 +1,14 @@
-package main
+package helm
 
 import (
 	"bufio"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"regexp"
+
+	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v2"
 )
 
 var valuesDescriptionRegex = regexp.MustCompile("# (.*) -- (.*)")
@@ -40,7 +41,16 @@ type ChartRequirements struct {
 
 type ChartValues map[interface{}]interface{}
 
-func getYamlFileContents(filename string, debug bool) ([]byte, error) {
+type ChartDocumentationInfo struct {
+	ChartMeta
+	ChartRequirements
+	ChartValues
+
+	ChartDirectory          string
+	ChartValuesDescriptions map[string]string
+}
+
+func getYamlFileContents(filename string) ([]byte, error) {
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
 		return nil, err
 	}
@@ -51,9 +61,7 @@ func getYamlFileContents(filename string, debug bool) ([]byte, error) {
 		panic(err)
 	}
 
-	if debug {
-		log.Printf("Reading %s file contents:\n%s\n", filename, yamlFileContents)
-	}
+	log.Debugf("Reading %s file contents:\n%s\n", filename, yamlFileContents)
 
 	return []byte(yamlFileContents), nil
 }
@@ -80,10 +88,10 @@ func isErrorInReadingNecessaryFile(filePath string, loadError error) bool {
 	return false
 }
 
-func parseChartFile(chartDirectory string, debug bool) (ChartMeta, error) {
+func parseChartFile(chartDirectory string) (ChartMeta, error) {
 	chartYamlPath := path.Join(chartDirectory, "Chart.yaml")
 	chartMeta := ChartMeta{}
-	yamlFileContents, err := getYamlFileContents(chartYamlPath, debug)
+	yamlFileContents, err := getYamlFileContents(chartYamlPath)
 
 	if isErrorInReadingNecessaryFile(chartYamlPath, err) {
 		return chartMeta, err
@@ -93,14 +101,14 @@ func parseChartFile(chartDirectory string, debug bool) (ChartMeta, error) {
 	return chartMeta, nil
 }
 
-func parseChartRequirementsFile(chartDirectory string, debug bool) (ChartRequirements, error) {
+func parseChartRequirementsFile(chartDirectory string) (ChartRequirements, error) {
 	requirementsPath := path.Join(chartDirectory, "requirements.yaml")
 	if _, err := os.Stat(requirementsPath); os.IsNotExist(err) {
 		return ChartRequirements{Dependencies: []ChartRequirementsItem{}}, nil
 	}
 
 	chartRequirements := ChartRequirements{}
-	yamlFileContents, err := getYamlFileContents(requirementsPath, debug)
+	yamlFileContents, err := getYamlFileContents(requirementsPath)
 
 	if isErrorInReadingNecessaryFile(requirementsPath, err) {
 		return chartRequirements, err
@@ -110,10 +118,10 @@ func parseChartRequirementsFile(chartDirectory string, debug bool) (ChartRequire
 	return chartRequirements, nil
 }
 
-func parseValuesFile(chartDirectory string, debug bool) (ChartValues, error) {
+func parseChartValuesFile(chartDirectory string) (ChartValues, error) {
 	valuesPath := path.Join(chartDirectory, "values.yaml")
 	values := ChartValues{}
-	yamlFileContents, err := getYamlFileContents(valuesPath, debug)
+	yamlFileContents, err := getYamlFileContents(valuesPath)
 
 	if isErrorInReadingNecessaryFile(valuesPath, err) {
 		return values, err
@@ -123,7 +131,7 @@ func parseValuesFile(chartDirectory string, debug bool) (ChartValues, error) {
 	return values, nil
 }
 
-func parseValuesFileComments(chartDirectory string) (map[string]string, error) {
+func parseChartValuesFileComments(chartDirectory string) (map[string]string, error) {
 	valuesPath := path.Join(chartDirectory, "values.yaml")
 	valuesFile, err := os.Open(valuesPath)
 
@@ -145,4 +153,32 @@ func parseValuesFileComments(chartDirectory string) (map[string]string, error) {
 	}
 
 	return keyToDescriptions, nil
+}
+
+func ParseChartInformation(chartDirectory string) (ChartDocumentationInfo, error) {
+	var chartDocInfo ChartDocumentationInfo
+	var err error
+
+	chartDocInfo.ChartDirectory = chartDirectory
+	chartDocInfo.ChartMeta, err = parseChartFile(chartDirectory)
+	if err != nil {
+		return chartDocInfo, err
+	}
+
+	chartDocInfo.ChartRequirements, err = parseChartRequirementsFile(chartDirectory)
+	if err != nil {
+		return chartDocInfo, err
+	}
+
+	chartDocInfo.ChartValues, err = parseChartValuesFile(chartDirectory)
+	if err != nil {
+		return chartDocInfo, err
+	}
+
+	chartDocInfo.ChartValuesDescriptions, err = parseChartValuesFileComments(chartDirectory)
+	if err != nil {
+		return chartDocInfo, err
+	}
+
+	return chartDocInfo, nil
 }

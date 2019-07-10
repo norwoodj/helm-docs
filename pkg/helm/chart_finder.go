@@ -1,4 +1,4 @@
-package main
+package helm
 
 import (
 	"os"
@@ -11,10 +11,10 @@ var ignoreDirectories = map[string]bool{
 	"templates": true,
 }
 
-func findChartDirectories() []string {
-	var chartDirs []string
+func FindChartDirectories() ([]string, error) {
+	chartDirs := make([]string, 0)
 
-	filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -30,5 +30,5 @@ func findChartDirectories() []string {
 		return nil
 	})
 
-	return chartDirs
+	return chartDirs, err
 }
