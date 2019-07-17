@@ -25,3 +25,10 @@ controller:
 
   # controller.replicas -- (int) Number of nginx-ingress pods to load balance between
   replicas:
+
+  service:
+    annotations:
+      # controller.service.annotations."external-dns.alpha.kubernetes.io/hostname" -- Hostname to be assigned to the ELB for the service
+      external-dns.alpha.kubernetes.io/hostname: stupidchess.jmn23.com
+
+    type: LoadBalancer

@@ -2,10 +2,12 @@ package helm
 
 import (
 	"bufio"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"regexp"
+	"sort"
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
@@ -99,6 +101,10 @@ func parseChartFile(chartDirectory string) (ChartMeta, error) {
 	return chartMeta, nil
 }
 
+func requirementKey(requirement ChartRequirementsItem) string {
+	return fmt.Sprintf("%s/%s", requirement.Repository, requirement.Name)
+}
+
 func parseChartRequirementsFile(chartDirectory string) (ChartRequirements, error) {
 	requirementsPath := path.Join(chartDirectory, "requirements.yaml")
 	if _, err := os.Stat(requirementsPath); os.IsNotExist(err) {
@@ -113,6 +119,11 @@ func parseChartRequirementsFile(chartDirectory string) (ChartRequirements, error
 	}
 
 	yamlLoadAndCheck(yamlFileContents, &chartRequirements)
+
+	sort.Slice(chartRequirements.Dependencies[:], func(i, j int) bool {
+		return requirementKey(chartRequirements.Dependencies[i]) < requirementKey(chartRequirements.Dependencies[j])
+	})
+
 	return chartRequirements, nil
 }
 

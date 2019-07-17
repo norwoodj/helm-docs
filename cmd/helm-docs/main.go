@@ -48,11 +48,12 @@ func helmDocs(_ *cobra.Command, _ []string) {
 func main() {
 	command, err := newHelmDocsCommand(helmDocs)
 	if err != nil {
-		panic(err)
+		log.Errorf("Failed to create the CLI commander: %s", err)
+		os.Exit(1)
 	}
 
 	if err := command.Execute(); err != nil {
-		log.Error(err)
+		log.Errorf("Failed to start the CLI: %s", err)
 		os.Exit(1)
 	}
 }
