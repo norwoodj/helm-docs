@@ -26,7 +26,7 @@ func initializeCli() {
 	logLevelName := viper.GetString("log-level")
 	logLevel, err := log.ParseLevel(logLevelName)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("Failed to parse provided log level %s: %s", logLevelName, err)
 		os.Exit(1)
 	}
 
@@ -44,6 +44,7 @@ func newHelmDocsCommand(run func(cmd *cobra.Command, args []string)) (*cobra.Com
 
 	logLevelUsage := fmt.Sprintf("Level of logs that should printed, one of (%s)", strings.Join(possibleLogLevels(), ", "))
 	command.PersistentFlags().BoolP("dry-run", "d", false, "don't actually render any markdown files just print to stdout passed")
+	command.PersistentFlags().StringP("template-file", "t", "README.md.gotmpl", "gotemplate file to use to generate documentation for charts")
 	command.PersistentFlags().StringP("log-level", "l", "info", logLevelUsage)
 
 	viper.AutomaticEnv()

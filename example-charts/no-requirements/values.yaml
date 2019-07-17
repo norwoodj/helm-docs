@@ -1,0 +1,16 @@
+rules:
+  latency:
+    percentiles:
+      "99":
+        # rules.latency.percentiles.99.threshold -- Threshold in seconds for our 99th percentile latency above which the alert will fire
+        threshold: 1.5
+        # rules.latency.percentiles.99.duration -- Duration for which the 99th percentile must be above the threshold to alert
+        duration: 5m
+
+  statusCodes:
+    codes:
+      5xx:
+        # rules.statusCodes.codes.5xx.threshold -- Threshold percentage of 5xx responses above which the alert will fire
+        threshold: 1.5
+        # rules.statusCodes.codes.5xx.duration -- Duration for which the percent of 5xx responses must be above the threshold to alert
+        duration: 5m

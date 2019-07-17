@@ -1,0 +1,10 @@
+apiVersion: v1
+name: no-requirements
+description: A simple chart that installs, let's say PrometheusRules, that needs no sub-charts
+version: "0.2.0"
+home: "https://github.com/norwoodj/helm-docs/example-charts/no-requirements"
+sources: ["https://github.com/norwoodj/helm-docs/example-charts/no-requirements"]
+engine: gotpl
+maintainers:
+  - email: norwood.john.m@gmail.com
+    name: John Norwood
