@@ -9,16 +9,27 @@ from charts and generates a number of sub-templates that can be referenced in a 
 If no template file is provided, the tool has a default internal template that will generate a reasonably formatted README.
 
 
-## Usage
-To build from source:
-```bash
+## Installation
+helm-docs can be installed using [homebrew](https://brew.sh/):
+
+```
+brew install norwoodj/tap/helm-docs
+```
+
+This will download and install the [latest release](https://github.com/norwoodj/helm-docs/releases/latest)
+of the tool.
+
+To build from source in this repository:
+
+```
 cd cmd/helm-docs
 go build
 ```
 
-You can also download the latest release for a variety of platforms from [here](https://github.com/norwoodj/helm-docs/releases/latest).
 
-To run:
+## Usage
+To run and generate documentation into READMEs for all helm charts within or recursively contained by a directory:
+
 ```bash
 helm-docs
 # OR
