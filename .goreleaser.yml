@@ -20,5 +20,16 @@ changelog:
   sort: asc
   filters:
     exclude:
-    - "^docs:"
-    - "^test:"
+      - "^docs:"
+      - "^test:"
+brews:
+  - github:
+      owner: norwoodj
+      name: homebrew
+    folder: Formula
+    homepage: https://github.com/norwoodj/helm-docs
+    description: Automatically generate markdown documentation for helm charts
+    install: |
+      bin.install "helm-docs"
+    test: |
+      system "#{bin}/helm-docs --version"
