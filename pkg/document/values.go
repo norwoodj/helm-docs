@@ -93,11 +93,11 @@ func parseNilValueType(prefix string, description string) valueRow {
 }
 
 func createListRows(prefix string, values []interface{}, keysToDescriptions map[string]string) []valueRow {
-	if len(values) == 0 {
-		return []valueRow{createAtomRow(prefix, values, keysToDescriptions)}
-	}
+	valueRows := []valueRow{createAtomRow(prefix, values, keysToDescriptions)}
 
-	valueRows := []valueRow{}
+	if len(values) == 0 {
+		return valueRows
+	}
 
 	for i, v := range values {
 		var nextPrefix string
@@ -128,15 +128,15 @@ func createListRows(prefix string, values []interface{}, keysToDescriptions map[
 }
 
 func createValueRows(prefix string, values helm.ChartValues, keysToDescriptions map[string]string) []valueRow {
-	if len(values) == 0 {
-		if prefix == "" {
-			return []valueRow{}
-		}
+	valueRows := make([]valueRow, 0)
 
-		return []valueRow{createAtomRow(prefix, values, keysToDescriptions)}
+	if prefix != "" {
+		valueRows = append(valueRows, createAtomRow(prefix, values, keysToDescriptions))
 	}
 
-	valueRows := make([]valueRow, 0)
+	if len(values) == 0 {
+		return valueRows
+	}
 
 	for k, v := range values {
 		var escapedKey string
