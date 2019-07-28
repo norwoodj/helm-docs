@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func retrieveInfoAndPrintDocumentation(chartDirectory string, waitGroup *sync.WaitGroup) {
+func retrieveInfoAndPrintDocumentation(chartDirectory string, waitGroup *sync.WaitGroup, dryRun bool) {
 	defer waitGroup.Done()
 	chartDocumentationInfo, err := helm.ParseChartInformation(chartDirectory)
 
@@ -21,7 +21,7 @@ func retrieveInfoAndPrintDocumentation(chartDirectory string, waitGroup *sync.Wa
 		return
 	}
 
-	document.PrintDocumentation(chartDocumentationInfo, viper.GetBool("dry-run"))
+	document.PrintDocumentation(chartDocumentationInfo, dryRun)
 
 }
 
@@ -35,11 +35,18 @@ func helmDocs(_ *cobra.Command, _ []string) {
 	}
 
 	log.Infof("Found Chart directories [%s]", strings.Join(chartDirs, ", "))
+	dryRun := viper.GetBool("dry-run")
 	waitGroup := sync.WaitGroup{}
 
 	for _, c := range chartDirs {
 		waitGroup.Add(1)
-		go retrieveInfoAndPrintDocumentation(c, &waitGroup)
+
+		// On dry runs all output goes to stdout, and so as to not jumble things, generate serially
+		if dryRun {
+			retrieveInfoAndPrintDocumentation(c, &waitGroup, dryRun)
+		} else {
+			go retrieveInfoAndPrintDocumentation(c, &waitGroup, dryRun)
+		}
 	}
 
 	waitGroup.Wait()
