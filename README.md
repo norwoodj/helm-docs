@@ -99,16 +99,54 @@ controller:
   replicas: 2
 ```
 
-The descriptions will be picked up and put in the table in the README. The comment need not be near the parameter it
-explains, although this is probably preferable.
+The following rules are used to determine which values will be added to the values table in the README:
 
-_Note:_ if the value in question contains any `.` characters, that section of the path must be quoted e.g.
+* By default, only _leaf nodes_, that is, fields of type `int`, `string`, `float`, `bool`, empty lists, and empty maps
+  are added as rows in the values table. These fields will be added even if they do not have a description comment
+* Lists and maps which contain elements will not be added as rows in the values table _unless_ they have a description
+  comment which refers to them
+* Adding a description comment for a non-empty list or map in this way makes it so that leaf nodes underneath the
+  described field will _not_ be automatically added to the values table. In order to document both a non-empty list/map
+  _and_ a leaf node within that field, description comments must be added for both
+
+e.g. In this case, both `controller.livenessProbe` and `controller.livenessProbe.httpGet.path` will be added as rows in
+the values table, but `controller.livenessProbe.httpGet.port` will not
 ```yaml
-service:
-  annotations:
-    # ingress.annotations."external-dns.alpha.kubernetes.io/hostname" -- Hostname to be assigned to the ELB for the service
-    external-dns.alpha.kubernetes.io/hostname: stupidchess.jmn23.com
+controller:
+  # controller.livenessProbe -- Configure the healthcheck for the ingress controller
+  livenessProbe:
+    httpGet:
+      # controller.livenessProbe.httpGet.path -- This is the liveness check endpoint
+      path: /healthz
+      port: http
 ```
+
+Results in:
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| controller.livenessProbe | object | `{"httpGet":{"path":"/healthz","port":8080}}` | Configure the healthcheck for the ingress controller |
+| controller.livenessProbe.httpGet.path | string | `"/healthz"` | This is the liveness check endpoint |
+
+If we remove the comment for `controller.livenessProbe` however, both leaf nodes `controller.livenessProbe.httpGet.path`
+and `controller.livenessProbe.httpGet.port` will be added to the table, with our without description comments:
+
+```yaml
+controller:
+  livenessProbe:
+    httpGet:
+      # controller.livenessProbe.httpGet.path -- This is the liveness check endpoint
+      path: /healthz
+      port: http
+```
+
+Results in:
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| controller.livenessProbe.httpGet.path | string | `"/healthz"` | This is the liveness check endpoint |
+| controller.livenessProbe.httpGet.port | string | `"http"` | |
+
 
 ### nil values
 If you would like to define a key for a value, but leave the default empty, you can still specify a description for it
@@ -119,3 +157,18 @@ controller:
   replicas:
 ```
 This could be useful when wanting to enforce user-defined values for the chart, where there are no sensible defaults.
+
+### Spaces and Dots in keys
+If a key name contains any "." or " " characters, that section of the path must be quoted in description comments e.g.
+
+```yaml
+service:
+  annotations:
+    # service.annotations."external-dns.alpha.kubernetes.io/hostname" -- Hostname to be assigned to the ELB for the service
+    external-dns.alpha.kubernetes.io/hostname: stupidchess.jmn23.com
+
+configMap:
+  # configMap."not real config param" -- A completely fake config parameter for a useful example
+  not real config param: value
+```
+

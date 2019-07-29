@@ -16,11 +16,20 @@ type chartTemplateData struct {
 	Values []valueRow
 }
 
-func getChartTemplateData(chartDocumentationInfo helm.ChartDocumentationInfo) chartTemplateData {
-	valuesTableRows := createValueRows("", chartDocumentationInfo.ChartValues, chartDocumentationInfo.ChartValuesDescriptions)
+func getChartTemplateData(chartDocumentationInfo helm.ChartDocumentationInfo) (chartTemplateData, error) {
+	valuesTableRows, err := createValueRowsFromObject(
+		"",
+		chartDocumentationInfo.ChartValues,
+		chartDocumentationInfo.ChartValuesDescriptions,
+		true,
+	)
+
+	if err != nil {
+		return chartTemplateData{}, err
+	}
 
 	return chartTemplateData{
 		ChartDocumentationInfo: chartDocumentationInfo,
 		Values:                 valuesTableRows,
-	}
+	}, nil
 }

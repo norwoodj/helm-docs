@@ -26,6 +26,18 @@ func getOutputFile(chartDirectory string, dryRun bool) (*os.File, error) {
 func PrintDocumentation(chartDocumentationInfo helm.ChartDocumentationInfo, dryRun bool) {
 	log.Infof("Generating README Documentation for chart %s", chartDocumentationInfo.ChartDirectory)
 
+	chartDocumentationTemplate, err := newChartDocumentationTemplate(chartDocumentationInfo)
+	if err != nil {
+		log.Warnf("Error generating gotemplates for chart %s: %s", chartDocumentationInfo.ChartDirectory, err)
+		return
+	}
+
+	chartTemplateDataObject, err := getChartTemplateData(chartDocumentationInfo)
+	if err != nil {
+		log.Warnf("Error generating template data for chart %s: %s", chartDocumentationInfo.ChartDirectory, err)
+		return
+	}
+
 	outputFile, err := getOutputFile(chartDocumentationInfo.ChartDirectory, dryRun)
 	if err != nil {
 		log.Warnf("Could not open chart README file %s, skipping chart", filepath.Join(chartDocumentationInfo.ChartDirectory, "README.md"))
@@ -36,15 +48,7 @@ func PrintDocumentation(chartDocumentationInfo helm.ChartDocumentationInfo, dryR
 		defer outputFile.Close()
 	}
 
-	chartDocumentationTemplate, err := newChartDocumentationTemplate(chartDocumentationInfo)
-	if err != nil {
-		log.Warnf("Error generating templates for chart %s: %s", chartDocumentationInfo.ChartDirectory, err)
-		return
-	}
-
-	chartTemplateDataObject := getChartTemplateData(chartDocumentationInfo)
 	err = chartDocumentationTemplate.Execute(outputFile, chartTemplateDataObject)
-
 	if err != nil {
 		log.Warnf("Error generating documentation for chart %s: %s", chartDocumentationInfo.ChartDirectory, err)
 	}

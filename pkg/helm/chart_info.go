@@ -41,13 +41,11 @@ type ChartRequirements struct {
 	Dependencies []ChartRequirementsItem
 }
 
-type ChartValues map[interface{}]interface{}
-
 type ChartDocumentationInfo struct {
 	ChartMeta
 	ChartRequirements
-	ChartValues
 
+	ChartValues             map[interface{}]interface{}
 	ChartDirectory          string
 	ChartValuesDescriptions map[string]string
 }
@@ -127,9 +125,9 @@ func parseChartRequirementsFile(chartDirectory string) (ChartRequirements, error
 	return chartRequirements, nil
 }
 
-func parseChartValuesFile(chartDirectory string) (ChartValues, error) {
+func parseChartValuesFile(chartDirectory string) (map[interface{}]interface{}, error) {
 	valuesPath := path.Join(chartDirectory, "values.yaml")
-	values := ChartValues{}
+	values := make(map[interface{}]interface{})
 	yamlFileContents, err := getYamlFileContents(valuesPath)
 
 	if isErrorInReadingNecessaryFile(valuesPath, err) {

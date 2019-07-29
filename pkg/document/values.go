@@ -1,13 +1,11 @@
 package document
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"sort"
-	"strconv"
 	"strings"
-
-	"github.com/norwoodj/helm-docs/pkg/helm"
 )
 
 const (
@@ -19,63 +17,53 @@ const (
 	stringType = "string"
 )
 
-func createAtomRow(prefix string, value interface{}, keysToDescriptions map[string]string) valueRow {
-	description := keysToDescriptions[prefix]
+var nilValueTypeRegex, _ = regexp.Compile("^\\(.*?\\)")
 
-	switch value.(type) {
-	case bool:
-		return valueRow{
-			Key:         prefix,
-			Type:        boolType,
-			Default:     fmt.Sprintf("%t", value),
-			Description: description,
-		}
-	case float64:
-		return valueRow{
-			Key:         prefix,
-			Type:        floatType,
-			Default:     strconv.FormatFloat(value.(float64), 'f', -1, 64),
-			Description: description,
-		}
-	case int:
-		return valueRow{
-			Key:         prefix,
-			Type:        intType,
-			Default:     fmt.Sprintf("%d", value),
-			Description: description,
-		}
-	case string:
-		return valueRow{
-			Key:         prefix,
-			Type:        stringType,
-			Default:     fmt.Sprintf("\"%s\"", value),
-			Description: description,
-		}
-	case []interface{}:
-		return valueRow{
-			Key:         prefix,
-			Type:        listType,
-			Default:     "[]",
-			Description: description,
-		}
-	case helm.ChartValues:
-		return valueRow{
-			Key:         prefix,
-			Type:        objectType,
-			Default:     "{}",
-			Description: description,
-		}
-	case nil:
-		return parseNilValueType(prefix, description)
-	}
-
-	return valueRow{}
+func formatNextListKeyPrefix(prefix string, index int) string {
+	return fmt.Sprintf("%s[%d]", prefix, index)
 }
 
-func parseNilValueType(prefix string, description string) valueRow {
+func formatNextObjectKeyPrefix(prefix string, key string) string {
+	var escapedKey string
+	var nextPrefix string
+
+	if strings.Contains(key, ".") || strings.Contains(key, " ") {
+		escapedKey = fmt.Sprintf(`"%s"`, key)
+	} else {
+		escapedKey = key
+	}
+
+	if prefix != "" {
+		nextPrefix = fmt.Sprintf("%s.%s", prefix, escapedKey)
+	} else {
+		nextPrefix = fmt.Sprintf("%s", escapedKey)
+	}
+
+	return nextPrefix
+}
+
+func getTypeName(value interface{}) string {
+	switch value.(type) {
+	case bool:
+		return boolType
+	case float64:
+		return floatType
+	case int:
+		return intType
+	case string:
+		return stringType
+	case []interface{}:
+		return listType
+	case jsonableMap:
+		return objectType
+	}
+
+	return ""
+}
+
+func parseNilValueType(key string, description string) valueRow {
 	// Grab whatever's in between the parentheses of the description and treat it as the type
-	r, _ := regexp.Compile("^\\(.*?\\)")
-	t := r.FindString(description)
+	t := nilValueTypeRegex.FindString(description)
 
 	if len(t) > 0 {
 		t = t[1 : len(t)-1]
@@ -85,97 +73,195 @@ func parseNilValueType(prefix string, description string) valueRow {
 	}
 
 	return valueRow{
-		Key:         prefix,
+		Key:         key,
 		Type:        t,
-		Default:     "\\<nil\\>",
+		Default:     "`nil`",
 		Description: description,
 	}
 }
 
-func createListRows(prefix string, values []interface{}, keysToDescriptions map[string]string) []valueRow {
-	if len(values) == 0 {
-		return []valueRow{createAtomRow(prefix, values, keysToDescriptions)}
+func createValueRow(
+	key string,
+	value interface{},
+	description string,
+) (valueRow, error) {
+	if value == nil {
+		return parseNilValueType(key, description), nil
 	}
 
-	valueRows := []valueRow{}
-
-	for i, v := range values {
-		var nextPrefix string
-		if prefix != "" {
-			nextPrefix = fmt.Sprintf("%s[%d]", prefix, i)
-		} else {
-			nextPrefix = fmt.Sprintf("[%d]", i)
-		}
-
-		switch v.(type) {
-		case helm.ChartValues:
-			valueRows = append(valueRows, createValueRows(nextPrefix, v.(helm.ChartValues), keysToDescriptions)...)
-		case []interface{}:
-			valueRows = append(valueRows, createListRows(nextPrefix, v.([]interface{}), keysToDescriptions)...)
-		case bool:
-			valueRows = append(valueRows, createAtomRow(nextPrefix, v, keysToDescriptions))
-		case float64:
-			valueRows = append(valueRows, createAtomRow(nextPrefix, v, keysToDescriptions))
-		case int:
-			valueRows = append(valueRows, createAtomRow(nextPrefix, v, keysToDescriptions))
-		case string:
-			valueRows = append(valueRows, createAtomRow(nextPrefix, v, keysToDescriptions))
-			break
-		}
+	jsonEncodedValue, err := json.Marshal(value)
+	if err != nil {
+		return valueRow{}, fmt.Errorf("failed to marshal default value for %s to json: %s", key, err)
 	}
 
-	return valueRows
+	defaultValue := fmt.Sprintf("`%s`", jsonEncodedValue)
+	return valueRow{
+		Key:         key,
+		Type:        getTypeName(value),
+		Default:     defaultValue,
+		Description: description,
+	}, nil
 }
 
-func createValueRows(prefix string, values helm.ChartValues, keysToDescriptions map[string]string) []valueRow {
-	if len(values) == 0 {
-		if prefix == "" {
-			return []valueRow{}
+func createRowsFromField(
+	nextPrefix string,
+	value interface{},
+	keysToDescriptions map[string]string,
+	documentLeafNodes bool,
+) ([]valueRow, error) {
+	valueRows := make([]valueRow, 0)
+
+	switch value.(type) {
+	case map[interface{}]interface{}:
+		subObjectValuesRows, err := createValueRowsFromObject(nextPrefix, value.(map[interface{}]interface{}), keysToDescriptions, documentLeafNodes)
+		if err != nil {
+			return nil, err
 		}
 
-		return []valueRow{createAtomRow(prefix, values, keysToDescriptions)}
+		valueRows = append(valueRows, subObjectValuesRows...)
+
+	case []interface{}:
+		subListValuesRows, err := createValueRowsFromList(nextPrefix, value.([]interface{}), keysToDescriptions, documentLeafNodes)
+		if err != nil {
+			return nil, err
+		}
+
+		valueRows = append(valueRows, subListValuesRows...)
+
+	default:
+		description, hasDescription := keysToDescriptions[nextPrefix]
+		if !(documentLeafNodes || hasDescription) {
+			return []valueRow{}, nil
+		}
+
+		leafValueRow, err := createValueRow(nextPrefix, value, description)
+		if err != nil {
+			return nil, err
+		}
+
+		valueRows = append(valueRows, leafValueRow)
+	}
+
+	return valueRows, nil
+}
+
+func createValueRowsFromList(
+	prefix string,
+	values []interface{},
+	keysToDescriptions map[string]string,
+	documentLeafNodes bool,
+) ([]valueRow, error) {
+	description, hasDescription := keysToDescriptions[prefix]
+
+	// If we encounter an empty list, it should be documented if no parent object or list had a description or if this
+	// list has a description
+	if len(values) == 0 {
+
+		if !(documentLeafNodes || hasDescription) {
+			return []valueRow{}, nil
+		}
+
+		emptyListRow, err := createValueRow(prefix, values, description)
+		if err != nil {
+			return nil, err
+		}
+
+		return []valueRow{emptyListRow}, nil
 	}
 
 	valueRows := make([]valueRow, 0)
 
-	for k, v := range values {
-		var escapedKey string
-		var nextPrefix string
+	// We have a nonempty list with a description, document it, and mark that leaf nodes underneath it should not be
+	// documented without descriptions
+	if hasDescription {
+		jsonableObject := convertHelmValuesToJsonable(values)
+		listRow, err := createValueRow(prefix, jsonableObject, description)
 
-		key := k.(string)
-		if strings.Contains(key, ".") {
-			escapedKey = fmt.Sprintf("\"%s\"", k)
-		} else {
-			escapedKey = key
+		if err != nil {
+			return nil, err
 		}
 
-		if prefix != "" {
-			nextPrefix = fmt.Sprintf("%s.%s", prefix, escapedKey)
-		} else {
-			nextPrefix = fmt.Sprintf("%s", escapedKey)
-		}
-
-		switch v.(type) {
-		case helm.ChartValues:
-			valueRows = append(valueRows, createValueRows(nextPrefix, v.(helm.ChartValues), keysToDescriptions)...)
-		case []interface{}:
-			valueRows = append(valueRows, createListRows(nextPrefix, v.([]interface{}), keysToDescriptions)...)
-		case bool:
-			valueRows = append(valueRows, createAtomRow(nextPrefix, v, keysToDescriptions))
-		case float64:
-			valueRows = append(valueRows, createAtomRow(nextPrefix, v, keysToDescriptions))
-		case int:
-			valueRows = append(valueRows, createAtomRow(nextPrefix, v, keysToDescriptions))
-		case string:
-			valueRows = append(valueRows, createAtomRow(nextPrefix, v, keysToDescriptions))
-		default:
-			valueRows = append(valueRows, createAtomRow(nextPrefix, v, keysToDescriptions))
-		}
+		valueRows = append(valueRows, listRow)
+		documentLeafNodes = false
 	}
 
-	sort.Slice(valueRows[:], func(i, j int) bool {
-		return valueRows[i].Key < valueRows[j].Key
-	})
+	// Generate documentation rows for all list items and their potential sub-fields
+	for i, v := range values {
+		nextPrefix := formatNextListKeyPrefix(prefix, i)
+		valueRowsForListField, err := createRowsFromField(nextPrefix, v, keysToDescriptions, documentLeafNodes)
 
-	return valueRows
+		if err != nil {
+			return nil, err
+		}
+
+		valueRows = append(valueRows, valueRowsForListField...)
+	}
+
+	return valueRows, nil
+}
+
+func createValueRowsFromObject(
+	prefix string,
+	values map[interface{}]interface{},
+	keysToDescriptions map[string]string,
+	documentLeafNodes bool,
+) ([]valueRow, error) {
+	description, hasDescription := keysToDescriptions[prefix]
+
+	if len(values) == 0 {
+		// if the first level of recursion has no values, then there are no values at all, and so we return zero rows of documentation
+		if prefix == "" {
+			return []valueRow{}, nil
+		}
+
+		// Otherwise, we have a leaf empty object node that should be documented if no object up the recursion chain had
+		// a description or if this object has a description
+		if !(documentLeafNodes || hasDescription) {
+			return []valueRow{}, nil
+		}
+
+		documentedRow, err := createValueRow(prefix, jsonableMap{}, description)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return []valueRow{documentedRow}, nil
+	}
+
+	valueRows := make([]valueRow, 0)
+
+	// We have a nonempty object with a description, document it, and mark that leaf nodes underneath it should not be
+	// documented without descriptions
+	if hasDescription {
+		jsonableObject := convertHelmValuesToJsonable(values)
+		objectRow, err := createValueRow(prefix, jsonableObject, description)
+
+		if err != nil {
+			return nil, err
+		}
+
+		valueRows = append(valueRows, objectRow)
+		documentLeafNodes = false
+	}
+
+	for k, v := range values {
+		nextPrefix := formatNextObjectKeyPrefix(prefix, convertMapKeyToString(k))
+		valueRowsForObjectField, err := createRowsFromField(nextPrefix, v, keysToDescriptions, documentLeafNodes)
+
+		if err != nil {
+			return nil, err
+		}
+
+		valueRows = append(valueRows, valueRowsForObjectField...)
+	}
+
+	// At the top level of recursion, sort value rows by key
+	if prefix == "" {
+		sort.Slice(valueRows[:], func(i, j int) bool {
+			return valueRows[i].Key < valueRows[j].Key
+		})
+	}
+
+	return valueRows, nil
 }
