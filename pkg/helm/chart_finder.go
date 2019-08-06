@@ -11,8 +11,12 @@ var ignoreDirectories = map[string]bool{
 	"templates": true,
 }
 
-func FindChartDirectories() ([]string, error) {
+func FindChartDirectories(ignoreDirectory string) ([]string, error) {
 	chartDirs := make([]string, 0)
+
+	if ignoreDirectory != "" {
+		ignoreDirectories[ignoreDirectory] = true
+	}
 
 	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
 		if err != nil {

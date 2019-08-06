@@ -45,6 +45,7 @@ func newHelmDocsCommand(run func(cmd *cobra.Command, args []string)) (*cobra.Com
 	logLevelUsage := fmt.Sprintf("Level of logs that should printed, one of (%s)", strings.Join(possibleLogLevels(), ", "))
 	command.PersistentFlags().BoolP("dry-run", "d", false, "don't actually render any markdown files just print to stdout passed")
 	command.PersistentFlags().StringP("template-file", "t", "README.md.gotmpl", "gotemplate file to use to generate documentation for charts")
+	command.PersistentFlags().StringP("ignore-dir", "i", "", "directory to ignore when finding charts")
 	command.PersistentFlags().StringP("log-level", "l", "info", logLevelUsage)
 
 	viper.AutomaticEnv()

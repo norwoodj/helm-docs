@@ -27,7 +27,10 @@ func retrieveInfoAndPrintDocumentation(chartDirectory string, waitGroup *sync.Wa
 
 func helmDocs(_ *cobra.Command, _ []string) {
 	initializeCli()
-	chartDirs, err := helm.FindChartDirectories()
+
+	ignoreDir := viper.GetString("ignore-dir")
+
+	chartDirs, err := helm.FindChartDirectories(ignoreDir)
 
 	if err != nil {
 		log.Errorf("Error finding chart directories: %s", err)
