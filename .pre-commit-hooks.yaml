@@ -2,7 +2,7 @@
   args: []
   description: Uses `helm-docs` to creates documentation from Helm chart's `values.yaml` file, and inserts the result into a corresponding README.md.
   entry: helm_docs.sh
-  # exclude: charts\/.*$
+  exclude: charts\/.*$
   files: (Chart\.yaml)$
   language: script
   name: Helm docs
