@@ -45,8 +45,8 @@ type ChartDocumentationInfo struct {
 	ChartMeta
 	ChartRequirements
 
-	ChartValues             map[interface{}]interface{}
 	ChartDirectory          string
+	ChartValues             map[interface{}]interface{}
 	ChartValuesDescriptions map[string]string
 }
 
