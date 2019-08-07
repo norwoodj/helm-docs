@@ -42,26 +42,14 @@ helm_docs() {
 
     paths[index]=$(dirname "$file_with_path")
 
-    ((index+=1))
+    (( "index+=1" ))
   done
-
-  readonly tmp_file=$(mktemp)
-  readonly text_file="README.md"
 
   for path_uniq in $(echo "${paths[*]}" | tr ' ' '\n' | sort -u); do
     path_uniq="${path_uniq//__REPLACED__SPACE__/ }"
 
     pushd "$path_uniq" > /dev/null
-
-    # if [[ ! -f "$text_file" ]]; then
-    #   popd > /dev/null
-    #   continue
-    # fi
-
-    helm-docs "${args}" ./ > "$text_file"
-
-    rm -f "$tmp_file"
-
+    helm-docs "${args}"
     popd > /dev/null
   done
 }
