@@ -1,0 +1,9 @@
+- id: helm_docs
+  name: Helm docs
+  description: Uses `helm-docs` to creates documentation from Helm chart's `values.yaml` file, and inserts the result into a corresponding README.md.
+  require_serial: true
+  entry: helm_docs.sh
+  args: [--args=--with-aggregate-type-defaults]
+  language: script
+  files: Chart.yaml
+  exclude: charts\/.*$
