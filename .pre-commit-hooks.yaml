@@ -1,7 +1,7 @@
 - id: helm_docs
   args: []
   description: Uses 'helm-docs' to create documentation from the Helm chart's 'values.yaml' file, and inserts the result into a corresponding 'README.md' file.
-  entry: helm_docs.sh
+  entry: scripts/helm_docs.sh
   exclude: charts\/.*$
   files: (Chart\.yaml)$
   language: script
