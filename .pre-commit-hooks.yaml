@@ -3,7 +3,7 @@
   description: Uses 'helm-docs' to create documentation from the Helm chart's 'values.yaml' file, and inserts the result into a corresponding 'README.md' file.
   entry: scripts/helm_docs.sh
   exclude: charts\/.*$
-  files: (Chart\.yaml)$
+  files: (Chart|requirements)\.yaml$
   language: script
   name: Helm docs
   require_serial: true
