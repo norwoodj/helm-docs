@@ -1,8 +1,8 @@
-- id: helm_docs
+- id: helm-docs
   args: []
   description: Uses 'helm-docs' to create documentation from the Helm chart's 'values.yaml' file, and inserts the result into a corresponding 'README.md' file.
-  entry: git-hook/helm_docs.sh
+  entry: git-hook/helm-docs
   files: (Chart|requirements|values)\.yaml$
   language: script
-  name: Helm docs
+  name: Helm Docs
   require_serial: true
