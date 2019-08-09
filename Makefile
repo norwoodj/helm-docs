@@ -12,4 +12,4 @@ test:
 
 .PHONY: clean
 clean:
-	rm helm-docs
+	rm -f helm-docs
