@@ -1,2 +1,3 @@
-helm-docs
+/helm-docs
+/cmd/helm-docs/helm-docs
 dist
