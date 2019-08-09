@@ -4,7 +4,7 @@ A simple chart that installs, let's say PrometheusRules, that needs no sub-chart
 
 Current chart version is `0.2.0`
 
-Source code can be found [here](https://github.com/norwoodj/helm-docs/example-charts/no-requirements)
+Source code can be found [here](https://github.com/norwoodj/helm-docs/tree/master/example-charts/no-requirements)
 
 
 

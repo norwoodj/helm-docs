@@ -2,8 +2,8 @@ apiVersion: v1
 name: no-values
 description: A very simple chart that doesn't even need any values for customization
 version: "0.2.0"
-home: "https://github.com/norwoodj/helm-docs/example-charts/no-values"
-sources: ["https://github.com/norwoodj/helm-docs/example-charts/no-values"]
+home: "https://github.com/norwoodj/helm-docs/tree/master/example-charts/no-values"
+sources: ["https://github.com/norwoodj/helm-docs/tree/master/example-charts/no-values"]
 engine: gotpl
 maintainers:
   - email: norwood.john.m@gmail.com

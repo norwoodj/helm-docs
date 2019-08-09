@@ -4,7 +4,7 @@ A simple wrapper around the stable/nginx-ingress chart that adds a few of our co
 
 Current chart version is `0.2.0`
 
-Source code can be found [here](https://github.com/norwoodj/helm-docs/example-charts/nginx-ingress)
+Source code can be found [here](https://github.com/norwoodj/helm-docs/tree/master/example-charts/nginx-ingress)
 
 ## Chart Requirements
 

@@ -2,8 +2,8 @@ apiVersion: v1
 name: custom-template
 description: Basically the same as the nginx-ingress chart, but using a custom template to include some other content
 version: "0.2.0"
-home: "https://github.com/norwoodj/helm-docs/example-charts/custom-template"
-sources: ["https://github.com/norwoodj/helm-docs/example-charts/custom-template"]
+home: "https://github.com/norwoodj/helm-docs/tree/master/example-charts/custom-template"
+sources: ["https://github.com/norwoodj/helm-docs/tree/master/example-charts/custom-template"]
 engine: gotpl
 maintainers:
   - email: norwood.john.m@gmail.com

@@ -2,8 +2,8 @@ apiVersion: v1
 name: nginx-ingress
 description: A simple wrapper around the stable/nginx-ingress chart that adds a few of our conventions
 version: "0.2.0"
-home: "https://github.com/norwoodj/helm-docs/example-charts/nginx-ingress"
-sources: ["https://github.com/norwoodj/helm-docs/example-charts/nginx-ingress"]
+home: "https://github.com/norwoodj/helm-docs/tree/master/example-charts/nginx-ingress"
+sources: ["https://github.com/norwoodj/helm-docs/tree/master/example-charts/nginx-ingress"]
 engine: gotpl
 maintainers:
   - email: norwood.john.m@gmail.com
