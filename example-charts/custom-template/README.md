@@ -4,7 +4,7 @@ Basically the same as the nginx-ingress chart, but using a custom template to in
 
 Current chart version is `0.2.0`
 
-Source code can be found [here](https://github.com/norwoodj/helm-docs/example-charts/custom-template)
+Source code can be found [here](https://github.com/norwoodj/helm-docs/tree/master/example-charts/custom-template)
 
 ## Additional Information
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore
