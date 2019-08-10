@@ -1,0 +1,10 @@
+apiVersion: v1
+name: ignored-one
+description: A demonstration of the ability of a .helmdocsignore file to ignore files by Chart.yaml file
+version: "0.2.0"
+home: "https://github.com/norwoodj/helm-docs/tree/master/example-charts/ignored-one"
+sources: ["https://github.com/norwoodj/helm-docs/tree/master/example-charts/ignored-one"]
+engine: gotpl
+maintainers:
+  - email: norwood.john.m@gmail.com
+    name: John Norwood

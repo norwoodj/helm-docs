@@ -88,7 +88,8 @@ in the templates you supply.
 ## Ignoring Chart Directories
 helm-docs supports a `.helmdocsignore` file, exactly like a `.gitignore` file in which one can specify directories to ignore
 when searching for charts. Directories specified need not be charts themselves, so parent directories containing potentially
-many charts can be ignored and none of the charts underneath them will be processed.
+many charts can be ignored and none of the charts underneath them will be processed. You may also directly reference the
+Chart.yaml file for a chart to skip processing for it.
 
 
 ## values.yaml metadata
