@@ -183,12 +183,14 @@ configMap:
 
 ## Pre-commit hook
 
-If you want to automatically generate `README.md` files with a pre-commit hook, make sure you have the `pre-commit` binary installed (instructions here: [https://pre-commit.com/#install](https://pre-commit.com/#install)), and add the following file to your Helm charts repository:
+If you want to automatically generate `README.md` files with a pre-commit hook, make sure you
+[install the pre-commit binary](https://pre-commit.com/#install), and add a [.pre-commit-config.yaml file](./.pre-commit-config.yaml)
+to your project. Then run:
 
-**.pre-commit-config.yaml**
-```yaml
-- repo: https://github.com/norwoodj/helm-docs
-  rev: master
-  hooks:
-    - id: helm_docs
+```bash
+pre-commit install
+pre-commit install-hooks
 ```
+
+Future changes to your charts requirements.yaml, values.yaml, or Chart.yaml files will cause an update to documentation when
+you commit.
