@@ -17,7 +17,7 @@ const (
 	stringType = "string"
 )
 
-var nilValueTypeRegex, _ = regexp.Compile("^\\(.*?\\)")
+var nilValueTypeRegex = regexp.MustCompile("^\\(.*?\\)")
 
 func formatNextListKeyPrefix(prefix string, index int) string {
 	return fmt.Sprintf("%s[%d]", prefix, index)
@@ -109,24 +109,12 @@ func createRowsFromField(
 	keysToDescriptions map[string]string,
 	documentLeafNodes bool,
 ) ([]valueRow, error) {
-	valueRows := make([]valueRow, 0)
-
 	switch value.(type) {
 	case map[interface{}]interface{}:
-		subObjectValuesRows, err := createValueRowsFromObject(nextPrefix, value.(map[interface{}]interface{}), keysToDescriptions, documentLeafNodes)
-		if err != nil {
-			return nil, err
-		}
-
-		valueRows = append(valueRows, subObjectValuesRows...)
+		return createValueRowsFromObject(nextPrefix, value.(map[interface{}]interface{}), keysToDescriptions, documentLeafNodes)
 
 	case []interface{}:
-		subListValuesRows, err := createValueRowsFromList(nextPrefix, value.([]interface{}), keysToDescriptions, documentLeafNodes)
-		if err != nil {
-			return nil, err
-		}
-
-		valueRows = append(valueRows, subListValuesRows...)
+		return createValueRowsFromList(nextPrefix, value.([]interface{}), keysToDescriptions, documentLeafNodes)
 
 	default:
 		description, hasDescription := keysToDescriptions[nextPrefix]
@@ -135,14 +123,8 @@ func createRowsFromField(
 		}
 
 		leafValueRow, err := createValueRow(nextPrefix, value, description)
-		if err != nil {
-			return nil, err
-		}
-
-		valueRows = append(valueRows, leafValueRow)
+		return []valueRow{leafValueRow}, err
 	}
-
-	return valueRows, nil
 }
 
 func createValueRowsFromList(
@@ -156,7 +138,6 @@ func createValueRowsFromList(
 	// If we encounter an empty list, it should be documented if no parent object or list had a description or if this
 	// list has a description
 	if len(values) == 0 {
-
 		if !(documentLeafNodes || hasDescription) {
 			return []valueRow{}, nil
 		}
@@ -221,12 +202,7 @@ func createValueRowsFromObject(
 		}
 
 		documentedRow, err := createValueRow(prefix, jsonableMap{}, description)
-
-		if err != nil {
-			return nil, err
-		}
-
-		return []valueRow{documentedRow}, nil
+		return []valueRow{documentedRow}, err
 	}
 
 	valueRows := make([]valueRow, 0)

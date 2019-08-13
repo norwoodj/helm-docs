@@ -61,7 +61,7 @@ func NewIgnoreContext(ignoreFilename string) IgnoreContext {
 
 	if err != nil {
 		log.Warnf("Using empty ignore rules due to error: %s", err)
-		return IgnoreContext{rules: ignoreRules}
+		return IgnoreContext{rules: ignore.Empty()}
 	}
 
 	return IgnoreContext{rules: ignoreRules, relativeDir: gitRepositoryRoot}
