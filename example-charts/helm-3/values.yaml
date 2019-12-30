@@ -1,0 +1,41 @@
+controller:
+  name: controller
+  image:
+    repository: nginx-ingress-controller
+    tag: "18.0831"
+
+  # controller.persistentVolumeClaims -- List of persistent volume claims to create
+  persistentVolumeClaims: []
+
+  # controller.extraVolumes -- Additional volumes to be mounted into the ingress controller container
+  extraVolumes:
+    - name: config-volume
+      configMap:
+        name: nginx-ingress-config
+
+  # controller.livenessProbe -- Configure the healthcheck for the ingress controller
+  livenessProbe:
+    httpGet:
+      # controller.livenessProbe.httpGet.path -- This is the liveness check endpoint
+      path: /healthz
+      port: 8080
+
+  # controller.ingressClass -- Name of the ingress class to route through this controller
+  ingressClass: nginx
+
+  # controller.podLabels -- The labels to be applied to instances of the controller pod
+  podLabels: {}
+
+  publishService:
+    # controller.publishService.enabled -- Whether to expose the ingress controller to the public world
+    enabled: false
+
+  # controller.replicas -- (int) Number of nginx-ingress pods to load balance between
+  replicas:
+
+  service:
+    annotations:
+      # controller.service.annotations."external-dns.alpha.kubernetes.io/hostname" -- Hostname to be assigned to the ELB for the service
+      external-dns.alpha.kubernetes.io/hostname: stupidchess.jmn23.com
+
+    type: LoadBalancer
