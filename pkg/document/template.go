@@ -45,13 +45,13 @@ func getDescriptionTemplate() string {
 }
 
 func getTypeTemplate() string {
-	versionBuilder := strings.Builder{}
-	versionBuilder.WriteString(`{{ define "chart.type" }}{{ .Type }}{{ end }}\n`)
-	versionBuilder.WriteString(`{{ define "chart.typeLine" }}`)
-	versionBuilder.WriteString("Current chart type is `{{ .Type }}`")
-	versionBuilder.WriteString("{{ end }}")
+	typeBuilder := strings.Builder{}
+	typeBuilder.WriteString(`{{ define "chart.type" }}{{ .Type }}{{ end }}\n`)
+	typeBuilder.WriteString(`{{ define "chart.typeLine" }}`)
+	typeBuilder.WriteString("Current chart type is `{{ .Type }}`")
+	typeBuilder.WriteString("{{ end }}")
 
-	return versionBuilder.String()
+	return typeBuilder.String()
 }
 
 func getVersionTemplates() string {
