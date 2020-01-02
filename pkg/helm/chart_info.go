@@ -26,6 +26,7 @@ type ChartMeta struct {
 	Description string
 	Version     string
 	Home        string
+	Type        string
 	Sources     []string
 	Engine      string
 	Maintainers []ChartMetaMaintainer
@@ -103,10 +104,17 @@ func requirementKey(requirement ChartRequirementsItem) string {
 	return fmt.Sprintf("%s/%s", requirement.Repository, requirement.Name)
 }
 
-func parseChartRequirementsFile(chartDirectory string) (ChartRequirements, error) {
-	requirementsPath := path.Join(chartDirectory, "requirements.yaml")
-	if _, err := os.Stat(requirementsPath); os.IsNotExist(err) {
-		return ChartRequirements{Dependencies: []ChartRequirementsItem{}}, nil
+func parseChartRequirementsFile(chartDirectory string, apiVersion string) (ChartRequirements, error) {
+	var requirementsPath string
+
+	if apiVersion == "v1" {
+		requirementsPath = path.Join(chartDirectory, "requirements.yaml")
+
+		if _, err := os.Stat(requirementsPath); os.IsNotExist(err) {
+			return ChartRequirements{Dependencies: []ChartRequirementsItem{}}, nil
+		}
+	} else {
+		requirementsPath = path.Join(chartDirectory, "Chart.yaml")
 	}
 
 	chartRequirements := ChartRequirements{}
@@ -172,7 +180,7 @@ func ParseChartInformation(chartDirectory string) (ChartDocumentationInfo, error
 		return chartDocInfo, err
 	}
 
-	chartDocInfo.ChartRequirements, err = parseChartRequirementsFile(chartDirectory)
+	chartDocInfo.ChartRequirements, err = parseChartRequirementsFile(chartDirectory, chartDocInfo.ApiVersion)
 	if err != nil {
 		return chartDocInfo, err
 	}

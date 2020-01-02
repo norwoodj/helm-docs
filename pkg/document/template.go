@@ -44,6 +44,16 @@ func getDescriptionTemplate() string {
 	return descriptionBuilder.String()
 }
 
+func getTypeTemplate() string {
+	typeBuilder := strings.Builder{}
+	typeBuilder.WriteString(`{{ define "chart.type" }}{{ .Type }}{{ end }}\n`)
+	typeBuilder.WriteString(`{{ define "chart.typeLine" }}`)
+	typeBuilder.WriteString("Current chart type is `{{ .Type }}`")
+	typeBuilder.WriteString("{{ end }}")
+
+	return typeBuilder.String()
+}
+
 func getVersionTemplates() string {
 	versionBuilder := strings.Builder{}
 	versionBuilder.WriteString(`{{ define "chart.version" }}{{ .Version }}{{ end }}\n`)
@@ -143,6 +153,7 @@ func getDocumentationTemplates(chartDirectory string) ([]string, error) {
 		getHeaderTemplate(),
 		getDescriptionTemplate(),
 		getVersionTemplates(),
+		getTypeTemplate(),
 		getSourceLinkTemplates(),
 		getRequirementsTableTemplates(),
 		getValuesTableTemplates(),
