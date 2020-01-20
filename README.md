@@ -106,9 +106,13 @@ controller:
     # controller.publishService.enabled -- Whether to expose the ingress controller to the public world
     enabled: false
 
-  # controller.replicas -- Number of nginx-ingress pods to load balance between
+  # controller.replicas -- Number of nginx-ingress pods to load balance between.
+  # Do not set this below 2.
   replicas: 2
 ```
+
+Note that comments can continue on the next line. In that case leave out the double dash, and the lines will simply be
+appended with a space in-between.
 
 The following rules are used to determine which values will be added to the values table in the README:
 
@@ -168,6 +172,20 @@ controller:
   replicas:
 ```
 This could be useful when wanting to enforce user-defined values for the chart, where there are no sensible defaults.
+
+### Default values/column
+In cases where you do not want to include the default value from `values.yaml`, or where the real default is calculated
+inside the chart, you can change the contents of the column like so:
+
+```yaml
+service:
+  # service.annotations -- Add annotations to the service
+  # Default -- the chart will add some internal annotations automatically
+  annotations: []
+```
+
+The order and casing are important. The name must be spelled just like the column heading. The first comment must be the
+one specifying the key. The "Default" comment must follow.
 
 ### Spaces and Dots in keys
 If a key name contains any "." or " " characters, that section of the path must be quoted in description comments e.g.
