@@ -70,20 +70,20 @@ oscar: 3.14159
 
 	descriptions := []helm.ChartValueDescription{
 		{
-			Key:         "echo",
-			Description: "echo",
+			Key:     "echo",
+			Columns: map[string]string{"Description": "echo"},
 		},
 		{
-			Key:         "foxtrot",
-			Description: "foxtrot",
+			Key:     "foxtrot",
+			Columns: map[string]string{"Description": "foxtrot"},
 		},
 		{
-			Key:         "hello",
-			Description: "hello",
+			Key:     "hello",
+			Columns: map[string]string{"Description": "hello"},
 		},
 		{
-			Key:         "oscar",
-			Description: "oscar",
+			Key:     "oscar",
+			Columns: map[string]string{"Description": "oscar"},
 		},
 	}
 
@@ -145,12 +145,12 @@ oscar: dog
 
 	descriptions := []helm.ChartValueDescription{
 		{
-			Key:         "recursive.echo",
-			Description: "echo",
+			Key:     "recursive.echo",
+			Columns: map[string]string{"Description": "echo"},
 		},
 		{
-			Key:         "oscar",
-			Description: "oscar",
+			Key:     "oscar",
+			Columns: map[string]string{"Description": "oscar"},
 		},
 	}
 
@@ -200,8 +200,8 @@ oscar: dog
 
 	descriptions := []helm.ChartValueDescription{
 		{
-			Key:         "recursive",
-			Description: "an empty object",
+			Key:     "recursive",
+			Columns: map[string]string{"Description": "an empty object"},
 		},
 	}
 
@@ -251,12 +251,12 @@ echo: cat
 
 	descriptions := []helm.ChartValueDescription{
 		{
-			Key:         "birds",
-			Description: "birds",
+			Key:     "birds",
+			Columns: map[string]string{"Description": "birds"},
 		},
 		{
-			Key:         "echo",
-			Description: "echo",
+			Key:     "echo",
+			Columns: map[string]string{"Description": "echo"},
 		},
 	}
 
@@ -305,12 +305,12 @@ cats: [echo, foxtrot]
 
 	descriptions := []helm.ChartValueDescription{
 		{
-			Key:         "cats[0]",
-			Description: "the black one",
+			Key:     "cats[0]",
+			Columns: map[string]string{"Description": "the black one"},
 		},
 		{
-			Key:         "cats[1]",
-			Description: "the friendly one",
+			Key:     "cats[1]",
+			Columns: map[string]string{"Description": "the friendly one"},
 		},
 	}
 
@@ -382,16 +382,16 @@ animals:
 
 	descriptions := []helm.ChartValueDescription{
 		{
-			Key:         "animals[0].elements[0]",
-			Description: "the black one",
+			Key:     "animals[0].elements[0]",
+			Columns: map[string]string{"Description": "the black one"},
 		},
 		{
-			Key:         "animals[0].elements[1]",
-			Description: "the friendly one",
+			Key:     "animals[0].elements[1]",
+			Columns: map[string]string{"Description": "the friendly one"},
 		},
 		{
-			Key:         "animals[1].elements[0]",
-			Description: "the sleepy one",
+			Key:     "animals[1].elements[0]",
+			Columns: map[string]string{"Description": "the sleepy one"},
 		},
 	}
 
@@ -437,8 +437,8 @@ animals:
 
 	descriptions := []helm.ChartValueDescription{
 		{
-			Key:         "animals",
-			Description: "all the animals of the house",
+			Key:     "animals",
+			Columns: map[string]string{"Description": "all the animals of the house"},
 		},
 	}
 
@@ -464,8 +464,8 @@ animals:
 
 	descriptions := []helm.ChartValueDescription{
 		{
-			Key:         "animals[0]",
-			Description: "all the cats of the house",
+			Key:     "animals[0]",
+			Columns: map[string]string{"Description": "all the cats of the house"},
 		},
 	}
 
@@ -501,8 +501,8 @@ animals:
 
 	descriptions := []helm.ChartValueDescription{
 		{
-			Key:         "animals.byTrait",
-			Description: "animals listed by their various characteristics",
+			Key:     "animals.byTrait",
+			Columns: map[string]string{"Description": "animals listed by their various characteristics"},
 		},
 	}
 
@@ -528,20 +528,20 @@ animals:
 
 	descriptions := []helm.ChartValueDescription{
 		{
-			Key:         "animals",
-			Description: "animal stuff",
+			Key:     "animals",
+			Columns: map[string]string{"Description": "animal stuff"},
 		},
 		{
-			Key:         "animals.byTrait",
-			Description: "animals listed by their various characteristics",
+			Key:     "animals.byTrait",
+			Columns: map[string]string{"Description": "animals listed by their various characteristics"},
 		},
 		{
-			Key:         "animals.byTrait.friendly",
-			Description: "the friendly animals of the house",
+			Key:     "animals.byTrait.friendly",
+			Columns: map[string]string{"Description": "the friendly animals of the house"},
 		},
 		{
-			Key:         "animals.byTrait.friendly[0]",
-			Description: "best cat ever",
+			Key:     "animals.byTrait.friendly[0]",
+			Columns: map[string]string{"Description": "best cat ever"},
 		},
 	}
 
@@ -581,16 +581,16 @@ animals:
 
 	descriptions := []helm.ChartValueDescription{
 		{
-			Key:         "animals.birdCount",
-			Description: "(int) the number of birds we have",
+			Key:     "animals.birdCount",
+			Columns: map[string]string{"Description": "(int) the number of birds we have"},
 		},
 		{
-			Key:         "animals.birds",
-			Description: "(list) the list of birds we have",
+			Key:     "animals.birds",
+			Columns: map[string]string{"Description": "(list) the list of birds we have"},
 		},
 		{
-			Key:         "animals.nonWeirdCats",
-			Description: "the cats that we have that are not weird",
+			Key:     "animals.nonWeirdCats",
+			Columns: map[string]string{"Description": "the cats that we have that are not weird"},
 		},
 	}
 
@@ -649,12 +649,12 @@ fullNames:
 
 	descriptions := []helm.ChartValueDescription{
 		{
-			Key:         `fullNames."John Norwood"`,
-			Description: "who am I",
+			Key:     `fullNames."John Norwood"`,
+			Columns: map[string]string{"Description": "who am I"},
 		},
 		{
-			Key:         `websites."stupidchess.jmn23.com"`,
-			Description: "status of the stupidchess website",
+			Key:     `websites."stupidchess.jmn23.com"`,
+			Columns: map[string]string{"Description": "status of the stupidchess website"},
 		},
 	}
 

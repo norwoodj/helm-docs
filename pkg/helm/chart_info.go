@@ -8,12 +8,14 @@ import (
 	"path"
 	"regexp"
 	"sort"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
-var valuesDescriptionRegex = regexp.MustCompile("# (.*) -- (.*)")
+var columnDescriptionRegex = regexp.MustCompile("# (.*) -- (.*)")
+var commentContinuationRegex = regexp.MustCompile("#(.*)")
 
 type ChartMetaMaintainer struct {
 	Email string
@@ -52,9 +54,12 @@ type ChartDocumentationInfo struct {
 }
 
 type ChartValueDescription struct {
-	Key         string
-	Description string
-	Columns     map[string]string
+	Key     string
+	Columns map[string]string
+}
+
+func (desc *ChartValueDescription) Description() string {
+	return desc.Columns["Description"]
 }
 
 func getYamlFileContents(filename string) ([]byte, error) {
@@ -165,23 +170,37 @@ func parseChartValuesFileComments(chartDirectory string) ([]ChartValueDescriptio
 	chartValueDescriptions := []ChartValueDescription{}
 	scanner := bufio.NewScanner(valuesFile)
 
-	hit := false
+	key := ""
+	column := ""
 	for scanner.Scan() {
-		match := valuesDescriptionRegex.FindStringSubmatch(scanner.Text())
+		match := columnDescriptionRegex.FindStringSubmatch(scanner.Text())
 
 		if len(match) > 2 {
-			if !hit {
-				hit = true
+			if key == "" {
+				key = strings.TrimSpace(match[1])
+				column = "Description"
+
 				chartValueDescriptions = append(chartValueDescriptions, ChartValueDescription{
-					Key:         match[1],
-					Description: match[2],
-					Columns:     map[string]string{},
+					Key:     key,
+					Columns: map[string]string{column: strings.TrimSpace(match[2])},
 				})
 			} else {
-				chartValueDescriptions[len(chartValueDescriptions)-1].Columns[match[1]] = match[2]
+				column = strings.TrimSpace(match[1])
+
+				chartValueDescriptions[len(chartValueDescriptions)-1].Columns[column] = strings.TrimSpace(match[2])
 			}
 		} else {
-			hit = false
+			match = commentContinuationRegex.FindStringSubmatch(scanner.Text())
+
+			if (len(match)) > 1 && key != "" {
+				chartValueDescriptions[len(chartValueDescriptions)-1].Columns[column] =
+					chartValueDescriptions[len(chartValueDescriptions)-1].Columns[column] +
+						" " +
+						strings.TrimSpace(match[1])
+			} else {
+				key = ""
+				column = ""
+			}
 		}
 
 	}

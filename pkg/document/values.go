@@ -64,14 +64,14 @@ func getTypeName(value interface{}) string {
 
 func parseNilValueType(key string, description helm.ChartValueDescription) valueRow {
 	// Grab whatever's in between the parentheses of the description and treat it as the type
-	t := nilValueTypeRegex.FindString(description.Description)
+	t := nilValueTypeRegex.FindString(description.Description())
 	text := ""
 	if len(t) > 0 {
 		t = t[1 : len(t)-1]
-		text = description.Description[len(t)+3:]
+		text = description.Description()[len(t)+3:]
 	} else {
 		t = stringType
-		text = description.Description
+		text = description.Description()
 	}
 
 	return valueRow{
@@ -101,7 +101,7 @@ func createValueRow(
 		Key:         key,
 		Type:        getTypeName(value),
 		Default:     defaultValue,
-		Description: description.Description,
+		Description: description.Description(),
 	}, nil
 }
 
