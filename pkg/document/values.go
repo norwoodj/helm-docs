@@ -74,10 +74,15 @@ func parseNilValueType(key string, description helm.ChartValueDescription) value
 		text = description.Description()
 	}
 
+	defaultValue := "`nil`"
+	if override, ok := description.Columns["Default"]; ok {
+		defaultValue = override
+	}
+
 	return valueRow{
 		Key:         key,
 		Type:        t,
-		Default:     "`nil`",
+		Default:     defaultValue,
 		Description: text,
 	}
 }
@@ -91,12 +96,17 @@ func createValueRow(
 		return parseNilValueType(key, description), nil
 	}
 
-	jsonEncodedValue, err := json.Marshal(value)
-	if err != nil {
-		return valueRow{}, fmt.Errorf("failed to marshal default value for %s to json: %s", key, err)
+	var defaultValue string
+	if override, ok := description.Columns["Default"]; ok {
+		defaultValue = override
+	} else {
+		jsonEncodedValue, err := json.Marshal(value)
+		if err != nil {
+			return valueRow{}, fmt.Errorf("failed to marshal default value for %s to json: %s", key, err)
+		}
+		defaultValue = fmt.Sprintf("`%s`", jsonEncodedValue)
 	}
 
-	defaultValue := fmt.Sprintf("`%s`", jsonEncodedValue)
 	return valueRow{
 		Key:         key,
 		Type:        getTypeName(value),
