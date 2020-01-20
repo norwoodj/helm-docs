@@ -3,6 +3,7 @@ package document
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/norwoodj/helm-docs/pkg/helm"
 	"regexp"
 	"sort"
 	"strings"
@@ -61,29 +62,30 @@ func getTypeName(value interface{}) string {
 	return ""
 }
 
-func parseNilValueType(key string, description string) valueRow {
+func parseNilValueType(key string, description helm.ChartValueDescription) valueRow {
 	// Grab whatever's in between the parentheses of the description and treat it as the type
-	t := nilValueTypeRegex.FindString(description)
-
+	t := nilValueTypeRegex.FindString(description.Description)
+	text := ""
 	if len(t) > 0 {
 		t = t[1 : len(t)-1]
-		description = description[len(t)+3:]
+		text = description.Description[len(t)+3:]
 	} else {
 		t = stringType
+		text = description.Description
 	}
 
 	return valueRow{
 		Key:         key,
 		Type:        t,
 		Default:     "`nil`",
-		Description: description,
+		Description: text,
 	}
 }
 
 func createValueRow(
 	key string,
 	value interface{},
-	description string,
+	description helm.ChartValueDescription,
 ) (valueRow, error) {
 	if value == nil {
 		return parseNilValueType(key, description), nil
@@ -99,25 +101,25 @@ func createValueRow(
 		Key:         key,
 		Type:        getTypeName(value),
 		Default:     defaultValue,
-		Description: description,
+		Description: description.Description,
 	}, nil
 }
 
 func createRowsFromField(
 	nextPrefix string,
 	value interface{},
-	keysToDescriptions map[string]string,
+	chartValuesDescriptions []helm.ChartValueDescription,
 	documentLeafNodes bool,
 ) ([]valueRow, error) {
 	switch value.(type) {
 	case map[interface{}]interface{}:
-		return createValueRowsFromObject(nextPrefix, value.(map[interface{}]interface{}), keysToDescriptions, documentLeafNodes)
+		return createValueRowsFromObject(nextPrefix, value.(map[interface{}]interface{}), chartValuesDescriptions, documentLeafNodes)
 
 	case []interface{}:
-		return createValueRowsFromList(nextPrefix, value.([]interface{}), keysToDescriptions, documentLeafNodes)
+		return createValueRowsFromList(nextPrefix, value.([]interface{}), chartValuesDescriptions, documentLeafNodes)
 
 	default:
-		description, hasDescription := keysToDescriptions[nextPrefix]
+		description, hasDescription := findDescription(nextPrefix, chartValuesDescriptions)
 		if !(documentLeafNodes || hasDescription) {
 			return []valueRow{}, nil
 		}
@@ -130,10 +132,10 @@ func createRowsFromField(
 func createValueRowsFromList(
 	prefix string,
 	values []interface{},
-	keysToDescriptions map[string]string,
+	chartValuesDescriptions []helm.ChartValueDescription,
 	documentLeafNodes bool,
 ) ([]valueRow, error) {
-	description, hasDescription := keysToDescriptions[prefix]
+	description, hasDescription := findDescription(prefix, chartValuesDescriptions)
 
 	// If we encounter an empty list, it should be documented if no parent object or list had a description or if this
 	// list has a description
@@ -169,7 +171,7 @@ func createValueRowsFromList(
 	// Generate documentation rows for all list items and their potential sub-fields
 	for i, v := range values {
 		nextPrefix := formatNextListKeyPrefix(prefix, i)
-		valueRowsForListField, err := createRowsFromField(nextPrefix, v, keysToDescriptions, documentLeafNodes)
+		valueRowsForListField, err := createRowsFromField(nextPrefix, v, chartValuesDescriptions, documentLeafNodes)
 
 		if err != nil {
 			return nil, err
@@ -184,10 +186,10 @@ func createValueRowsFromList(
 func createValueRowsFromObject(
 	prefix string,
 	values map[interface{}]interface{},
-	keysToDescriptions map[string]string,
+	chartValueDescriptions []helm.ChartValueDescription,
 	documentLeafNodes bool,
 ) ([]valueRow, error) {
-	description, hasDescription := keysToDescriptions[prefix]
+	description, hasDescription := findDescription(prefix, chartValueDescriptions)
 
 	if len(values) == 0 {
 		// if the first level of recursion has no values, then there are no values at all, and so we return zero rows of documentation
@@ -223,7 +225,7 @@ func createValueRowsFromObject(
 
 	for k, v := range values {
 		nextPrefix := formatNextObjectKeyPrefix(prefix, convertMapKeyToString(k))
-		valueRowsForObjectField, err := createRowsFromField(nextPrefix, v, keysToDescriptions, documentLeafNodes)
+		valueRowsForObjectField, err := createRowsFromField(nextPrefix, v, chartValueDescriptions, documentLeafNodes)
 
 		if err != nil {
 			return nil, err
@@ -240,4 +242,16 @@ func createValueRowsFromObject(
 	}
 
 	return valueRows, nil
+}
+
+func findDescription(
+	prefix string,
+	chartValueDescriptions []helm.ChartValueDescription,
+) (helm.ChartValueDescription, bool) {
+	for _, v := range chartValueDescriptions {
+		if v.Key == prefix {
+			return v, true
+		}
+	}
+	return helm.ChartValueDescription{}, false
 }

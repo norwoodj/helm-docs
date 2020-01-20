@@ -48,7 +48,13 @@ type ChartDocumentationInfo struct {
 
 	ChartDirectory          string
 	ChartValues             map[interface{}]interface{}
-	ChartValuesDescriptions map[string]string
+	ChartValuesDescriptions []ChartValueDescription
+}
+
+type ChartValueDescription struct {
+	Key         string
+	Description string
+	Columns     map[string]string
 }
 
 func getYamlFileContents(filename string) ([]byte, error) {
@@ -146,28 +152,41 @@ func parseChartValuesFile(chartDirectory string) (map[interface{}]interface{}, e
 	return values, nil
 }
 
-func parseChartValuesFileComments(chartDirectory string) (map[string]string, error) {
+func parseChartValuesFileComments(chartDirectory string) ([]ChartValueDescription, error) {
 	valuesPath := path.Join(chartDirectory, "values.yaml")
 	valuesFile, err := os.Open(valuesPath)
 
 	if isErrorInReadingNecessaryFile(valuesPath, err) {
-		return map[string]string{}, err
+		return []ChartValueDescription{}, err
 	}
 
 	defer valuesFile.Close()
 
-	keyToDescriptions := make(map[string]string)
+	chartValueDescriptions := []ChartValueDescription{}
 	scanner := bufio.NewScanner(valuesFile)
 
+	hit := false
 	for scanner.Scan() {
 		match := valuesDescriptionRegex.FindStringSubmatch(scanner.Text())
 
 		if len(match) > 2 {
-			keyToDescriptions[match[1]] = match[2]
+			if !hit {
+				hit = true
+				chartValueDescriptions = append(chartValueDescriptions, ChartValueDescription{
+					Key:         match[1],
+					Description: match[2],
+					Columns:     map[string]string{},
+				})
+			} else {
+				chartValueDescriptions[len(chartValueDescriptions)-1].Columns[match[1]] = match[2]
+			}
+		} else {
+			hit = false
 		}
+
 	}
 
-	return keyToDescriptions, nil
+	return chartValueDescriptions, nil
 }
 
 func ParseChartInformation(chartDirectory string) (ChartDocumentationInfo, error) {

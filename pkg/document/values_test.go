@@ -1,6 +1,7 @@
 package document
 
 import (
+	"github.com/norwoodj/helm-docs/pkg/helm"
 	"strings"
 	"testing"
 
@@ -20,7 +21,7 @@ func parseYamlValues(yamlValues string) map[interface{}]interface{} {
 }
 
 func TestEmptyValues(t *testing.T) {
-	valuesRows, err := createValueRowsFromObject("", make(map[interface{}]interface{}), make(map[string]string), true)
+	valuesRows, err := createValueRowsFromObject("", make(map[interface{}]interface{}), []helm.ChartValueDescription{}, true)
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 0)
 }
@@ -33,7 +34,7 @@ hello: "world"
 oscar: 3.14159
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]string), true)
+	valuesRows, err := createValueRowsFromObject("", helmValues, []helm.ChartValueDescription{}, true)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 4)
@@ -67,11 +68,23 @@ hello: "world"
 oscar: 3.14159
 	`)
 
-	descriptions := map[string]string{
-		"echo":    "echo",
-		"foxtrot": "foxtrot",
-		"hello":   "hello",
-		"oscar":   "oscar",
+	descriptions := []helm.ChartValueDescription{
+		{
+			Key:         "echo",
+			Description: "echo",
+		},
+		{
+			Key:         "foxtrot",
+			Description: "foxtrot",
+		},
+		{
+			Key:         "hello",
+			Description: "hello",
+		},
+		{
+			Key:         "oscar",
+			Description: "oscar",
+		},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -107,7 +120,7 @@ recursive:
 oscar: dog
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]string), true)
+	valuesRows, err := createValueRowsFromObject("", helmValues, []helm.ChartValueDescription{}, true)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -130,9 +143,15 @@ recursive:
 oscar: dog
 	`)
 
-	descriptions := map[string]string{
-		"recursive.echo": "echo",
-		"oscar":          "oscar",
+	descriptions := []helm.ChartValueDescription{
+		{
+			Key:         "recursive.echo",
+			Description: "echo",
+		},
+		{
+			Key:         "oscar",
+			Description: "oscar",
+		},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -157,7 +176,7 @@ recursive: {}
 oscar: dog
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]string), true)
+	valuesRows, err := createValueRowsFromObject("", helmValues, []helm.ChartValueDescription{}, true)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -179,7 +198,12 @@ recursive: {}
 oscar: dog
 	`)
 
-	descriptions := map[string]string{"recursive": "an empty object"}
+	descriptions := []helm.ChartValueDescription{
+		{
+			Key:         "recursive",
+			Description: "an empty object",
+		},
+	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
 
@@ -203,7 +227,7 @@ birds: []
 echo: cat
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]string), true)
+	valuesRows, err := createValueRowsFromObject("", helmValues, []helm.ChartValueDescription{}, true)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -225,9 +249,15 @@ birds: []
 echo: cat
 	`)
 
-	descriptions := map[string]string{
-		"birds": "birds",
-		"echo":  "echo",
+	descriptions := []helm.ChartValueDescription{
+		{
+			Key:         "birds",
+			Description: "birds",
+		},
+		{
+			Key:         "echo",
+			Description: "echo",
+		},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -251,7 +281,7 @@ func TestListOfStrings(t *testing.T) {
 cats: [echo, foxtrot]
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]string), true)
+	valuesRows, err := createValueRowsFromObject("", helmValues, []helm.ChartValueDescription{}, true)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -273,9 +303,15 @@ func TestListOfStringsWithDescriptions(t *testing.T) {
 cats: [echo, foxtrot]
 	`)
 
-	descriptions := map[string]string{
-		"cats[0]": "the black one",
-		"cats[1]": "the friendly one",
+	descriptions := []helm.ChartValueDescription{
+		{
+			Key:         "cats[0]",
+			Description: "the black one",
+		},
+		{
+			Key:         "cats[1]",
+			Description: "the friendly one",
+		},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -304,7 +340,7 @@ animals:
     type: dog
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]string), true)
+	valuesRows, err := createValueRowsFromObject("", helmValues, []helm.ChartValueDescription{}, true)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 5)
@@ -344,10 +380,19 @@ animals:
     type: dog
 	`)
 
-	descriptions := map[string]string{
-		"animals[0].elements[0]": "the black one",
-		"animals[0].elements[1]": "the friendly one",
-		"animals[1].elements[0]": "the sleepy one",
+	descriptions := []helm.ChartValueDescription{
+		{
+			Key:         "animals[0].elements[0]",
+			Description: "the black one",
+		},
+		{
+			Key:         "animals[0].elements[1]",
+			Description: "the friendly one",
+		},
+		{
+			Key:         "animals[1].elements[0]",
+			Description: "the sleepy one",
+		},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -390,8 +435,11 @@ animals:
     type: dog
 	`)
 
-	descriptions := map[string]string{
-		"animals": "all the animals of the house",
+	descriptions := []helm.ChartValueDescription{
+		{
+			Key:         "animals",
+			Description: "all the animals of the house",
+		},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -414,8 +462,11 @@ animals:
     type: dog
 	`)
 
-	descriptions := map[string]string{
-		"animals[0]": "all the cats of the house",
+	descriptions := []helm.ChartValueDescription{
+		{
+			Key:         "animals[0]",
+			Description: "all the cats of the house",
+		},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -448,8 +499,11 @@ animals:
     sleepy: [oscar]
 	`)
 
-	descriptions := map[string]string{
-		"animals.byTrait": "animals listed by their various characteristics",
+	descriptions := []helm.ChartValueDescription{
+		{
+			Key:         "animals.byTrait",
+			Description: "animals listed by their various characteristics",
+		},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -472,11 +526,23 @@ animals:
     sleepy: [oscar]
 	`)
 
-	descriptions := map[string]string{
-		"animals":                     "animal stuff",
-		"animals.byTrait":             "animals listed by their various characteristics",
-		"animals.byTrait.friendly":    "the friendly animals of the house",
-		"animals.byTrait.friendly[0]": "best cat ever",
+	descriptions := []helm.ChartValueDescription{
+		{
+			Key:         "animals",
+			Description: "animal stuff",
+		},
+		{
+			Key:         "animals.byTrait",
+			Description: "animals listed by their various characteristics",
+		},
+		{
+			Key:         "animals.byTrait.friendly",
+			Description: "the friendly animals of the house",
+		},
+		{
+			Key:         "animals.byTrait.friendly[0]",
+			Description: "best cat ever",
+		},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -513,10 +579,19 @@ animals:
   nonWeirdCats:
 	`)
 
-	descriptions := map[string]string{
-		"animals.birdCount":    "(int) the number of birds we have",
-		"animals.birds":        "(list) the list of birds we have",
-		"animals.nonWeirdCats": "the cats that we have that are not weird",
+	descriptions := []helm.ChartValueDescription{
+		{
+			Key:         "animals.birdCount",
+			Description: "(int) the number of birds we have",
+		},
+		{
+			Key:         "animals.birds",
+			Description: "(list) the list of birds we have",
+		},
+		{
+			Key:         "animals.nonWeirdCats",
+			Description: "the cats that we have that are not weird",
+		},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -548,7 +623,7 @@ fullNames:
   John Norwood: me
 `)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]string), true)
+	valuesRows, err := createValueRowsFromObject("", helmValues, []helm.ChartValueDescription{}, true)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -572,9 +647,15 @@ fullNames:
   John Norwood: me
 `)
 
-	descriptions := map[string]string{
-		`fullNames."John Norwood"`:         "who am I",
-		`websites."stupidchess.jmn23.com"`: "status of the stupidchess website",
+	descriptions := []helm.ChartValueDescription{
+		{
+			Key:         `fullNames."John Norwood"`,
+			Description: "who am I",
+		},
+		{
+			Key:         `websites."stupidchess.jmn23.com"`,
+			Description: "status of the stupidchess website",
+		},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -600,7 +681,7 @@ func TestNonStringKeys(t *testing.T) {
 true: "true"
 `)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]string), true)
+	valuesRows, err := createValueRowsFromObject("", helmValues, []helm.ChartValueDescription{}, true)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 3)
