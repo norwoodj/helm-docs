@@ -3,7 +3,6 @@ package document
 import (
 	"io/ioutil"
 	"os"
-	"path"
 	"strings"
 	"text/template"
 
@@ -125,15 +124,14 @@ func getValuesTableTemplates() string {
 
 func getDocumentationTemplate(chartDirectory string) (string, error) {
 	templateFile := viper.GetString("template-file")
-	templateFileForChart := path.Join(chartDirectory, templateFile)
 
-	if _, err := os.Stat(templateFileForChart); os.IsNotExist(err) {
+	if _, err := os.Stat(templateFile); os.IsNotExist(err) {
 		log.Debugf("Did not find template file %s for chart %s, using default template", templateFile, chartDirectory)
 		return defaultDocumentationTemplate, nil
 	}
 
 	log.Debugf("Using template file %s for chart %s", templateFile, chartDirectory)
-	templateContents, err := ioutil.ReadFile(templateFileForChart)
+	templateContents, err := ioutil.ReadFile(templateFile)
 	if err != nil {
 		return "", err
 	}
