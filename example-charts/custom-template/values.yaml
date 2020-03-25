@@ -4,7 +4,9 @@ controller:
     repository: nginx-ingress-controller
     tag: "18.0831"
 
-  # controller.persistentVolumeClaims -- List of persistent volume claims to create
+  # controller.persistentVolumeClaims -- List of persistent volume claims to create.
+  # For very long comments, break them into multiple lines.
+  # @default -- Use this to override the default value specified here in the file
   persistentVolumeClaims: []
 
   extraVolumes:

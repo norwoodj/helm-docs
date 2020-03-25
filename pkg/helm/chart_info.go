@@ -13,7 +13,9 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var valuesDescriptionRegex = regexp.MustCompile("# (.*) -- (.*)")
+var valuesDescriptionRegex = regexp.MustCompile("^\\s*# (.*) -- (.*)$")
+var commentContinuationRegex = regexp.MustCompile("^\\s*# (.*)$")
+var defaultValueRegex = regexp.MustCompile("^\\s*# @default -- (.*)$")
 
 type ChartMetaMaintainer struct {
 	Email string
@@ -42,13 +44,18 @@ type ChartRequirements struct {
 	Dependencies []ChartRequirementsItem
 }
 
+type ChartValueDescription struct {
+	Description string
+	Default     string
+}
+
 type ChartDocumentationInfo struct {
 	ChartMeta
 	ChartRequirements
 
 	ChartDirectory          string
 	ChartValues             map[interface{}]interface{}
-	ChartValuesDescriptions map[string]string
+	ChartValuesDescriptions map[string]ChartValueDescription
 }
 
 func getYamlFileContents(filename string) ([]byte, error) {
@@ -146,24 +153,49 @@ func parseChartValuesFile(chartDirectory string) (map[interface{}]interface{}, e
 	return values, nil
 }
 
-func parseChartValuesFileComments(chartDirectory string) (map[string]string, error) {
+func parseChartValuesFileComments(chartDirectory string) (map[string]ChartValueDescription, error) {
 	valuesPath := path.Join(chartDirectory, "values.yaml")
 	valuesFile, err := os.Open(valuesPath)
 
 	if isErrorInReadingNecessaryFile(valuesPath, err) {
-		return map[string]string{}, err
+		return map[string]ChartValueDescription{}, err
 	}
 
 	defer valuesFile.Close()
 
-	keyToDescriptions := make(map[string]string)
+	keyToDescriptions := make(map[string]ChartValueDescription)
 	scanner := bufio.NewScanner(valuesFile)
 
 	for scanner.Scan() {
 		match := valuesDescriptionRegex.FindStringSubmatch(scanner.Text())
 
 		if len(match) > 2 {
-			keyToDescriptions[match[1]] = match[2]
+			// this starts a doc comment
+			key := match[1]
+			desc := match[2]
+			var def string
+
+			for scanner.Scan() {
+				match = defaultValueRegex.FindStringSubmatch(scanner.Text())
+
+				if len(match) > 1 {
+					def = match[1]
+					continue
+				}
+
+				match = commentContinuationRegex.FindStringSubmatch(scanner.Text())
+
+				if len(match) > 1 {
+					desc = desc + " " + match[1]
+					continue
+				}
+
+				keyToDescriptions[key] = ChartValueDescription{
+					Description: desc,
+					Default:     def,
+				}
+				break
+			}
 		}
 	}
 
