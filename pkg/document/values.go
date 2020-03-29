@@ -95,19 +95,20 @@ func createValueRow(
 		return parseNilValueType(key, description), nil
 	}
 
-	if description.Default == "" {
+	defaultValue := description.Default
+	if defaultValue == "" {
 		jsonEncodedValue, err := json.Marshal(value)
 		if err != nil {
 			return valueRow{}, fmt.Errorf("failed to marshal default value for %s to json: %s", key, err)
 		}
 
-		description.Default = fmt.Sprintf("`%s`", jsonEncodedValue)
+		defaultValue = string(jsonEncodedValue)
 	}
 
 	return valueRow{
 		Key:         key,
 		Type:        getTypeName(value),
-		Default:     description.Default,
+		Default:     fmt.Sprintf("`%s`", defaultValue),
 		Description: description.Description,
 	}, nil
 }

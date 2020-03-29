@@ -1,5 +1,7 @@
 module github.com/norwoodj/helm-docs
 
+go 1.14
+
 require (
 	github.com/Masterminds/goutils v1.1.0 // indirect
 	github.com/Masterminds/semver v1.4.2 // indirect

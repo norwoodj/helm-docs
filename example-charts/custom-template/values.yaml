@@ -6,7 +6,7 @@ controller:
 
   # controller.persistentVolumeClaims -- List of persistent volume claims to create.
   # For very long comments, break them into multiple lines.
-  # @default -- Use this to override the default value specified here in the file
+  # @default -- ["default", "specified", "here"]
   persistentVolumeClaims: []
 
   extraVolumes:

@@ -69,10 +69,10 @@ oscar: 3.14159
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"echo":    helm.ChartValueDescription{Description: "echo"},
-		"foxtrot": helm.ChartValueDescription{Description: "foxtrot"},
-		"hello":   helm.ChartValueDescription{Description: "hello"},
-		"oscar":   helm.ChartValueDescription{Description: "oscar"},
+		"echo":    {Description: "echo"},
+		"foxtrot": {Description: "foxtrot"},
+		"hello":   {Description: "hello"},
+		"oscar":   {Description: "oscar"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -110,10 +110,10 @@ oscar: 3.14159
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"echo":    helm.ChartValueDescription{Description: "echo", Default: "some"},
-		"foxtrot": helm.ChartValueDescription{Description: "foxtrot", Default: "explicit"},
-		"hello":   helm.ChartValueDescription{Description: "hello", Default: "default"},
-		"oscar":   helm.ChartValueDescription{Description: "oscar", Default: "values"},
+		"echo":    {Description: "echo", Default: "some"},
+		"foxtrot": {Description: "foxtrot", Default: "explicit"},
+		"hello":   {Description: "hello", Default: "default"},
+		"oscar":   {Description: "oscar", Default: "values"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -123,22 +123,22 @@ oscar: 3.14159
 
 	assert.Equal(t, "echo", valuesRows[0].Key)
 	assert.Equal(t, intType, valuesRows[0].Type, intType)
-	assert.Equal(t, "some", valuesRows[0].Default)
+	assert.Equal(t, "`some`", valuesRows[0].Default)
 	assert.Equal(t, "echo", valuesRows[0].Description)
 
 	assert.Equal(t, "foxtrot", valuesRows[1].Key)
 	assert.Equal(t, boolType, valuesRows[1].Type)
-	assert.Equal(t, "explicit", valuesRows[1].Default)
+	assert.Equal(t, "`explicit`", valuesRows[1].Default)
 	assert.Equal(t, "foxtrot", valuesRows[1].Description)
 
 	assert.Equal(t, "hello", valuesRows[2].Key)
 	assert.Equal(t, stringType, valuesRows[2].Type)
-	assert.Equal(t, "default", valuesRows[2].Default)
+	assert.Equal(t, "`default`", valuesRows[2].Default)
 	assert.Equal(t, "hello", valuesRows[2].Description)
 
 	assert.Equal(t, "oscar", valuesRows[3].Key)
 	assert.Equal(t, floatType, valuesRows[3].Type)
-	assert.Equal(t, "values", valuesRows[3].Default)
+	assert.Equal(t, "`values`", valuesRows[3].Default)
 	assert.Equal(t, "oscar", valuesRows[3].Description)
 }
 
@@ -173,8 +173,8 @@ oscar: dog
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"recursive.echo": helm.ChartValueDescription{Description: "echo"},
-		"oscar":          helm.ChartValueDescription{Description: "oscar"},
+		"recursive.echo": {Description: "echo"},
+		"oscar":          {Description: "oscar"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -201,8 +201,8 @@ oscar: dog
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"recursive.echo": helm.ChartValueDescription{Description: "echo", Default: "custom"},
-		"oscar":          helm.ChartValueDescription{Description: "oscar", Default: "default"},
+		"recursive.echo": {Description: "echo", Default: "custom"},
+		"oscar":          {Description: "oscar", Default: "default"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -212,12 +212,12 @@ oscar: dog
 
 	assert.Equal(t, "oscar", valuesRows[0].Key)
 	assert.Equal(t, stringType, valuesRows[0].Type)
-	assert.Equal(t, "default", valuesRows[0].Default)
+	assert.Equal(t, "`default`", valuesRows[0].Default)
 	assert.Equal(t, "oscar", valuesRows[0].Description)
 
 	assert.Equal(t, "recursive.echo", valuesRows[1].Key)
 	assert.Equal(t, stringType, valuesRows[1].Type)
-	assert.Equal(t, "custom", valuesRows[1].Default)
+	assert.Equal(t, "`custom`", valuesRows[1].Default)
 	assert.Equal(t, "echo", valuesRows[1].Description)
 }
 
@@ -250,7 +250,7 @@ oscar: dog
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"recursive": helm.ChartValueDescription{Description: "an empty object"},
+		"recursive": {Description: "an empty object"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -276,7 +276,7 @@ oscar: dog
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"recursive": helm.ChartValueDescription{Description: "an empty object", Default: "default"},
+		"recursive": {Description: "an empty object", Default: "default"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -291,7 +291,7 @@ oscar: dog
 
 	assert.Equal(t, "recursive", valuesRows[1].Key)
 	assert.Equal(t, objectType, valuesRows[1].Type)
-	assert.Equal(t, "default", valuesRows[1].Default)
+	assert.Equal(t, "`default`", valuesRows[1].Default)
 	assert.Equal(t, "an empty object", valuesRows[1].Description)
 }
 func TestEmptyList(t *testing.T) {
@@ -323,8 +323,8 @@ echo: cat
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"birds": helm.ChartValueDescription{Description: "birds"},
-		"echo":  helm.ChartValueDescription{Description: "echo"},
+		"birds": {Description: "birds"},
+		"echo":  {Description: "echo"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -350,8 +350,8 @@ echo: cat
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"birds": helm.ChartValueDescription{Description: "birds", Default: "explicit"},
-		"echo":  helm.ChartValueDescription{Description: "echo", Default: "default value"},
+		"birds": {Description: "birds", Default: "explicit"},
+		"echo":  {Description: "echo", Default: "default value"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -361,12 +361,12 @@ echo: cat
 
 	assert.Equal(t, "birds", valuesRows[0].Key)
 	assert.Equal(t, listType, valuesRows[0].Type)
-	assert.Equal(t, "explicit", valuesRows[0].Default)
+	assert.Equal(t, "`explicit`", valuesRows[0].Default)
 	assert.Equal(t, "birds", valuesRows[0].Description)
 
 	assert.Equal(t, "echo", valuesRows[1].Key)
 	assert.Equal(t, stringType, valuesRows[1].Type)
-	assert.Equal(t, "default value", valuesRows[1].Default)
+	assert.Equal(t, "`default value`", valuesRows[1].Default)
 	assert.Equal(t, "echo", valuesRows[1].Description)
 }
 
@@ -398,8 +398,8 @@ cats: [echo, foxtrot]
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"cats[0]": helm.ChartValueDescription{Description: "the black one"},
-		"cats[1]": helm.ChartValueDescription{Description: "the friendly one"},
+		"cats[0]": {Description: "the black one"},
+		"cats[1]": {Description: "the friendly one"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -425,8 +425,8 @@ cats: [echo, foxtrot]
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"cats[0]": helm.ChartValueDescription{Description: "the black one", Default: "explicit"},
-		"cats[1]": helm.ChartValueDescription{Description: "the friendly one", Default: "default value"},
+		"cats[0]": {Description: "the black one", Default: "explicit"},
+		"cats[1]": {Description: "the friendly one", Default: "default value"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -436,12 +436,12 @@ cats: [echo, foxtrot]
 
 	assert.Equal(t, "cats[0]", valuesRows[0].Key)
 	assert.Equal(t, stringType, valuesRows[0].Type)
-	assert.Equal(t, "explicit", valuesRows[0].Default)
+	assert.Equal(t, "`explicit`", valuesRows[0].Default)
 	assert.Equal(t, "the black one", valuesRows[0].Description)
 
 	assert.Equal(t, "cats[1]", valuesRows[1].Key)
 	assert.Equal(t, stringType, valuesRows[1].Type)
-	assert.Equal(t, "default value", valuesRows[1].Default)
+	assert.Equal(t, "`default value`", valuesRows[1].Default)
 	assert.Equal(t, "the friendly one", valuesRows[1].Description)
 
 }
@@ -496,9 +496,9 @@ animals:
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"animals[0].elements[0]": helm.ChartValueDescription{Description: "the black one"},
-		"animals[0].elements[1]": helm.ChartValueDescription{Description: "the friendly one"},
-		"animals[1].elements[0]": helm.ChartValueDescription{Description: "the sleepy one"},
+		"animals[0].elements[0]": {Description: "the black one"},
+		"animals[0].elements[1]": {Description: "the friendly one"},
+		"animals[1].elements[0]": {Description: "the sleepy one"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -542,9 +542,9 @@ animals:
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"animals[0].elements[0]": helm.ChartValueDescription{Description: "the black one", Default: "explicit"},
-		"animals[0].elements[1]": helm.ChartValueDescription{Description: "the friendly one", Default: "default"},
-		"animals[1].elements[0]": helm.ChartValueDescription{Description: "the sleepy one", Default: "value"},
+		"animals[0].elements[0]": {Description: "the black one", Default: "explicit"},
+		"animals[0].elements[1]": {Description: "the friendly one", Default: "default"},
+		"animals[1].elements[0]": {Description: "the sleepy one", Default: "value"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -554,12 +554,12 @@ animals:
 
 	assert.Equal(t, "animals[0].elements[0]", valuesRows[0].Key)
 	assert.Equal(t, stringType, valuesRows[0].Type)
-	assert.Equal(t, "explicit", valuesRows[0].Default)
+	assert.Equal(t, "`explicit`", valuesRows[0].Default)
 	assert.Equal(t, "the black one", valuesRows[0].Description)
 
 	assert.Equal(t, "animals[0].elements[1]", valuesRows[1].Key)
 	assert.Equal(t, stringType, valuesRows[1].Type)
-	assert.Equal(t, "default", valuesRows[1].Default)
+	assert.Equal(t, "`default`", valuesRows[1].Default)
 	assert.Equal(t, "the friendly one", valuesRows[1].Description)
 
 	assert.Equal(t, "animals[0].type", valuesRows[2].Key)
@@ -569,7 +569,7 @@ animals:
 
 	assert.Equal(t, "animals[1].elements[0]", valuesRows[3].Key)
 	assert.Equal(t, stringType, valuesRows[3].Type)
-	assert.Equal(t, "value", valuesRows[3].Default)
+	assert.Equal(t, "`value`", valuesRows[3].Default)
 	assert.Equal(t, "the sleepy one", valuesRows[3].Description)
 
 	assert.Equal(t, "animals[1].type", valuesRows[4].Key)
@@ -588,7 +588,7 @@ animals:
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"animals": helm.ChartValueDescription{Description: "all the animals of the house"},
+		"animals": {Description: "all the animals of the house"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -612,7 +612,7 @@ animals:
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"animals": helm.ChartValueDescription{Description: "all the animals of the house", Default: "cat and dog"},
+		"animals": {Description: "all the animals of the house", Default: "cat and dog"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -622,7 +622,7 @@ animals:
 
 	assert.Equal(t, "animals", valuesRows[0].Key)
 	assert.Equal(t, listType, valuesRows[0].Type)
-	assert.Equal(t, "cat and dog", valuesRows[0].Default)
+	assert.Equal(t, "`cat and dog`", valuesRows[0].Default)
 	assert.Equal(t, "all the animals of the house", valuesRows[0].Description)
 }
 
@@ -636,7 +636,7 @@ animals:
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"animals[0]": helm.ChartValueDescription{Description: "all the cats of the house", Default: "only cats here"},
+		"animals[0]": {Description: "all the cats of the house", Default: "only cats here"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -646,7 +646,7 @@ animals:
 
 	assert.Equal(t, "animals[0]", valuesRows[0].Key)
 	assert.Equal(t, objectType, valuesRows[0].Type)
-	assert.Equal(t, "only cats here", valuesRows[0].Default)
+	assert.Equal(t, "`only cats here`", valuesRows[0].Default)
 	assert.Equal(t, "all the cats of the house", valuesRows[0].Description)
 
 	assert.Equal(t, "animals[1].elements[0]", valuesRows[1].Key)
@@ -670,7 +670,7 @@ animals:
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"animals.byTrait": helm.ChartValueDescription{Description: "animals listed by their various characteristics"},
+		"animals.byTrait": {Description: "animals listed by their various characteristics"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -694,7 +694,7 @@ animals:
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"animals.byTrait": helm.ChartValueDescription{Description: "animals listed by their various characteristics", Default: "animals, you know"},
+		"animals.byTrait": {Description: "animals listed by their various characteristics", Default: "animals, you know"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -704,7 +704,7 @@ animals:
 
 	assert.Equal(t, "animals.byTrait", valuesRows[0].Key)
 	assert.Equal(t, objectType, valuesRows[0].Type)
-	assert.Equal(t, "animals, you know", valuesRows[0].Default)
+	assert.Equal(t, "`animals, you know`", valuesRows[0].Default)
 	assert.Equal(t, "animals listed by their various characteristics", valuesRows[0].Description)
 }
 
@@ -718,10 +718,10 @@ animals:
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"animals":                     helm.ChartValueDescription{Description: "animal stuff"},
-		"animals.byTrait":             helm.ChartValueDescription{Description: "animals listed by their various characteristics"},
-		"animals.byTrait.friendly":    helm.ChartValueDescription{Description: "the friendly animals of the house"},
-		"animals.byTrait.friendly[0]": helm.ChartValueDescription{Description: "best cat ever"},
+		"animals":                     {Description: "animal stuff"},
+		"animals.byTrait":             {Description: "animals listed by their various characteristics"},
+		"animals.byTrait.friendly":    {Description: "the friendly animals of the house"},
+		"animals.byTrait.friendly[0]": {Description: "best cat ever"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -760,10 +760,10 @@ animals:
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"animals":                     helm.ChartValueDescription{Description: "animal stuff", Default: "some"},
-		"animals.byTrait":             helm.ChartValueDescription{Description: "animals listed by their various characteristics", Default: "explicit"},
-		"animals.byTrait.friendly":    helm.ChartValueDescription{Description: "the friendly animals of the house", Default: "default"},
-		"animals.byTrait.friendly[0]": helm.ChartValueDescription{Description: "best cat ever", Default: "value"},
+		"animals":                     {Description: "animal stuff", Default: "some"},
+		"animals.byTrait":             {Description: "animals listed by their various characteristics", Default: "explicit"},
+		"animals.byTrait.friendly":    {Description: "the friendly animals of the house", Default: "default"},
+		"animals.byTrait.friendly[0]": {Description: "best cat ever", Default: "value"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -773,22 +773,22 @@ animals:
 
 	assert.Equal(t, "animals", valuesRows[0].Key)
 	assert.Equal(t, objectType, valuesRows[0].Type)
-	assert.Equal(t, "some", valuesRows[0].Default)
+	assert.Equal(t, "`some`", valuesRows[0].Default)
 	assert.Equal(t, "animal stuff", valuesRows[0].Description)
 
 	assert.Equal(t, "animals.byTrait", valuesRows[1].Key)
 	assert.Equal(t, objectType, valuesRows[1].Type)
-	assert.Equal(t, "explicit", valuesRows[1].Default)
+	assert.Equal(t, "`explicit`", valuesRows[1].Default)
 	assert.Equal(t, "animals listed by their various characteristics", valuesRows[1].Description)
 
 	assert.Equal(t, "animals.byTrait.friendly", valuesRows[2].Key)
 	assert.Equal(t, listType, valuesRows[2].Type)
-	assert.Equal(t, "default", valuesRows[2].Default)
+	assert.Equal(t, "`default`", valuesRows[2].Default)
 	assert.Equal(t, "the friendly animals of the house", valuesRows[2].Description)
 
 	assert.Equal(t, "animals.byTrait.friendly[0]", valuesRows[3].Key)
 	assert.Equal(t, stringType, valuesRows[3].Type)
-	assert.Equal(t, "value", valuesRows[3].Default)
+	assert.Equal(t, "`value`", valuesRows[3].Default)
 	assert.Equal(t, "best cat ever", valuesRows[3].Description)
 }
 
@@ -801,9 +801,9 @@ animals:
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"animals.birdCount":    helm.ChartValueDescription{Description: "(int) the number of birds we have"},
-		"animals.birds":        helm.ChartValueDescription{Description: "(list) the list of birds we have"},
-		"animals.nonWeirdCats": helm.ChartValueDescription{Description: "the cats that we have that are not weird"},
+		"animals.birdCount":    {Description: "(int) the number of birds we have"},
+		"animals.birds":        {Description: "(list) the list of birds we have"},
+		"animals.nonWeirdCats": {Description: "the cats that we have that are not weird"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -836,9 +836,9 @@ animals:
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"animals.birdCount":    helm.ChartValueDescription{Description: "(int) the number of birds we have", Default: "some"},
-		"animals.birds":        helm.ChartValueDescription{Description: "(list) the list of birds we have", Default: "explicit"},
-		"animals.nonWeirdCats": helm.ChartValueDescription{Description: "the cats that we have that are not weird", Default: "default"},
+		"animals.birdCount":    {Description: "(int) the number of birds we have", Default: "some"},
+		"animals.birds":        {Description: "(list) the list of birds we have", Default: "explicit"},
+		"animals.nonWeirdCats": {Description: "the cats that we have that are not weird", Default: "default"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -895,8 +895,8 @@ fullNames:
 `)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		`fullNames."John Norwood"`:         helm.ChartValueDescription{Description: "who am I"},
-		`websites."stupidchess.jmn23.com"`: helm.ChartValueDescription{Description: "status of the stupidchess website"},
+		`fullNames."John Norwood"`:         {Description: "who am I"},
+		`websites."stupidchess.jmn23.com"`: {Description: "status of the stupidchess website"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -924,8 +924,8 @@ fullNames:
 `)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		`fullNames."John Norwood"`:         helm.ChartValueDescription{Description: "who am I", Default: "default"},
-		`websites."stupidchess.jmn23.com"`: helm.ChartValueDescription{Description: "status of the stupidchess website", Default: "value"},
+		`fullNames."John Norwood"`:         {Description: "who am I", Default: "default"},
+		`websites."stupidchess.jmn23.com"`: {Description: "status of the stupidchess website", Default: "value"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -935,12 +935,12 @@ fullNames:
 
 	assert.Equal(t, `fullNames."John Norwood"`, valuesRows[0].Key)
 	assert.Equal(t, stringType, valuesRows[0].Type)
-	assert.Equal(t, "default", valuesRows[0].Default)
+	assert.Equal(t, "`default`", valuesRows[0].Default)
 	assert.Equal(t, "who am I", valuesRows[0].Description)
 
 	assert.Equal(t, `websites."stupidchess.jmn23.com"`, valuesRows[1].Key)
 	assert.Equal(t, stringType, valuesRows[1].Type)
-	assert.Equal(t, "value", valuesRows[1].Default)
+	assert.Equal(t, "`value`", valuesRows[1].Default)
 	assert.Equal(t, "status of the stupidchess website", valuesRows[1].Description)
 }
 
