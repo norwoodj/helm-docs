@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/norwoodj/helm-docs/pkg/helm"
 )
 
 const (
@@ -61,52 +63,59 @@ func getTypeName(value interface{}) string {
 	return ""
 }
 
-func parseNilValueType(key string, description string) valueRow {
+func parseNilValueType(key string, description helm.ChartValueDescription) valueRow {
 	// Grab whatever's in between the parentheses of the description and treat it as the type
-	t := nilValueTypeRegex.FindString(description)
+	t := nilValueTypeRegex.FindString(description.Description)
 
 	if len(t) > 0 {
 		t = t[1 : len(t)-1]
-		description = description[len(t)+3:]
+		description.Description = description.Description[len(t)+3:]
 	} else {
 		t = stringType
+	}
+
+	if description.Default == "" {
+		description.Default = "`nil`"
 	}
 
 	return valueRow{
 		Key:         key,
 		Type:        t,
-		Default:     "`nil`",
-		Description: description,
+		Default:     description.Default,
+		Description: description.Description,
 	}
 }
 
 func createValueRow(
 	key string,
 	value interface{},
-	description string,
+	description helm.ChartValueDescription,
 ) (valueRow, error) {
 	if value == nil {
 		return parseNilValueType(key, description), nil
 	}
 
-	jsonEncodedValue, err := json.Marshal(value)
-	if err != nil {
-		return valueRow{}, fmt.Errorf("failed to marshal default value for %s to json: %s", key, err)
+	if description.Default == "" {
+		jsonEncodedValue, err := json.Marshal(value)
+		if err != nil {
+			return valueRow{}, fmt.Errorf("failed to marshal default value for %s to json: %s", key, err)
+		}
+
+		description.Default = fmt.Sprintf("`%s`", jsonEncodedValue)
 	}
 
-	defaultValue := fmt.Sprintf("`%s`", jsonEncodedValue)
 	return valueRow{
 		Key:         key,
 		Type:        getTypeName(value),
-		Default:     defaultValue,
-		Description: description,
+		Default:     description.Default,
+		Description: description.Description,
 	}, nil
 }
 
 func createRowsFromField(
 	nextPrefix string,
 	value interface{},
-	keysToDescriptions map[string]string,
+	keysToDescriptions map[string]helm.ChartValueDescription,
 	documentLeafNodes bool,
 ) ([]valueRow, error) {
 	switch value.(type) {
@@ -130,7 +139,7 @@ func createRowsFromField(
 func createValueRowsFromList(
 	prefix string,
 	values []interface{},
-	keysToDescriptions map[string]string,
+	keysToDescriptions map[string]helm.ChartValueDescription,
 	documentLeafNodes bool,
 ) ([]valueRow, error) {
 	description, hasDescription := keysToDescriptions[prefix]
@@ -184,7 +193,7 @@ func createValueRowsFromList(
 func createValueRowsFromObject(
 	prefix string,
 	values map[interface{}]interface{},
-	keysToDescriptions map[string]string,
+	keysToDescriptions map[string]helm.ChartValueDescription,
 	documentLeafNodes bool,
 ) ([]valueRow, error) {
 	description, hasDescription := keysToDescriptions[prefix]

@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/norwoodj/helm-docs/pkg/helm"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 )
@@ -20,7 +21,7 @@ func parseYamlValues(yamlValues string) map[interface{}]interface{} {
 }
 
 func TestEmptyValues(t *testing.T) {
-	valuesRows, err := createValueRowsFromObject("", make(map[interface{}]interface{}), make(map[string]string), true)
+	valuesRows, err := createValueRowsFromObject("", make(map[interface{}]interface{}), make(map[string]helm.ChartValueDescription), true)
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 0)
 }
@@ -33,7 +34,7 @@ hello: "world"
 oscar: 3.14159
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]string), true)
+	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 4)
@@ -67,11 +68,11 @@ hello: "world"
 oscar: 3.14159
 	`)
 
-	descriptions := map[string]string{
-		"echo":    "echo",
-		"foxtrot": "foxtrot",
-		"hello":   "hello",
-		"oscar":   "oscar",
+	descriptions := map[string]helm.ChartValueDescription{
+		"echo":    helm.ChartValueDescription{Description: "echo"},
+		"foxtrot": helm.ChartValueDescription{Description: "foxtrot"},
+		"hello":   helm.ChartValueDescription{Description: "hello"},
+		"oscar":   helm.ChartValueDescription{Description: "oscar"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -100,6 +101,47 @@ oscar: 3.14159
 	assert.Equal(t, "oscar", valuesRows[3].Description)
 }
 
+func TestSimpleValuesWithDescriptionsAndDefaults(t *testing.T) {
+	helmValues := parseYamlValues(`
+echo: 0
+foxtrot: true
+hello: "world"
+oscar: 3.14159
+	`)
+
+	descriptions := map[string]helm.ChartValueDescription{
+		"echo":    helm.ChartValueDescription{Description: "echo", Default: "some"},
+		"foxtrot": helm.ChartValueDescription{Description: "foxtrot", Default: "explicit"},
+		"hello":   helm.ChartValueDescription{Description: "hello", Default: "default"},
+		"oscar":   helm.ChartValueDescription{Description: "oscar", Default: "values"},
+	}
+
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 4)
+
+	assert.Equal(t, "echo", valuesRows[0].Key)
+	assert.Equal(t, intType, valuesRows[0].Type, intType)
+	assert.Equal(t, "some", valuesRows[0].Default)
+	assert.Equal(t, "echo", valuesRows[0].Description)
+
+	assert.Equal(t, "foxtrot", valuesRows[1].Key)
+	assert.Equal(t, boolType, valuesRows[1].Type)
+	assert.Equal(t, "explicit", valuesRows[1].Default)
+	assert.Equal(t, "foxtrot", valuesRows[1].Description)
+
+	assert.Equal(t, "hello", valuesRows[2].Key)
+	assert.Equal(t, stringType, valuesRows[2].Type)
+	assert.Equal(t, "default", valuesRows[2].Default)
+	assert.Equal(t, "hello", valuesRows[2].Description)
+
+	assert.Equal(t, "oscar", valuesRows[3].Key)
+	assert.Equal(t, floatType, valuesRows[3].Type)
+	assert.Equal(t, "values", valuesRows[3].Default)
+	assert.Equal(t, "oscar", valuesRows[3].Description)
+}
+
 func TestRecursiveValues(t *testing.T) {
 	helmValues := parseYamlValues(`
 recursive:
@@ -107,7 +149,7 @@ recursive:
 oscar: dog
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]string), true)
+	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -130,9 +172,9 @@ recursive:
 oscar: dog
 	`)
 
-	descriptions := map[string]string{
-		"recursive.echo": "echo",
-		"oscar":          "oscar",
+	descriptions := map[string]helm.ChartValueDescription{
+		"recursive.echo": helm.ChartValueDescription{Description: "echo"},
+		"oscar":          helm.ChartValueDescription{Description: "oscar"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -151,13 +193,41 @@ oscar: dog
 	assert.Equal(t, "echo", valuesRows[1].Description)
 }
 
+func TestRecursiveValuesWithDescriptionsAndDefaults(t *testing.T) {
+	helmValues := parseYamlValues(`
+recursive:
+  echo: cat
+oscar: dog
+	`)
+
+	descriptions := map[string]helm.ChartValueDescription{
+		"recursive.echo": helm.ChartValueDescription{Description: "echo", Default: "custom"},
+		"oscar":          helm.ChartValueDescription{Description: "oscar", Default: "default"},
+	}
+
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 2)
+
+	assert.Equal(t, "oscar", valuesRows[0].Key)
+	assert.Equal(t, stringType, valuesRows[0].Type)
+	assert.Equal(t, "default", valuesRows[0].Default)
+	assert.Equal(t, "oscar", valuesRows[0].Description)
+
+	assert.Equal(t, "recursive.echo", valuesRows[1].Key)
+	assert.Equal(t, stringType, valuesRows[1].Type)
+	assert.Equal(t, "custom", valuesRows[1].Default)
+	assert.Equal(t, "echo", valuesRows[1].Description)
+}
+
 func TestEmptyObject(t *testing.T) {
 	helmValues := parseYamlValues(`
 recursive: {}
 oscar: dog
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]string), true)
+	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -179,7 +249,9 @@ recursive: {}
 oscar: dog
 	`)
 
-	descriptions := map[string]string{"recursive": "an empty object"}
+	descriptions := map[string]helm.ChartValueDescription{
+		"recursive": helm.ChartValueDescription{Description: "an empty object"},
+	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
 
@@ -197,13 +269,38 @@ oscar: dog
 	assert.Equal(t, "an empty object", valuesRows[1].Description)
 }
 
+func TestEmptyObjectWithDescriptionAndDefaults(t *testing.T) {
+	helmValues := parseYamlValues(`
+recursive: {}
+oscar: dog
+	`)
+
+	descriptions := map[string]helm.ChartValueDescription{
+		"recursive": helm.ChartValueDescription{Description: "an empty object", Default: "default"},
+	}
+
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 2)
+
+	assert.Equal(t, "oscar", valuesRows[0].Key)
+	assert.Equal(t, stringType, valuesRows[0].Type)
+	assert.Equal(t, "`\"dog\"`", valuesRows[0].Default)
+	assert.Equal(t, "", valuesRows[0].Description)
+
+	assert.Equal(t, "recursive", valuesRows[1].Key)
+	assert.Equal(t, objectType, valuesRows[1].Type)
+	assert.Equal(t, "default", valuesRows[1].Default)
+	assert.Equal(t, "an empty object", valuesRows[1].Description)
+}
 func TestEmptyList(t *testing.T) {
 	helmValues := parseYamlValues(`
 birds: []
 echo: cat
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]string), true)
+	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -225,9 +322,9 @@ birds: []
 echo: cat
 	`)
 
-	descriptions := map[string]string{
-		"birds": "birds",
-		"echo":  "echo",
+	descriptions := map[string]helm.ChartValueDescription{
+		"birds": helm.ChartValueDescription{Description: "birds"},
+		"echo":  helm.ChartValueDescription{Description: "echo"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -246,12 +343,39 @@ echo: cat
 	assert.Equal(t, "echo", valuesRows[1].Description)
 }
 
+func TestEmptyListWithDescriptionsAndDefaults(t *testing.T) {
+	helmValues := parseYamlValues(`
+birds: []
+echo: cat
+	`)
+
+	descriptions := map[string]helm.ChartValueDescription{
+		"birds": helm.ChartValueDescription{Description: "birds", Default: "explicit"},
+		"echo":  helm.ChartValueDescription{Description: "echo", Default: "default value"},
+	}
+
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 2)
+
+	assert.Equal(t, "birds", valuesRows[0].Key)
+	assert.Equal(t, listType, valuesRows[0].Type)
+	assert.Equal(t, "explicit", valuesRows[0].Default)
+	assert.Equal(t, "birds", valuesRows[0].Description)
+
+	assert.Equal(t, "echo", valuesRows[1].Key)
+	assert.Equal(t, stringType, valuesRows[1].Type)
+	assert.Equal(t, "default value", valuesRows[1].Default)
+	assert.Equal(t, "echo", valuesRows[1].Description)
+}
+
 func TestListOfStrings(t *testing.T) {
 	helmValues := parseYamlValues(`
 cats: [echo, foxtrot]
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]string), true)
+	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -273,9 +397,9 @@ func TestListOfStringsWithDescriptions(t *testing.T) {
 cats: [echo, foxtrot]
 	`)
 
-	descriptions := map[string]string{
-		"cats[0]": "the black one",
-		"cats[1]": "the friendly one",
+	descriptions := map[string]helm.ChartValueDescription{
+		"cats[0]": helm.ChartValueDescription{Description: "the black one"},
+		"cats[1]": helm.ChartValueDescription{Description: "the friendly one"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -295,6 +419,33 @@ cats: [echo, foxtrot]
 
 }
 
+func TestListOfStringsWithDescriptionsAndDefaults(t *testing.T) {
+	helmValues := parseYamlValues(`
+cats: [echo, foxtrot]
+	`)
+
+	descriptions := map[string]helm.ChartValueDescription{
+		"cats[0]": helm.ChartValueDescription{Description: "the black one", Default: "explicit"},
+		"cats[1]": helm.ChartValueDescription{Description: "the friendly one", Default: "default value"},
+	}
+
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 2)
+
+	assert.Equal(t, "cats[0]", valuesRows[0].Key)
+	assert.Equal(t, stringType, valuesRows[0].Type)
+	assert.Equal(t, "explicit", valuesRows[0].Default)
+	assert.Equal(t, "the black one", valuesRows[0].Description)
+
+	assert.Equal(t, "cats[1]", valuesRows[1].Key)
+	assert.Equal(t, stringType, valuesRows[1].Type)
+	assert.Equal(t, "default value", valuesRows[1].Default)
+	assert.Equal(t, "the friendly one", valuesRows[1].Description)
+
+}
+
 func TestListOfObjects(t *testing.T) {
 	helmValues := parseYamlValues(`
 animals:
@@ -304,7 +455,7 @@ animals:
     type: dog
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]string), true)
+	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 5)
@@ -344,10 +495,10 @@ animals:
     type: dog
 	`)
 
-	descriptions := map[string]string{
-		"animals[0].elements[0]": "the black one",
-		"animals[0].elements[1]": "the friendly one",
-		"animals[1].elements[0]": "the sleepy one",
+	descriptions := map[string]helm.ChartValueDescription{
+		"animals[0].elements[0]": helm.ChartValueDescription{Description: "the black one"},
+		"animals[0].elements[1]": helm.ChartValueDescription{Description: "the friendly one"},
+		"animals[1].elements[0]": helm.ChartValueDescription{Description: "the sleepy one"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -381,6 +532,52 @@ animals:
 	assert.Equal(t, "", valuesRows[4].Description)
 }
 
+func TestListOfObjectsWithDescriptionsAndDefaults(t *testing.T) {
+	helmValues := parseYamlValues(`
+animals:
+  - elements: [echo, foxtrot]
+    type: cat
+  - elements: [oscar]
+    type: dog
+	`)
+
+	descriptions := map[string]helm.ChartValueDescription{
+		"animals[0].elements[0]": helm.ChartValueDescription{Description: "the black one", Default: "explicit"},
+		"animals[0].elements[1]": helm.ChartValueDescription{Description: "the friendly one", Default: "default"},
+		"animals[1].elements[0]": helm.ChartValueDescription{Description: "the sleepy one", Default: "value"},
+	}
+
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 5)
+
+	assert.Equal(t, "animals[0].elements[0]", valuesRows[0].Key)
+	assert.Equal(t, stringType, valuesRows[0].Type)
+	assert.Equal(t, "explicit", valuesRows[0].Default)
+	assert.Equal(t, "the black one", valuesRows[0].Description)
+
+	assert.Equal(t, "animals[0].elements[1]", valuesRows[1].Key)
+	assert.Equal(t, stringType, valuesRows[1].Type)
+	assert.Equal(t, "default", valuesRows[1].Default)
+	assert.Equal(t, "the friendly one", valuesRows[1].Description)
+
+	assert.Equal(t, "animals[0].type", valuesRows[2].Key)
+	assert.Equal(t, stringType, valuesRows[2].Type)
+	assert.Equal(t, "`\"cat\"`", valuesRows[2].Default)
+	assert.Equal(t, "", valuesRows[2].Description)
+
+	assert.Equal(t, "animals[1].elements[0]", valuesRows[3].Key)
+	assert.Equal(t, stringType, valuesRows[3].Type)
+	assert.Equal(t, "value", valuesRows[3].Default)
+	assert.Equal(t, "the sleepy one", valuesRows[3].Description)
+
+	assert.Equal(t, "animals[1].type", valuesRows[4].Key)
+	assert.Equal(t, stringType, valuesRows[4].Type)
+	assert.Equal(t, "`\"dog\"`", valuesRows[4].Default)
+	assert.Equal(t, "", valuesRows[4].Description)
+}
+
 func TestDescriptionOnList(t *testing.T) {
 	helmValues := parseYamlValues(`
 animals:
@@ -390,8 +587,8 @@ animals:
     type: dog
 	`)
 
-	descriptions := map[string]string{
-		"animals": "all the animals of the house",
+	descriptions := map[string]helm.ChartValueDescription{
+		"animals": helm.ChartValueDescription{Description: "all the animals of the house"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -405,7 +602,7 @@ animals:
 	assert.Equal(t, "all the animals of the house", valuesRows[0].Description)
 }
 
-func TestDescriptionOnObjectUnderList(t *testing.T) {
+func TestDescriptionAndDefaultOnList(t *testing.T) {
 	helmValues := parseYamlValues(`
 animals:
   - elements: [echo, foxtrot]
@@ -414,8 +611,32 @@ animals:
     type: dog
 	`)
 
-	descriptions := map[string]string{
-		"animals[0]": "all the cats of the house",
+	descriptions := map[string]helm.ChartValueDescription{
+		"animals": helm.ChartValueDescription{Description: "all the animals of the house", Default: "cat and dog"},
+	}
+
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 1)
+
+	assert.Equal(t, "animals", valuesRows[0].Key)
+	assert.Equal(t, listType, valuesRows[0].Type)
+	assert.Equal(t, "cat and dog", valuesRows[0].Default)
+	assert.Equal(t, "all the animals of the house", valuesRows[0].Description)
+}
+
+func TestDescriptionAndDefaultOnObjectUnderList(t *testing.T) {
+	helmValues := parseYamlValues(`
+animals:
+  - elements: [echo, foxtrot]
+    type: cat
+  - elements: [oscar]
+    type: dog
+	`)
+
+	descriptions := map[string]helm.ChartValueDescription{
+		"animals[0]": helm.ChartValueDescription{Description: "all the cats of the house", Default: "only cats here"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -425,7 +646,7 @@ animals:
 
 	assert.Equal(t, "animals[0]", valuesRows[0].Key)
 	assert.Equal(t, objectType, valuesRows[0].Type)
-	assert.Equal(t, "`{\"elements\":[\"echo\",\"foxtrot\"],\"type\":\"cat\"}`", valuesRows[0].Default)
+	assert.Equal(t, "only cats here", valuesRows[0].Default)
 	assert.Equal(t, "all the cats of the house", valuesRows[0].Description)
 
 	assert.Equal(t, "animals[1].elements[0]", valuesRows[1].Key)
@@ -448,8 +669,8 @@ animals:
     sleepy: [oscar]
 	`)
 
-	descriptions := map[string]string{
-		"animals.byTrait": "animals listed by their various characteristics",
+	descriptions := map[string]helm.ChartValueDescription{
+		"animals.byTrait": helm.ChartValueDescription{Description: "animals listed by their various characteristics"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -463,6 +684,30 @@ animals:
 	assert.Equal(t, "animals listed by their various characteristics", valuesRows[0].Description)
 }
 
+func TestDescriptionAndDefaultOnObjectUnderObject(t *testing.T) {
+	helmValues := parseYamlValues(`
+animals:
+  byTrait:
+    friendly: [foxtrot, oscar]
+    mean: [echo]
+    sleepy: [oscar]
+	`)
+
+	descriptions := map[string]helm.ChartValueDescription{
+		"animals.byTrait": helm.ChartValueDescription{Description: "animals listed by their various characteristics", Default: "animals, you know"},
+	}
+
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 1)
+
+	assert.Equal(t, "animals.byTrait", valuesRows[0].Key)
+	assert.Equal(t, objectType, valuesRows[0].Type)
+	assert.Equal(t, "animals, you know", valuesRows[0].Default)
+	assert.Equal(t, "animals listed by their various characteristics", valuesRows[0].Description)
+}
+
 func TestDescriptionsDownChain(t *testing.T) {
 	helmValues := parseYamlValues(`
 animals:
@@ -472,11 +717,11 @@ animals:
     sleepy: [oscar]
 	`)
 
-	descriptions := map[string]string{
-		"animals":                     "animal stuff",
-		"animals.byTrait":             "animals listed by their various characteristics",
-		"animals.byTrait.friendly":    "the friendly animals of the house",
-		"animals.byTrait.friendly[0]": "best cat ever",
+	descriptions := map[string]helm.ChartValueDescription{
+		"animals":                     helm.ChartValueDescription{Description: "animal stuff"},
+		"animals.byTrait":             helm.ChartValueDescription{Description: "animals listed by their various characteristics"},
+		"animals.byTrait.friendly":    helm.ChartValueDescription{Description: "the friendly animals of the house"},
+		"animals.byTrait.friendly[0]": helm.ChartValueDescription{Description: "best cat ever"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -505,6 +750,48 @@ animals:
 	assert.Equal(t, "best cat ever", valuesRows[3].Description)
 }
 
+func TestDescriptionsAndDefaultsDownChain(t *testing.T) {
+	helmValues := parseYamlValues(`
+animals:
+  byTrait:
+    friendly: [foxtrot, oscar]
+    mean: [echo]
+    sleepy: [oscar]
+	`)
+
+	descriptions := map[string]helm.ChartValueDescription{
+		"animals":                     helm.ChartValueDescription{Description: "animal stuff", Default: "some"},
+		"animals.byTrait":             helm.ChartValueDescription{Description: "animals listed by their various characteristics", Default: "explicit"},
+		"animals.byTrait.friendly":    helm.ChartValueDescription{Description: "the friendly animals of the house", Default: "default"},
+		"animals.byTrait.friendly[0]": helm.ChartValueDescription{Description: "best cat ever", Default: "value"},
+	}
+
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 4)
+
+	assert.Equal(t, "animals", valuesRows[0].Key)
+	assert.Equal(t, objectType, valuesRows[0].Type)
+	assert.Equal(t, "some", valuesRows[0].Default)
+	assert.Equal(t, "animal stuff", valuesRows[0].Description)
+
+	assert.Equal(t, "animals.byTrait", valuesRows[1].Key)
+	assert.Equal(t, objectType, valuesRows[1].Type)
+	assert.Equal(t, "explicit", valuesRows[1].Default)
+	assert.Equal(t, "animals listed by their various characteristics", valuesRows[1].Description)
+
+	assert.Equal(t, "animals.byTrait.friendly", valuesRows[2].Key)
+	assert.Equal(t, listType, valuesRows[2].Type)
+	assert.Equal(t, "default", valuesRows[2].Default)
+	assert.Equal(t, "the friendly animals of the house", valuesRows[2].Description)
+
+	assert.Equal(t, "animals.byTrait.friendly[0]", valuesRows[3].Key)
+	assert.Equal(t, stringType, valuesRows[3].Type)
+	assert.Equal(t, "value", valuesRows[3].Default)
+	assert.Equal(t, "best cat ever", valuesRows[3].Description)
+}
+
 func TestNilValues(t *testing.T) {
 	helmValues := parseYamlValues(`
 animals:
@@ -513,10 +800,10 @@ animals:
   nonWeirdCats:
 	`)
 
-	descriptions := map[string]string{
-		"animals.birdCount":    "(int) the number of birds we have",
-		"animals.birds":        "(list) the list of birds we have",
-		"animals.nonWeirdCats": "the cats that we have that are not weird",
+	descriptions := map[string]helm.ChartValueDescription{
+		"animals.birdCount":    helm.ChartValueDescription{Description: "(int) the number of birds we have"},
+		"animals.birds":        helm.ChartValueDescription{Description: "(list) the list of birds we have"},
+		"animals.nonWeirdCats": helm.ChartValueDescription{Description: "the cats that we have that are not weird"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -540,6 +827,41 @@ animals:
 	assert.Equal(t, "the cats that we have that are not weird", valuesRows[2].Description)
 }
 
+func TestNilValuesWithDefaults(t *testing.T) {
+	helmValues := parseYamlValues(`
+animals:
+  birds:
+  birdCount:
+  nonWeirdCats:
+	`)
+
+	descriptions := map[string]helm.ChartValueDescription{
+		"animals.birdCount":    helm.ChartValueDescription{Description: "(int) the number of birds we have", Default: "some"},
+		"animals.birds":        helm.ChartValueDescription{Description: "(list) the list of birds we have", Default: "explicit"},
+		"animals.nonWeirdCats": helm.ChartValueDescription{Description: "the cats that we have that are not weird", Default: "default"},
+	}
+
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 3)
+
+	assert.Equal(t, "animals.birdCount", valuesRows[0].Key)
+	assert.Equal(t, intType, valuesRows[0].Type)
+	assert.Equal(t, "some", valuesRows[0].Default)
+	assert.Equal(t, "the number of birds we have", valuesRows[0].Description)
+
+	assert.Equal(t, "animals.birds", valuesRows[1].Key)
+	assert.Equal(t, listType, valuesRows[1].Type)
+	assert.Equal(t, "explicit", valuesRows[1].Default)
+	assert.Equal(t, "the list of birds we have", valuesRows[1].Description)
+
+	assert.Equal(t, "animals.nonWeirdCats", valuesRows[2].Key)
+	assert.Equal(t, stringType, valuesRows[2].Type)
+	assert.Equal(t, "default", valuesRows[2].Default)
+	assert.Equal(t, "the cats that we have that are not weird", valuesRows[2].Description)
+}
+
 func TestKeysWithSpecialCharacters(t *testing.T) {
 	helmValues := parseYamlValues(`
 websites:
@@ -548,7 +870,7 @@ fullNames:
   John Norwood: me
 `)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]string), true)
+	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -572,9 +894,9 @@ fullNames:
   John Norwood: me
 `)
 
-	descriptions := map[string]string{
-		`fullNames."John Norwood"`:         "who am I",
-		`websites."stupidchess.jmn23.com"`: "status of the stupidchess website",
+	descriptions := map[string]helm.ChartValueDescription{
+		`fullNames."John Norwood"`:         helm.ChartValueDescription{Description: "who am I"},
+		`websites."stupidchess.jmn23.com"`: helm.ChartValueDescription{Description: "status of the stupidchess website"},
 	}
 
 	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
@@ -593,6 +915,35 @@ fullNames:
 	assert.Equal(t, "status of the stupidchess website", valuesRows[1].Description)
 }
 
+func TestKeysWithSpecialCharactersWithDescriptionsAndDefaults(t *testing.T) {
+	helmValues := parseYamlValues(`
+websites:
+  stupidchess.jmn23.com: defunct
+fullNames:
+  John Norwood: me
+`)
+
+	descriptions := map[string]helm.ChartValueDescription{
+		`fullNames."John Norwood"`:         helm.ChartValueDescription{Description: "who am I", Default: "default"},
+		`websites."stupidchess.jmn23.com"`: helm.ChartValueDescription{Description: "status of the stupidchess website", Default: "value"},
+	}
+
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true)
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 2)
+
+	assert.Equal(t, `fullNames."John Norwood"`, valuesRows[0].Key)
+	assert.Equal(t, stringType, valuesRows[0].Type)
+	assert.Equal(t, "default", valuesRows[0].Default)
+	assert.Equal(t, "who am I", valuesRows[0].Description)
+
+	assert.Equal(t, `websites."stupidchess.jmn23.com"`, valuesRows[1].Key)
+	assert.Equal(t, stringType, valuesRows[1].Type)
+	assert.Equal(t, "value", valuesRows[1].Default)
+	assert.Equal(t, "status of the stupidchess website", valuesRows[1].Description)
+}
+
 func TestNonStringKeys(t *testing.T) {
 	helmValues := parseYamlValues(`
 3: three
@@ -600,7 +951,7 @@ func TestNonStringKeys(t *testing.T) {
 true: "true"
 `)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]string), true)
+	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 3)
