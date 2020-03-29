@@ -1,6 +1,7 @@
 package document
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"regexp"
@@ -86,6 +87,19 @@ func parseNilValueType(key string, description helm.ChartValueDescription) value
 	}
 }
 
+func jsonMarshalNoEscape(key string, value interface{}) (string, error) {
+	outputBuffer := &bytes.Buffer{}
+	valueEncoder := json.NewEncoder(outputBuffer)
+	valueEncoder.SetEscapeHTML(false)
+	err := valueEncoder.Encode(value)
+
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal default value for %s to json: %s", key, err)
+	}
+
+	return strings.TrimRight(outputBuffer.String(), "\n"), nil
+}
+
 func createValueRow(
 	key string,
 	value interface{},
@@ -97,7 +111,7 @@ func createValueRow(
 
 	defaultValue := description.Default
 	if defaultValue == "" {
-		jsonEncodedValue, err := json.Marshal(value)
+		jsonEncodedValue, err := jsonMarshalNoEscape(key, value)
 		if err != nil {
 			return valueRow{}, fmt.Errorf("failed to marshal default value for %s to json: %s", key, err)
 		}
