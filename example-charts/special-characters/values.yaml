@@ -1,0 +1,22 @@
+elasticsearch:
+  # elasticsearch.clusterHealthCheckParams -- The Elasticsearch cluster health status params that will be used by readinessProbe command
+  clusterHealthCheckParams: "wait_for_status=yellow&timeout=1s"
+
+  # elasticsearch.clusterHealthCheckParamsDescription -- Now let's put some special characters in the description: wait_for_status=yellow&timeout=1s
+  clusterHealthCheckParamsDescription: ""
+
+htmlSnippets:
+  one: |
+    <html>
+      <head></head>
+      <body>
+        <h1>Is this right, I don't know html</h1>
+      </body>
+    </html>
+
+  # htmlSnippets.two -- Let's put it in the description <html></html>
+  two: ""
+
+  # htmlSnippets.three -- Another description
+  # @default -- "<html><head></head></html>"
+  three: ""
