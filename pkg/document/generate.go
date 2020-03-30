@@ -7,6 +7,7 @@ import (
 
 	"github.com/norwoodj/helm-docs/pkg/helm"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 func getOutputFile(chartDirectory string, dryRun bool) (*os.File, error) {
@@ -14,7 +15,8 @@ func getOutputFile(chartDirectory string, dryRun bool) (*os.File, error) {
 		return os.Stdout, nil
 	}
 
-	f, err := os.Create(fmt.Sprintf("%s/README.md", chartDirectory))
+	outputFile := viper.GetString("output-file")
+	f, err := os.Create(fmt.Sprintf("%s/%s", chartDirectory, outputFile))
 
 	if err != nil {
 		return nil, err
