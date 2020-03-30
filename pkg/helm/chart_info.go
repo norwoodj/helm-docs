@@ -163,40 +163,55 @@ func parseChartValuesFileComments(chartDirectory string) (map[string]ChartValueD
 
 	defer valuesFile.Close()
 
+	var description, key string
 	keyToDescriptions := make(map[string]ChartValueDescription)
 	scanner := bufio.NewScanner(valuesFile)
+	foundValuesComment := false
 
 	for scanner.Scan() {
-		match := valuesDescriptionRegex.FindStringSubmatch(scanner.Text())
+		currentLine := scanner.Text()
 
-		if len(match) > 2 {
-			// this starts a doc comment
-			key := match[1]
-			desc := match[2]
-			var def string
-
-			for scanner.Scan() {
-				match = defaultValueRegex.FindStringSubmatch(scanner.Text())
-
-				if len(match) > 1 {
-					def = match[1]
-					continue
-				}
-
-				match = commentContinuationRegex.FindStringSubmatch(scanner.Text())
-
-				if len(match) > 1 {
-					desc = desc + " " + match[1]
-					continue
-				}
-
-				keyToDescriptions[key] = ChartValueDescription{
-					Description: desc,
-					Default:     def,
-				}
-				break
+		// If we've not yet found a values comment with a key name, try and find one on each line
+		if !foundValuesComment {
+			match := valuesDescriptionRegex.FindStringSubmatch(currentLine)
+			if len(match) < 3 {
+				continue
 			}
+
+			foundValuesComment = true
+			key = match[1]
+			description = match[2]
+			continue
 		}
+
+		// If we've already found a values comment, on the next line try and parse a custom default value. If we find one
+		// that completes parsing for this key, add it to the list and reset to searching for a new key
+		match := defaultValueRegex.FindStringSubmatch(currentLine)
+
+		if len(match) > 1 {
+			keyToDescriptions[key] = ChartValueDescription{
+				Description: description,
+				Default:     match[1],
+			}
+
+			foundValuesComment = false
+			continue
+		}
+
+		// Otherwise, see if there's a comment continuing the description from the previous line
+		match = commentContinuationRegex.FindStringSubmatch(currentLine)
+		if len(match) > 1 {
+			description = description + " " + match[1]
+			continue
+		}
+
+		// If we haven't continued by this point, we didn't match any of the comment formats we want, so we need to add
+		// the in progress value to the map, and reset to looking for a new key
+		keyToDescriptions[key] = ChartValueDescription{
+			Description: description,
+		}
+
+		foundValuesComment = false
 	}
 
 	return keyToDescriptions, nil
