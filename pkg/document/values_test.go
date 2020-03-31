@@ -123,22 +123,22 @@ oscar: 3.14159
 
 	assert.Equal(t, "echo", valuesRows[0].Key)
 	assert.Equal(t, intType, valuesRows[0].Type, intType)
-	assert.Equal(t, "`some`", valuesRows[0].Default)
+	assert.Equal(t, "some", valuesRows[0].Default)
 	assert.Equal(t, "echo", valuesRows[0].Description)
 
 	assert.Equal(t, "foxtrot", valuesRows[1].Key)
 	assert.Equal(t, boolType, valuesRows[1].Type)
-	assert.Equal(t, "`explicit`", valuesRows[1].Default)
+	assert.Equal(t, "explicit", valuesRows[1].Default)
 	assert.Equal(t, "foxtrot", valuesRows[1].Description)
 
 	assert.Equal(t, "hello", valuesRows[2].Key)
 	assert.Equal(t, stringType, valuesRows[2].Type)
-	assert.Equal(t, "`default`", valuesRows[2].Default)
+	assert.Equal(t, "default", valuesRows[2].Default)
 	assert.Equal(t, "hello", valuesRows[2].Description)
 
 	assert.Equal(t, "oscar", valuesRows[3].Key)
 	assert.Equal(t, floatType, valuesRows[3].Type)
-	assert.Equal(t, "`values`", valuesRows[3].Default)
+	assert.Equal(t, "values", valuesRows[3].Default)
 	assert.Equal(t, "oscar", valuesRows[3].Description)
 }
 
@@ -212,12 +212,12 @@ oscar: dog
 
 	assert.Equal(t, "oscar", valuesRows[0].Key)
 	assert.Equal(t, stringType, valuesRows[0].Type)
-	assert.Equal(t, "`default`", valuesRows[0].Default)
+	assert.Equal(t, "default", valuesRows[0].Default)
 	assert.Equal(t, "oscar", valuesRows[0].Description)
 
 	assert.Equal(t, "recursive.echo", valuesRows[1].Key)
 	assert.Equal(t, stringType, valuesRows[1].Type)
-	assert.Equal(t, "`custom`", valuesRows[1].Default)
+	assert.Equal(t, "custom", valuesRows[1].Default)
 	assert.Equal(t, "echo", valuesRows[1].Description)
 }
 
@@ -291,7 +291,7 @@ oscar: dog
 
 	assert.Equal(t, "recursive", valuesRows[1].Key)
 	assert.Equal(t, objectType, valuesRows[1].Type)
-	assert.Equal(t, "`default`", valuesRows[1].Default)
+	assert.Equal(t, "default", valuesRows[1].Default)
 	assert.Equal(t, "an empty object", valuesRows[1].Description)
 }
 func TestEmptyList(t *testing.T) {
@@ -361,12 +361,12 @@ echo: cat
 
 	assert.Equal(t, "birds", valuesRows[0].Key)
 	assert.Equal(t, listType, valuesRows[0].Type)
-	assert.Equal(t, "`explicit`", valuesRows[0].Default)
+	assert.Equal(t, "explicit", valuesRows[0].Default)
 	assert.Equal(t, "birds", valuesRows[0].Description)
 
 	assert.Equal(t, "echo", valuesRows[1].Key)
 	assert.Equal(t, stringType, valuesRows[1].Type)
-	assert.Equal(t, "`default value`", valuesRows[1].Default)
+	assert.Equal(t, "default value", valuesRows[1].Default)
 	assert.Equal(t, "echo", valuesRows[1].Description)
 }
 
@@ -436,12 +436,12 @@ cats: [echo, foxtrot]
 
 	assert.Equal(t, "cats[0]", valuesRows[0].Key)
 	assert.Equal(t, stringType, valuesRows[0].Type)
-	assert.Equal(t, "`explicit`", valuesRows[0].Default)
+	assert.Equal(t, "explicit", valuesRows[0].Default)
 	assert.Equal(t, "the black one", valuesRows[0].Description)
 
 	assert.Equal(t, "cats[1]", valuesRows[1].Key)
 	assert.Equal(t, stringType, valuesRows[1].Type)
-	assert.Equal(t, "`default value`", valuesRows[1].Default)
+	assert.Equal(t, "default value", valuesRows[1].Default)
 	assert.Equal(t, "the friendly one", valuesRows[1].Description)
 
 }
@@ -554,12 +554,12 @@ animals:
 
 	assert.Equal(t, "animals[0].elements[0]", valuesRows[0].Key)
 	assert.Equal(t, stringType, valuesRows[0].Type)
-	assert.Equal(t, "`explicit`", valuesRows[0].Default)
+	assert.Equal(t, "explicit", valuesRows[0].Default)
 	assert.Equal(t, "the black one", valuesRows[0].Description)
 
 	assert.Equal(t, "animals[0].elements[1]", valuesRows[1].Key)
 	assert.Equal(t, stringType, valuesRows[1].Type)
-	assert.Equal(t, "`default`", valuesRows[1].Default)
+	assert.Equal(t, "default", valuesRows[1].Default)
 	assert.Equal(t, "the friendly one", valuesRows[1].Description)
 
 	assert.Equal(t, "animals[0].type", valuesRows[2].Key)
@@ -569,7 +569,7 @@ animals:
 
 	assert.Equal(t, "animals[1].elements[0]", valuesRows[3].Key)
 	assert.Equal(t, stringType, valuesRows[3].Type)
-	assert.Equal(t, "`value`", valuesRows[3].Default)
+	assert.Equal(t, "value", valuesRows[3].Default)
 	assert.Equal(t, "the sleepy one", valuesRows[3].Description)
 
 	assert.Equal(t, "animals[1].type", valuesRows[4].Key)
@@ -622,7 +622,7 @@ animals:
 
 	assert.Equal(t, "animals", valuesRows[0].Key)
 	assert.Equal(t, listType, valuesRows[0].Type)
-	assert.Equal(t, "`cat and dog`", valuesRows[0].Default)
+	assert.Equal(t, "cat and dog", valuesRows[0].Default)
 	assert.Equal(t, "all the animals of the house", valuesRows[0].Description)
 }
 
@@ -646,7 +646,7 @@ animals:
 
 	assert.Equal(t, "animals[0]", valuesRows[0].Key)
 	assert.Equal(t, objectType, valuesRows[0].Type)
-	assert.Equal(t, "`only cats here`", valuesRows[0].Default)
+	assert.Equal(t, "only cats here", valuesRows[0].Default)
 	assert.Equal(t, "all the cats of the house", valuesRows[0].Description)
 
 	assert.Equal(t, "animals[1].elements[0]", valuesRows[1].Key)
@@ -704,7 +704,7 @@ animals:
 
 	assert.Equal(t, "animals.byTrait", valuesRows[0].Key)
 	assert.Equal(t, objectType, valuesRows[0].Type)
-	assert.Equal(t, "`animals, you know`", valuesRows[0].Default)
+	assert.Equal(t, "animals, you know", valuesRows[0].Default)
 	assert.Equal(t, "animals listed by their various characteristics", valuesRows[0].Description)
 }
 
@@ -773,22 +773,22 @@ animals:
 
 	assert.Equal(t, "animals", valuesRows[0].Key)
 	assert.Equal(t, objectType, valuesRows[0].Type)
-	assert.Equal(t, "`some`", valuesRows[0].Default)
+	assert.Equal(t, "some", valuesRows[0].Default)
 	assert.Equal(t, "animal stuff", valuesRows[0].Description)
 
 	assert.Equal(t, "animals.byTrait", valuesRows[1].Key)
 	assert.Equal(t, objectType, valuesRows[1].Type)
-	assert.Equal(t, "`explicit`", valuesRows[1].Default)
+	assert.Equal(t, "explicit", valuesRows[1].Default)
 	assert.Equal(t, "animals listed by their various characteristics", valuesRows[1].Description)
 
 	assert.Equal(t, "animals.byTrait.friendly", valuesRows[2].Key)
 	assert.Equal(t, listType, valuesRows[2].Type)
-	assert.Equal(t, "`default`", valuesRows[2].Default)
+	assert.Equal(t, "default", valuesRows[2].Default)
 	assert.Equal(t, "the friendly animals of the house", valuesRows[2].Description)
 
 	assert.Equal(t, "animals.byTrait.friendly[0]", valuesRows[3].Key)
 	assert.Equal(t, stringType, valuesRows[3].Type)
-	assert.Equal(t, "`value`", valuesRows[3].Default)
+	assert.Equal(t, "value", valuesRows[3].Default)
 	assert.Equal(t, "best cat ever", valuesRows[3].Description)
 }
 
@@ -935,12 +935,12 @@ fullNames:
 
 	assert.Equal(t, `fullNames."John Norwood"`, valuesRows[0].Key)
 	assert.Equal(t, stringType, valuesRows[0].Type)
-	assert.Equal(t, "`default`", valuesRows[0].Default)
+	assert.Equal(t, "default", valuesRows[0].Default)
 	assert.Equal(t, "who am I", valuesRows[0].Description)
 
 	assert.Equal(t, `websites."stupidchess.jmn23.com"`, valuesRows[1].Key)
 	assert.Equal(t, stringType, valuesRows[1].Type)
-	assert.Equal(t, "`value`", valuesRows[1].Default)
+	assert.Equal(t, "value", valuesRows[1].Default)
 	assert.Equal(t, "status of the stupidchess website", valuesRows[1].Description)
 }
 

@@ -29,7 +29,7 @@ culpa qui officia deserunt mollit anim id est laborum.
 | controller.image.tag | string | `"18.0831"` |  |
 | controller.ingressClass | string | `"nginx"` | Name of the ingress class to route through this controller |
 | controller.name | string | `"controller"` |  |
-| controller.persistentVolumeClaims | list | `["default", "specified", "here"]` | List of persistent volume claims to create. For very long comments, break them into multiple lines. |
+| controller.persistentVolumeClaims | list | the chart will construct this list internally unless specified | List of persistent volume claims to create. For very long comments, break them into multiple lines. |
 | controller.podLabels | object | `{}` | The labels to be applied to instances of the controller pod |
 | controller.publishService.enabled | bool | `false` | Whether to expose the ingress controller to the public world |
 | controller.replicas | int | `nil` | Number of nginx-ingress pods to load balance between |
