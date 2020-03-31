@@ -116,13 +116,13 @@ func createValueRow(
 			return valueRow{}, fmt.Errorf("failed to marshal default value for %s to json: %s", key, err)
 		}
 
-		defaultValue = string(jsonEncodedValue)
+		defaultValue = fmt.Sprintf("`%s`", jsonEncodedValue)
 	}
 
 	return valueRow{
 		Key:         key,
 		Type:        getTypeName(value),
-		Default:     fmt.Sprintf("`%s`", defaultValue),
+		Default:     defaultValue,
 		Description: description.Description,
 	}, nil
 }

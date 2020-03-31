@@ -6,7 +6,7 @@ controller:
 
   # controller.persistentVolumeClaims -- List of persistent volume claims to create.
   # For very long comments, break them into multiple lines.
-  # @default -- ["default", "specified", "here"]
+  # @default -- the chart will construct this list internally unless specified
   persistentVolumeClaims: []
 
   extraVolumes:
