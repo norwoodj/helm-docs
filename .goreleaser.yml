@@ -39,5 +39,5 @@ dockers:
     goarch: amd64
     dockerfile: Dockerfile
     image_templates:
-      - "norwoodj/{{.ProjectName}}:latest"
-      - "norwoodj/{{.ProjectName}}:{{.Tag}}"
+      - jnorwood/{{ .ProjectName }}:latest
+      - jnorwood/{{ .ProjectName }}:{{ .Tag }}
