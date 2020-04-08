@@ -34,3 +34,10 @@ brews:
       bin.install "helm-docs"
     test: |
       system "#{bin}/helm-docs --version"
+dockers:
+  - goos: linux
+    goarch: amd64
+    dockerfile: Dockerfile
+    image_templates:
+      - "norwoodj/{{.ProjectName}}:latest"
+      - "norwoodj/{{.ProjectName}}:{{.Tag}}"
