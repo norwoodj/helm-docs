@@ -23,6 +23,21 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
+
+signs:
+- artifacts: checksum
+  args: ["-u", "<thefingerprintid>", "--output", "${signature}", "--detach-sign", "${artifact}"]
+
+nfpms:
+- vendor: helm-docs
+  homepage: https://github.com/norwoodj/helm-docs
+  maintainer: norwoodj
+  description: A tool for automatically generating markdown documentation for helm charts
+  license: GNU General Public License v3.0
+  formats:
+  - deb
+  - rpm
+
 brews:
   - github:
       owner: norwoodj
