@@ -22,7 +22,7 @@ const defaultDocumentationTemplate = `{{ template "chart.header" . }}
 
 {{ template "chart.description" . }}
 
-{{ template "chart.homepage" . }}
+{{ template "chart.homepageLine" . }}
 
 {{ template "chart.maintainersSection" . }}
 
@@ -55,7 +55,7 @@ func getVersionTemplates() string {
 	versionBuilder := strings.Builder{}
 	versionBuilder.WriteString(`{{ define "chart.version" }}{{ .Version }}{{ end }}\n`)
 	versionBuilder.WriteString(`{{ define "chart.versionLine" }}`)
-	versionBuilder.WriteString("Current chart version is `{{ .Version }}`")
+	versionBuilder.WriteString("{{ if .Version }}Current chart version is `{{ .Version }}`{{ end }}")
 	versionBuilder.WriteString("{{ end }}")
 	versionBuilder.WriteString(`{{ define "chart.versionBadge" }}`)
 	versionBuilder.WriteString("![Version: {{ .Version }}](https://img.shields.io/badge/Version-{{ .Version }}-informational?style=flat-square)")
@@ -68,7 +68,7 @@ func getTypeTemplate() string {
 	typeBuilder := strings.Builder{}
 	typeBuilder.WriteString(`{{ define "chart.type" }}{{ .Type }}{{ end }}\n`)
 	typeBuilder.WriteString(`{{ define "chart.typeLine" }}`)
-	typeBuilder.WriteString("Current chart type is `{{ .Type }}`")
+	typeBuilder.WriteString("{{ if .Type }}Current chart type is `{{ .Type }}`{{ end }}")
 	typeBuilder.WriteString("{{ end }}")
 	typeBuilder.WriteString(`{{ define "chart.typeBadge" }}`)
 	typeBuilder.WriteString("{{ if .Type }}![Type: {{ .Type }}](https://img.shields.io/badge/Type-{{ .Type }}-informational?style=flat-square){{ end }}")
@@ -79,6 +79,10 @@ func getTypeTemplate() string {
 
 func getAppVersionTemplate() string {
 	appVersionBuilder := strings.Builder{}
+	appVersionBuilder.WriteString(`{{ define "chart.appVersion" }}{{ .AppVersion }}{{ end }}\n`)
+	appVersionBuilder.WriteString(`{{ define "chart.appVersionLine" }}`)
+	appVersionBuilder.WriteString("{{ if .AppVersion }}Current chart appVersion is `{{ .AppVersion }}`{{ end }}")
+	appVersionBuilder.WriteString("{{ end }}")
 	appVersionBuilder.WriteString(`{{ define "chart.appVersionBadge" }}`)
 	appVersionBuilder.WriteString("{{ if .AppVersion }}![AppVersion: {{ .AppVersion }}](https://img.shields.io/badge/AppVersion-{{ .AppVersion }}-informational?style=flat-square){{ end }}")
 	appVersionBuilder.WriteString("{{ end }}")
@@ -97,7 +101,8 @@ func getDescriptionTemplate() string {
 
 func getHomepageTemplate() string {
 	homepageBuilder := strings.Builder{}
-	homepageBuilder.WriteString(`{{ define "chart.homepage" }}`)
+	homepageBuilder.WriteString(`{{ define "chart.homepage" }}{{ .Home }}{{ end }}\n`)
+	homepageBuilder.WriteString(`{{ define "chart.homepageLine" }}`)
 	homepageBuilder.WriteString("{{ if .Home }}**Homepage:** <{{ .Home }}>{{ end }}")
 	homepageBuilder.WriteString("{{ end }}")
 
@@ -129,17 +134,9 @@ func getMaintainersTemplate() string {
 
 func getSourceLinkTemplates() string {
 	sourceLinkBuilder := strings.Builder{}
-	sourceLinkBuilder.WriteString(`{{ define "chart.sourceLink" }}`)
-	sourceLinkBuilder.WriteString("{{ .Home }}")
-	sourceLinkBuilder.WriteString("{{ end }}\n")
-
-	sourceLinkBuilder.WriteString(`{{ define "chart.sourceLinkLine" }}`)
-	sourceLinkBuilder.WriteString("{{ if .Home }}Source code can be found [here]({{ .Home }}){{ end }}")
-	sourceLinkBuilder.WriteString("{{ end }}")
-
 	sourceLinkBuilder.WriteString(`{{ define "chart.sourcesHeader" }}## Source Code{{ end}}`)
 
-	sourceLinkBuilder.WriteString(`{{ define "chart.sources" }}`)
+	sourceLinkBuilder.WriteString(`{{ define "chart.sourcesList" }}`)
 	sourceLinkBuilder.WriteString("{{- range .Sources }}")
 	sourceLinkBuilder.WriteString("\n* <{{ . }}>")
 	sourceLinkBuilder.WriteString("{{- end }}")
@@ -149,7 +146,7 @@ func getSourceLinkTemplates() string {
 	sourceLinkBuilder.WriteString("{{ if .Sources }}")
 	sourceLinkBuilder.WriteString(`{{ template "chart.sourcesHeader" . }}`)
 	sourceLinkBuilder.WriteString("\n")
-	sourceLinkBuilder.WriteString(`{{ template "chart.sources" . }}`)
+	sourceLinkBuilder.WriteString(`{{ template "chart.sourcesList" . }}`)
 	sourceLinkBuilder.WriteString("{{ end }}")
 	sourceLinkBuilder.WriteString("{{ end }}")
 
@@ -160,7 +157,8 @@ func getRequirementsTableTemplates() string {
 	requirementsSectionBuilder := strings.Builder{}
 	requirementsSectionBuilder.WriteString(`{{ define "chart.requirementsHeader" }}## Requirements{{ end }}`)
 
-	requirementsSectionBuilder.WriteString(`{{ define "chart.kubeVersion" }}`)
+	requirementsSectionBuilder.WriteString(`{{ define "chart.kubeVersion" }}{{ .KubeVersion }}{{ end }}\n`)
+	requirementsSectionBuilder.WriteString(`{{ define "chart.kubeVersionLine" }}`)
 	requirementsSectionBuilder.WriteString("{{ if .KubeVersion }}Kubernetes: `{{ .KubeVersion }}`{{ end }}")
 	requirementsSectionBuilder.WriteString("{{ end }}")
 
@@ -177,7 +175,7 @@ func getRequirementsTableTemplates() string {
 	requirementsSectionBuilder.WriteString(`{{ template "chart.requirementsHeader" . }}`)
 	requirementsSectionBuilder.WriteString("\n\n")
 	requirementsSectionBuilder.WriteString("{{ if .KubeVersion }}")
-	requirementsSectionBuilder.WriteString(`{{ template "chart.kubeVersion" . }}`)
+	requirementsSectionBuilder.WriteString(`{{ template "chart.kubeVersionLine" . }}`)
 	requirementsSectionBuilder.WriteString("\n\n")
 	requirementsSectionBuilder.WriteString("{{ end }}")
 	requirementsSectionBuilder.WriteString("{{ if .Dependencies }}")
