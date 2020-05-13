@@ -120,11 +120,19 @@ If there is no `README.md.gotmpl` (or other specified gotmpl file) present, the 
 That template looks like so:
 ```
 {{ template "chart.header" . }}
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.versionBadge" . }}
+{{ template "chart.typeBadge" . }}
+{{ template "chart.appVersionBadge" . }}
+
 {{ template "chart.description" . }}
 
-{{ template "chart.versionLine" . }}
+{{ template "chart.homepageLine" . }}
 
-{{ template "chart.sourceLinkLine" . }}
+{{ template "chart.maintainersSection" . }}
+
+{{ template "chart.sourcesSection" . }}
 
 {{ template "chart.requirementsSection" . }}
 
