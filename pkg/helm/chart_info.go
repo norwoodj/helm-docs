@@ -20,11 +20,15 @@ var defaultValueRegex = regexp.MustCompile("^\\s*# @default -- (.*)$")
 type ChartMetaMaintainer struct {
 	Email string
 	Name  string
+	Url   string
 }
 
 type ChartMeta struct {
 	ApiVersion  string `yaml:"apiVersion"`
+	AppVersion  string `yaml:"appVersion"`
+	KubeVersion string `yaml:"kubeVersion"`
 	Name        string
+	Deprecated  bool
 	Description string
 	Version     string
 	Home        string
