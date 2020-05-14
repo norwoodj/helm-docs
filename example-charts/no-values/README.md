@@ -2,9 +2,7 @@
 
 
 
-![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square)
-
-
+![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square)  
 
 A very simple chart that doesn't even need any values for customization
 
