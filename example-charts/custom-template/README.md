@@ -1,10 +1,8 @@
-custom-template
-===============
+# custom-template
+
 Basically the same as the nginx-ingress chart, but using a custom template to include some other content
 
 Current chart version is `0.2.0`
-
-Source code can be found [here](https://github.com/norwoodj/helm-docs/tree/master/example-charts/custom-template)
 
 ## Additional Information
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore
@@ -13,13 +11,13 @@ aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in volup
 cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
 culpa qui officia deserunt mollit anim id est laborum.
 
-## Chart Requirements
+## Requirements
 
 | Repository | Name | Version |
 |------------|------|---------|
 | @stable | nginx-ingress | 0.22.1 |
 
-## Chart Values
+## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
