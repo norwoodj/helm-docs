@@ -16,7 +16,7 @@ import (
 const defaultDocumentationTemplate = `{{ template "chart.header" . }}
 {{ template "chart.deprecationWarning" . }}
 
-{{ template "chart.versionBadge" . }} {{ template "chart.typeBadge" . }} {{ template "chart.appVersionBadge" . }}
+{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
 
 {{ template "chart.description" . }}
 
@@ -56,7 +56,7 @@ func getVersionTemplates() string {
 	versionBuilder.WriteString("{{ if .Version }}Current chart version is `{{ .Version }}`{{ end }}")
 	versionBuilder.WriteString("{{ end }}")
 	versionBuilder.WriteString(`{{ define "chart.versionBadge" }}`)
-	versionBuilder.WriteString("![Version: {{ .Version }}](https://img.shields.io/badge/Version-{{ .Version }}-informational?style=flat-square)")
+	versionBuilder.WriteString("![Version: {{ .Version }}](https://img.shields.io/badge/Version-{{ .Version }}-informational?style=flat-square) ")
 	versionBuilder.WriteString("{{ end }}")
 
 	return versionBuilder.String()
@@ -69,7 +69,7 @@ func getTypeTemplate() string {
 	typeBuilder.WriteString("{{ if .Type }}Current chart type is `{{ .Type }}`{{ end }}")
 	typeBuilder.WriteString("{{ end }}")
 	typeBuilder.WriteString(`{{ define "chart.typeBadge" }}`)
-	typeBuilder.WriteString("{{ if .Type }}![Type: {{ .Type }}](https://img.shields.io/badge/Type-{{ .Type }}-informational?style=flat-square){{ end }}")
+	typeBuilder.WriteString("{{ if .Type }}![Type: {{ .Type }}](https://img.shields.io/badge/Type-{{ .Type }}-informational?style=flat-square) {{ end }}")
 	typeBuilder.WriteString("{{ end }}")
 
 	return typeBuilder.String()
@@ -82,7 +82,7 @@ func getAppVersionTemplate() string {
 	appVersionBuilder.WriteString("{{ if .AppVersion }}Current chart appVersion is `{{ .AppVersion }}`{{ end }}")
 	appVersionBuilder.WriteString("{{ end }}")
 	appVersionBuilder.WriteString(`{{ define "chart.appVersionBadge" }}`)
-	appVersionBuilder.WriteString("{{ if .AppVersion }}![AppVersion: {{ .AppVersion }}](https://img.shields.io/badge/AppVersion-{{ .AppVersion }}-informational?style=flat-square){{ end }}")
+	appVersionBuilder.WriteString("{{ if .AppVersion }}![AppVersion: {{ .AppVersion }}](https://img.shields.io/badge/AppVersion-{{ .AppVersion }}-informational?style=flat-square) {{ end }}")
 	appVersionBuilder.WriteString("{{ end }}")
 
 	return appVersionBuilder.String()

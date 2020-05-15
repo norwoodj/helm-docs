@@ -1,8 +1,6 @@
 # special-characters
 
-
-
-![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) 
+![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 
 A chart demonstrating handling of special characters in values files
 
@@ -17,8 +15,6 @@ A chart demonstrating handling of special characters in values files
 ## Source Code
 
 * <https://github.com/norwoodj/helm-docs/tree/master/example-charts/special-characters>
-
-
 
 ## Values
 
