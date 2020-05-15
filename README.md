@@ -122,9 +122,7 @@ That template looks like so:
 {{ template "chart.header" . }}
 {{ template "chart.deprecationWarning" . }}
 
-{{ template "chart.versionBadge" . }}
-{{ template "chart.typeBadge" . }}
-{{ template "chart.appVersionBadge" . }}
+{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
 
 {{ template "chart.description" . }}
 
