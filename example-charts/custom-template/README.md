@@ -5,6 +5,7 @@ Basically the same as the nginx-ingress chart, but using a custom template to in
 Current chart version is `0.2.0`
 
 ## Additional Information
+
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore
 et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
 aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse

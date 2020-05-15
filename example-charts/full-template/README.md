@@ -76,7 +76,6 @@ https://github.com/norwoodj/helm-docs/tree/master/example-charts/full-template
 
 ## `chart.sourcesList`
 
-
 * <https://github.com/norwoodj/helm-docs/tree/master/example-charts/full-template>
 
 ## `chart.sourcesSection`

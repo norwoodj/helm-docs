@@ -1,8 +1,6 @@
 # no-requirements
 
-
-
-![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square)  
+![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) 
 
 A simple chart that installs, let's say PrometheusRules, that needs no sub-charts
 
@@ -17,8 +15,6 @@ A simple chart that installs, let's say PrometheusRules, that needs no sub-chart
 ## Source Code
 
 * <https://github.com/norwoodj/helm-docs/tree/master/example-charts/no-requirements>
-
-
 
 ## Values
 

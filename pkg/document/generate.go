@@ -1,9 +1,11 @@
 package document
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 
 	"github.com/norwoodj/helm-docs/pkg/helm"
 	log "github.com/sirupsen/logrus"
@@ -50,8 +52,27 @@ func PrintDocumentation(chartDocumentationInfo helm.ChartDocumentationInfo, dryR
 		defer outputFile.Close()
 	}
 
-	err = chartDocumentationTemplate.Execute(outputFile, chartTemplateDataObject)
+	var output bytes.Buffer
+	err = chartDocumentationTemplate.Execute(&output, chartTemplateDataObject)
 	if err != nil {
 		log.Warnf("Error generating documentation for chart %s: %s", chartDocumentationInfo.ChartDirectory, err)
 	}
+	output = applyMarkDownFormat(output)
+	_, err = output.WriteTo(outputFile)
+	if err != nil {
+		log.Warnf("Error generating documentation file for chart %s: %s", chartDocumentationInfo.ChartDirectory, err)
+	}
+}
+
+func applyMarkDownFormat(output bytes.Buffer) bytes.Buffer {
+	outputString := output.String()
+	re := regexp.MustCompile(` \n`)
+	outputString = re.ReplaceAllString(outputString, "\n")
+
+	re = regexp.MustCompile(`\n{3,}`)
+	outputString = re.ReplaceAllString(outputString, "\n\n")
+
+	output.Reset()
+	output.WriteString(outputString)
+	return output
 }
