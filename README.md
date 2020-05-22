@@ -51,17 +51,14 @@ You can mount directory with charts under `/helm-docs` within container.
 Print generated documentation to stdout rather than modifying READMEs:
 
 ```bash
-docker run -v "$(pwd):/helm-docs" jnorwood/helm-docs:latest --dry-run
+docker run --rm -v "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:latest --dry-run
 ```
 
 Overwrite READMEs within mounted directory:
 
 ```bash
-docker run -v "$(pwd):/helm-docs" jnorwood/helm-docs:latest
+docker run --rm -v "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:latest
 ```
-
-Notice: You may need to fix permissions to the created files.
-
 
 # Building from source
 
