@@ -1,18 +1,28 @@
-nginx-ingress
-=============
+# nginx-ingress
+
+![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
+
 A simple wrapper around the stable/nginx-ingress chart that adds a few of our conventions
 
-Current chart version is `0.2.0`
+**Homepage:** <https://github.com/norwoodj/helm-docs/tree/master/example-charts/nginx-ingress>
 
-Source code can be found [here](https://github.com/norwoodj/helm-docs/tree/master/example-charts/nginx-ingress)
+## Maintainers
 
-## Chart Requirements
+| Name | Email | Url |
+| ---- | ------ | --- |
+| John Norwood | norwood.john.m@gmail.com |  |
+
+## Source Code
+
+* <https://github.com/norwoodj/helm-docs/tree/master/example-charts/nginx-ingress>
+
+## Requirements
 
 | Repository | Name | Version |
 |------------|------|---------|
 | @stable | nginx-ingress | 0.22.1 |
 
-## Chart Values
+## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|

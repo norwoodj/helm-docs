@@ -1,14 +1,22 @@
-no-requirements
-===============
+# no-requirements
+
+![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square)
+
 A simple chart that installs, let's say PrometheusRules, that needs no sub-charts
 
-Current chart version is `0.2.0`
+**Homepage:** <https://github.com/norwoodj/helm-docs/tree/master/example-charts/no-requirements>
 
-Source code can be found [here](https://github.com/norwoodj/helm-docs/tree/master/example-charts/no-requirements)
+## Maintainers
 
+| Name | Email | Url |
+| ---- | ------ | --- |
+| John Norwood | norwood.john.m@gmail.com |  |
 
+## Source Code
 
-## Chart Values
+* <https://github.com/norwoodj/helm-docs/tree/master/example-charts/no-requirements>
+
+## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|

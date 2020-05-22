@@ -1,14 +1,22 @@
-special-characters
-==================
+# special-characters
+
+![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
+
 A chart demonstrating handling of special characters in values files
 
-Current chart version is `0.2.0`
+**Homepage:** <https://github.com/norwoodj/helm-docs/tree/master/example-charts/special-characters>
 
-Source code can be found [here](https://github.com/norwoodj/helm-docs/tree/master/example-charts/special-characters)
+## Maintainers
 
+| Name | Email | Url |
+| ---- | ------ | --- |
+| John Norwood | norwood.john.m@gmail.com |  |
 
+## Source Code
 
-## Chart Values
+* <https://github.com/norwoodj/helm-docs/tree/master/example-charts/special-characters>
+
+## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
