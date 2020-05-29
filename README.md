@@ -28,6 +28,11 @@ cd cmd/helm-docs
 go build
 ```
 
+Or install from source:
+
+```bash
+GO111MODULE=on go get github.com/norwoodj/helm-docs/cmd/helm-docs
+```
 
 ## Usage
 
