@@ -31,6 +31,15 @@ const defaultDocumentationTemplate = `{{ template "chart.header" . }}
 {{ template "chart.valuesSection" . }}
 `
 
+func getNameTemplate() string {
+	nameBuilder := strings.Builder{}
+	nameBuilder.WriteString(`{{ define "chart.name" }}`)
+	nameBuilder.WriteString("{{ .Name }}")
+	nameBuilder.WriteString("{{ end }}")
+
+	return nameBuilder.String()
+}
+
 func getHeaderTemplate() string {
 	headerTemplateBuilder := strings.Builder{}
 	headerTemplateBuilder.WriteString(`{{ define "chart.header" }}`)
@@ -235,6 +244,7 @@ func getDocumentationTemplates(chartDirectory string) ([]string, error) {
 	}
 
 	return []string{
+		getNameTemplate(),
 		getHeaderTemplate(),
 		getDeprecatedTemplate(),
 		getAppVersionTemplate(),
