@@ -45,9 +45,12 @@ func newHelmDocsCommand(run func(cmd *cobra.Command, args []string)) (*cobra.Com
 	logLevelUsage := fmt.Sprintf("Level of logs that should printed, one of (%s)", strings.Join(possibleLogLevels(), ", "))
 	command.PersistentFlags().BoolP("dry-run", "d", false, "don't actually render any markdown files just print to stdout passed")
 	command.PersistentFlags().StringP("ignore-file", "i", ".helmdocsignore", "The filename to use as an ignore file to exclude chart directories")
+	command.PersistentFlags().StringP("path", "p", ".", "The path to search for chart directories")
+	command.PersistentFlags().BoolP("omit-blanks", "s", false, "Do not output fields with no description")
 	command.PersistentFlags().StringP("log-level", "l", "info", logLevelUsage)
 	command.PersistentFlags().StringP("output-file", "o", "README.md", "markdown file path relative to each chart directory to which rendered documentation will be written")
 	command.PersistentFlags().StringP("template-file", "t", "README.md.gotmpl", "gotemplate file path relative to each chart directory from which documentation will be generated")
+	command.PersistentFlags().BoolP("blank-container-defaults", "c", false, "For lists / dictionaries output blank default text instead of the whole object")
 
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("HELM_DOCS")

@@ -2,6 +2,7 @@ package document
 
 import (
 	"github.com/norwoodj/helm-docs/pkg/helm"
+	"github.com/spf13/viper"
 )
 
 type valueRow struct {
@@ -17,11 +18,15 @@ type chartTemplateData struct {
 }
 
 func getChartTemplateData(chartDocumentationInfo helm.ChartDocumentationInfo) (chartTemplateData, error) {
+	documentLeafNodes := !viper.GetBool("omit-blanks")
+	blankContainerDefaults := viper.GetBool("blank-container-defaults")
+
 	valuesTableRows, err := createValueRowsFromObject(
 		"",
 		chartDocumentationInfo.ChartValues,
 		chartDocumentationInfo.ChartValuesDescriptions,
-		true,
+		documentLeafNodes,
+		blankContainerDefaults,
 	)
 
 	if err != nil {
