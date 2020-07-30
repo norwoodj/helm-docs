@@ -265,5 +265,4 @@ pre-commit install
 pre-commit install-hooks
 ```
 
-Future changes to your charts requirements.yaml, values.yaml, or Chart.yaml files will cause an update to documentation when
-you commit.
+Future changes to your chart's `requirements.yaml`, `values.yaml`, `Chart.yaml`, or `README.md.gotmpl` files will cause an update to documentation when you commit.
