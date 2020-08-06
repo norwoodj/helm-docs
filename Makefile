@@ -13,3 +13,7 @@ test:
 .PHONY: clean
 clean:
 	rm -f helm-docs
+
+.PHONY: dist
+dist:
+	goreleaser release --rm-dist --snapshot --skip-sign

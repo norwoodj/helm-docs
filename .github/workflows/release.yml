@@ -1,0 +1,27 @@
+name: Release
+
+on:
+  push:
+    tags:
+    - "*"
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-go@v2-beta
+      with:
+        go-version: '^1.14.1'
+    - uses: actions/cache@v1
+      with:
+        path: /home/runner/go/pkg/mod
+        key: go-mod
+    - name: Login to Docker hub
+      run: docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
+    - uses: goreleaser/goreleaser-action@v1
+      with:
+        args: release
+        key: ${{ secrets.SIGNING_KEY }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
