@@ -4,6 +4,10 @@
 
 > **:exclamation: This Helm Chart is deprecated!**
 
+## `chart.name`
+
+full-template
+
 ## `chart.description`
 
 A chart for showing every README-element
