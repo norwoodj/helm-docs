@@ -24,4 +24,4 @@ jobs:
         args: release
         key: ${{ secrets.SIGNING_KEY }}
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.NORWOODJ_ORG_TOKEN }}
