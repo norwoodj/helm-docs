@@ -132,14 +132,14 @@ func createRowsFromField(
 	value interface{},
 	keysToDescriptions map[string]helm.ChartValueDescription,
 	documentLeafNodes bool,
-	blankContainerDefaults bool,
+	containerDefaults string,
 ) ([]valueRow, error) {
 	switch value.(type) {
 	case map[interface{}]interface{}:
-		return createValueRowsFromObject(nextPrefix, value.(map[interface{}]interface{}), keysToDescriptions, documentLeafNodes, blankContainerDefaults)
+		return createValueRowsFromObject(nextPrefix, value.(map[interface{}]interface{}), keysToDescriptions, documentLeafNodes, containerDefaults)
 
 	case []interface{}:
-		return createValueRowsFromList(nextPrefix, value.([]interface{}), keysToDescriptions, documentLeafNodes, blankContainerDefaults)
+		return createValueRowsFromList(nextPrefix, value.([]interface{}), keysToDescriptions, documentLeafNodes, containerDefaults)
 
 	default:
 		description, hasDescription := keysToDescriptions[nextPrefix]
@@ -157,7 +157,7 @@ func createValueRowsFromList(
 	values []interface{},
 	keysToDescriptions map[string]helm.ChartValueDescription,
 	documentLeafNodes bool,
-	blankContainerDefaults bool,
+	containerDefaults string,
 ) ([]valueRow, error) {
 	description, hasDescription := keysToDescriptions[prefix]
 
@@ -182,10 +182,14 @@ func createValueRowsFromList(
 	// documented without descriptions
 	if hasDescription {
 		jsonableObject := convertHelmValuesToJsonable(values)
-		if blankContainerDefaults {
+
+		if containerDefaults != "" {
 			// Don't document complex objects
-			jsonableObject = ""
+			if description.Default == "" {
+				description.Default = containerDefaults
+			}
 		}
+
 		listRow, err := createValueRow(prefix, jsonableObject, description)
 
 		if err != nil {
@@ -199,7 +203,7 @@ func createValueRowsFromList(
 	// Generate documentation rows for all list items and their potential sub-fields
 	for i, v := range values {
 		nextPrefix := formatNextListKeyPrefix(prefix, i)
-		valueRowsForListField, err := createRowsFromField(nextPrefix, v, keysToDescriptions, documentLeafNodes, blankContainerDefaults)
+		valueRowsForListField, err := createRowsFromField(nextPrefix, v, keysToDescriptions, documentLeafNodes, containerDefaults)
 
 		if err != nil {
 			return nil, err
@@ -216,7 +220,7 @@ func createValueRowsFromObject(
 	values map[interface{}]interface{},
 	keysToDescriptions map[string]helm.ChartValueDescription,
 	documentLeafNodes bool,
-	blankContainerDefaults bool,
+	containerDefaults string,
 ) ([]valueRow, error) {
 	description, hasDescription := keysToDescriptions[prefix]
 
@@ -242,9 +246,12 @@ func createValueRowsFromObject(
 	// documented without descriptions
 	if hasDescription {
 		jsonableObject := convertHelmValuesToJsonable(values)
-		if blankContainerDefaults {
+
+		if containerDefaults != "" {
 			// Don't document complex objects
-			jsonableObject = ""
+			if description.Default == "" {
+				description.Default = containerDefaults
+			}
 		}
 
 		objectRow, err := createValueRow(prefix, jsonableObject, description)
@@ -259,7 +266,7 @@ func createValueRowsFromObject(
 
 	for k, v := range values {
 		nextPrefix := formatNextObjectKeyPrefix(prefix, convertMapKeyToString(k))
-		valueRowsForObjectField, err := createRowsFromField(nextPrefix, v, keysToDescriptions, documentLeafNodes, blankContainerDefaults)
+		valueRowsForObjectField, err := createRowsFromField(nextPrefix, v, keysToDescriptions, documentLeafNodes, containerDefaults)
 
 		if err != nil {
 			return nil, err

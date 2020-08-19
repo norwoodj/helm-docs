@@ -21,7 +21,7 @@ func parseYamlValues(yamlValues string) map[interface{}]interface{} {
 }
 
 func TestEmptyValues(t *testing.T) {
-	valuesRows, err := createValueRowsFromObject("", make(map[interface{}]interface{}), make(map[string]helm.ChartValueDescription), true, false)
+	valuesRows, err := createValueRowsFromObject("", make(map[interface{}]interface{}), make(map[string]helm.ChartValueDescription), true, "")
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 0)
 }
@@ -34,7 +34,7 @@ hello: "world"
 oscar: 3.14159
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 4)
@@ -59,8 +59,8 @@ oscar: 3.14159
 	assert.Equal(t, "`3.14159`", valuesRows[3].Default)
 	assert.Equal(t, "", valuesRows[3].Description)
 
-	// Check skip-blanks behaviour - no fields output
-	valuesRowsBlank, errBlank := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), false, false)
+	// Check omit-blanks behaviour - no fields output
+	valuesRowsBlank, errBlank := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), false, "")
 
 	assert.Nil(t, errBlank)
 	assert.Len(t, valuesRowsBlank, 0)
@@ -81,7 +81,7 @@ oscar: 3.14159
 		"oscar":   {Description: "oscar"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 4)
 
@@ -106,7 +106,7 @@ oscar: 3.14159
 	assert.Equal(t, "oscar", valuesRows[3].Description)
 
 	// Check skip-blanks behaviour - no fields output
-	valuesRowsBlank, errBlank := createValueRowsFromObject("", helmValues, descriptions, false, false)
+	valuesRowsBlank, errBlank := createValueRowsFromObject("", helmValues, descriptions, false, "")
 	assert.Nil(t, errBlank)
 	assert.Len(t, valuesRowsBlank, 4)
 }
@@ -126,7 +126,7 @@ oscar: 3.14159
 		"oscar":   {Description: "oscar", Default: "values"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 4)
@@ -159,7 +159,7 @@ recursive:
 oscar: dog
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -187,7 +187,7 @@ oscar: dog
 		"oscar":          {Description: "oscar"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -215,7 +215,7 @@ oscar: dog
 		"oscar":          {Description: "oscar", Default: "default"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -237,7 +237,7 @@ recursive: {}
 oscar: dog
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -263,7 +263,7 @@ oscar: dog
 		"recursive": {Description: "an empty object"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -289,7 +289,7 @@ oscar: dog
 		"recursive": {Description: "an empty object", Default: "default"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -305,7 +305,7 @@ oscar: dog
 	assert.Equal(t, "an empty object", valuesRows[1].Description)
 
 	// Check skip-blanks behaviour - only fields with descriptions output
-	valuesRowsBlanks, errBlanks := createValueRowsFromObject("", helmValues, descriptions, false, false)
+	valuesRowsBlanks, errBlanks := createValueRowsFromObject("", helmValues, descriptions, false, "")
 
 	assert.Nil(t, errBlanks)
 	assert.Len(t, valuesRowsBlanks, 1)
@@ -322,7 +322,7 @@ birds: []
 echo: cat
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -349,7 +349,7 @@ echo: cat
 		"echo":  {Description: "echo"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -376,7 +376,7 @@ echo: cat
 		"echo":  {Description: "echo", Default: "default value"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -397,7 +397,7 @@ func TestListOfStrings(t *testing.T) {
 cats: [echo, foxtrot]
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -424,7 +424,7 @@ cats: [echo, foxtrot]
 		"cats[1]": {Description: "the friendly one"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -451,7 +451,7 @@ cats: [echo, foxtrot]
 		"cats[1]": {Description: "the friendly one", Default: "default value"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -477,7 +477,7 @@ animals:
     type: dog
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 5)
@@ -523,7 +523,7 @@ animals:
 		"animals[1].elements[0]": {Description: "the sleepy one"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 5)
@@ -569,7 +569,7 @@ animals:
 		"animals[1].elements[0]": {Description: "the sleepy one", Default: "value"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 5)
@@ -613,7 +613,7 @@ animals:
 		"animals": {Description: "all the animals of the house"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 1)
@@ -623,15 +623,15 @@ animals:
 	assert.Equal(t, "`[{\"elements\":[\"echo\",\"foxtrot\"],\"type\":\"cat\"},{\"elements\":[\"oscar\"],\"type\":\"dog\"}]`", valuesRows[0].Default)
 	assert.Equal(t, "all the animals of the house", valuesRows[0].Description)
 
-	// Repeat with emptyContainerDefaults set
-	valuesRows2, err2 := createValueRowsFromObject("", helmValues, descriptions, true, true)
+	// Repeat with containerDefaults set
+	valuesRows2, err2 := createValueRowsFromObject("", helmValues, descriptions, true, "EMPTY")
 
 	assert.Nil(t, err2)
 	assert.Len(t, valuesRows2, 1)
 
 	assert.Equal(t, "animals", valuesRows2[0].Key)
-	assert.Equal(t, stringType, valuesRows2[0].Type)
-	assert.Equal(t, "`\"\"`", valuesRows2[0].Default)
+	assert.Equal(t, listType, valuesRows2[0].Type)
+	assert.Equal(t, "EMPTY", valuesRows2[0].Default)
 	assert.Equal(t, "all the animals of the house", valuesRows2[0].Description)
 }
 
@@ -648,7 +648,7 @@ animals:
 		"animals": {Description: "all the animals of the house", Default: "cat and dog"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 1)
@@ -672,7 +672,7 @@ animals:
 		"animals[0]": {Description: "all the cats of the house", Default: "only cats here"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 3)
@@ -706,7 +706,7 @@ animals:
 		"animals.byTrait": {Description: "animals listed by their various characteristics"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 1)
@@ -716,15 +716,15 @@ animals:
 	assert.Equal(t, "`{\"friendly\":[\"foxtrot\",\"oscar\"],\"mean\":[\"echo\"],\"sleepy\":[\"oscar\"]}`", valuesRows[0].Default)
 	assert.Equal(t, "animals listed by their various characteristics", valuesRows[0].Description)
 
-	// Repeat with emptyContainerDefaults set.  default will be string ""
-	valuesRows2, err2 := createValueRowsFromObject("", helmValues, descriptions, true, true)
+	// Repeat with containerDefaults set.  default will be string ""
+	valuesRows2, err2 := createValueRowsFromObject("", helmValues, descriptions, true, "BLANK")
 
 	assert.Nil(t, err2)
 	assert.Len(t, valuesRows2, 1)
 
 	assert.Equal(t, "animals.byTrait", valuesRows2[0].Key)
-	assert.Equal(t, stringType, valuesRows2[0].Type)
-	assert.Equal(t, "`\"\"`", valuesRows2[0].Default)
+	assert.Equal(t, objectType, valuesRows2[0].Type)
+	assert.Equal(t, "BLANK", valuesRows2[0].Default)
 	assert.Equal(t, "animals listed by their various characteristics", valuesRows2[0].Description)
 }
 
@@ -741,7 +741,7 @@ animals:
 		"animals.byTrait": {Description: "animals listed by their various characteristics", Default: "animals, you know"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 1)
@@ -768,7 +768,7 @@ animals:
 		"animals.byTrait.friendly[0]": {Description: "best cat ever"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 4)
@@ -810,25 +810,25 @@ animals:
 		"animals.byTrait.friendly[0]": {Description: "best cat ever"},
 	}
 
-	// emptyContainerDefaults set - Defaults output will be ""
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, true)
+	// containerDefaults set - Defaults output will be ""
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "EMPTY")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 4)
 
 	assert.Equal(t, "animals", valuesRows[0].Key)
-	assert.Equal(t, stringType, valuesRows[0].Type)
-	assert.Equal(t, "`\"\"`", valuesRows[0].Default)
+	assert.Equal(t, objectType, valuesRows[0].Type)
+	assert.Equal(t, "EMPTY", valuesRows[0].Default)
 	assert.Equal(t, "animal stuff", valuesRows[0].Description)
 
 	assert.Equal(t, "animals.byTrait", valuesRows[1].Key)
-	assert.Equal(t, stringType, valuesRows[1].Type)
-	assert.Equal(t, "`\"\"`", valuesRows[1].Default)
+	assert.Equal(t, objectType, valuesRows[1].Type)
+	assert.Equal(t, "EMPTY", valuesRows[1].Default)
 	assert.Equal(t, "animals listed by their various characteristics", valuesRows[1].Description)
 
 	assert.Equal(t, "animals.byTrait.friendly", valuesRows[2].Key)
-	assert.Equal(t, stringType, valuesRows[2].Type)
-	assert.Equal(t, "`\"\"`", valuesRows[2].Default)
+	assert.Equal(t, listType, valuesRows[2].Type)
+	assert.Equal(t, "EMPTY", valuesRows[2].Default)
 	assert.Equal(t, "the friendly animals of the house", valuesRows[2].Description)
 
 	assert.Equal(t, "animals.byTrait.friendly[0]", valuesRows[3].Key)
@@ -853,7 +853,7 @@ animals:
 		"animals.byTrait.friendly[0]": {Description: "best cat ever", Default: "value"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 4)
@@ -893,7 +893,7 @@ animals:
 		"animals.nonWeirdCats": {Description: "the cats that we have that are not weird"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 3)
@@ -928,7 +928,7 @@ animals:
 		"animals.nonWeirdCats": {Description: "the cats that we have that are not weird", Default: "default"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 3)
@@ -957,7 +957,7 @@ fullNames:
   John Norwood: me
 `)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -986,7 +986,7 @@ fullNames:
 		`websites."stupidchess.jmn23.com"`: {Description: "status of the stupidchess website"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -1015,7 +1015,7 @@ fullNames:
 		`websites."stupidchess.jmn23.com"`: {Description: "status of the stupidchess website", Default: "value"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, descriptions, true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -1038,7 +1038,7 @@ func TestNonStringKeys(t *testing.T) {
 true: "true"
 `)
 
-	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true, false)
+	valuesRows, err := createValueRowsFromObject("", helmValues, make(map[string]helm.ChartValueDescription), true, "")
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 3)

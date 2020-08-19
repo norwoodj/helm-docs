@@ -19,14 +19,14 @@ type chartTemplateData struct {
 
 func getChartTemplateData(chartDocumentationInfo helm.ChartDocumentationInfo) (chartTemplateData, error) {
 	documentLeafNodes := !viper.GetBool("omit-blanks")
-	blankContainerDefaults := viper.GetBool("blank-container-defaults")
+	containerDefaults := viper.GetString("container-defaults")
 
 	valuesTableRows, err := createValueRowsFromObject(
 		"",
 		chartDocumentationInfo.ChartValues,
 		chartDocumentationInfo.ChartValuesDescriptions,
 		documentLeafNodes,
-		blankContainerDefaults,
+		containerDefaults,
 	)
 
 	if err != nil {

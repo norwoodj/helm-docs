@@ -13,7 +13,7 @@ func FindChartDirectories() ([]string, error) {
 	ignoreFilename := viper.GetString("ignore-file")
 	ignoreContext := util.NewIgnoreContext(ignoreFilename)
 	chartDirs := make([]string, 0)
-	searchPath := viper.GetString("path")
+	searchPath := viper.GetString("search-path")
 
 	err := filepath.Walk(searchPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
