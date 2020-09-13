@@ -8,9 +8,10 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig"
-	"github.com/norwoodj/helm-docs/pkg/helm"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+
+	"github.com/norwoodj/helm-docs/pkg/helm"
 )
 
 const defaultDocumentationTemplate = `{{ template "chart.header" . }}
@@ -218,21 +219,32 @@ func getValuesTableTemplates() string {
 }
 
 func getDocumentationTemplate(chartDirectory string) (string, error) {
-	templateFile := viper.GetString("template-file")
-	templateFileForChart := path.Join(chartDirectory, templateFile)
-
-	if _, err := os.Stat(templateFileForChart); os.IsNotExist(err) {
-		log.Debugf("Did not find template file %s for chart %s, using default template", templateFile, chartDirectory)
-		return defaultDocumentationTemplate, nil
+	templateFiles := make([]string, 0)
+	templateType := viper.GetString("template-type")
+	if templateType == "template-file" {
+		templateFiles = append(templateFiles, viper.GetString("template-file"))
+	} else {
+		templateFiles = append(templateFiles, viper.GetStringSlice("template-files")...)
 	}
-
-	log.Debugf("Using template file %s for chart %s", templateFile, chartDirectory)
-	templateContents, err := ioutil.ReadFile(templateFileForChart)
-	if err != nil {
-		return "", err
+	templateFilesForChart := make([]string, 0)
+	for _, templateFile := range templateFiles {
+		templateFileForChart := path.Join(chartDirectory, templateFile)
+		if _, err := os.Stat(templateFileForChart); os.IsNotExist(err) {
+			log.Debugf("Did not find template file %s for chart %s, using default template", templateFile, chartDirectory)
+			return defaultDocumentationTemplate, nil
+		}
+		templateFilesForChart = append(templateFilesForChart, templateFileForChart)
 	}
-
-	return string(templateContents), nil
+	log.Debugf("Using template files %s for chart %s", templateFiles, chartDirectory)
+	allTemplateContents := make([]byte, 0)
+	for _, templateFileForChart := range templateFilesForChart {
+		templateContents, err := ioutil.ReadFile(templateFileForChart)
+		if err != nil {
+			return "", err
+		}
+		allTemplateContents = append(allTemplateContents, templateContents...)
+	}
+	return string(allTemplateContents), nil
 }
 
 func getDocumentationTemplates(chartDirectory string) ([]string, error) {
