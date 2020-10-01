@@ -9,6 +9,7 @@ type valueRow struct {
 	Type        string
 	Default     string
 	Description string
+	Order       int
 }
 
 type chartTemplateData struct {

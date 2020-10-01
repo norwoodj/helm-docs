@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/norwoodj/helm-docs/pkg/helm"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -84,6 +85,7 @@ func parseNilValueType(key string, description helm.ChartValueDescription) value
 		Type:        t,
 		Default:     description.Default,
 		Description: description.Description,
+		Order:       description.Order,
 	}
 }
 
@@ -124,6 +126,7 @@ func createValueRow(
 		Type:        getTypeName(value),
 		Default:     defaultValue,
 		Description: description.Description,
+		Order:       description.Order,
 	}, nil
 }
 
@@ -256,10 +259,15 @@ func createValueRowsFromObject(
 		valueRows = append(valueRows, valueRowsForObjectField...)
 	}
 
+	sortType := viper.GetString("sort")
 	// At the top level of recursion, sort value rows by key
 	if prefix == "" {
 		sort.Slice(valueRows[:], func(i, j int) bool {
-			return valueRows[i].Key < valueRows[j].Key
+			if sortType == "file" {
+				return valueRows[i].Order < valueRows[j].Order
+			} else {
+				return valueRows[i].Key < valueRows[j].Key
+			}
 		})
 	}
 

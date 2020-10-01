@@ -49,6 +49,7 @@ type ChartRequirements struct {
 }
 
 type ChartValueDescription struct {
+	Order       int
 	Description string
 	Default     string
 }
@@ -171,6 +172,7 @@ func parseChartValuesFileComments(chartDirectory string) (map[string]ChartValueD
 	keyToDescriptions := make(map[string]ChartValueDescription)
 	scanner := bufio.NewScanner(valuesFile)
 	foundValuesComment := false
+	currentIndex := 0
 
 	for scanner.Scan() {
 		currentLine := scanner.Text()
@@ -196,8 +198,9 @@ func parseChartValuesFileComments(chartDirectory string) (map[string]ChartValueD
 			keyToDescriptions[key] = ChartValueDescription{
 				Description: description,
 				Default:     match[1],
+				Order:       currentIndex,
 			}
-
+			currentIndex++
 			foundValuesComment = false
 			continue
 		}
@@ -213,7 +216,9 @@ func parseChartValuesFileComments(chartDirectory string) (map[string]ChartValueD
 		// the in progress value to the map, and reset to looking for a new key
 		keyToDescriptions[key] = ChartValueDescription{
 			Description: description,
+			Order:       currentIndex,
 		}
+		currentIndex++
 
 		foundValuesComment = false
 	}
