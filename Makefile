@@ -1,6 +1,5 @@
 helm-docs:
-	cd cmd/helm-docs && go build
-	mv cmd/helm-docs/helm-docs .
+	go build github.com/norwoodj/helm-docs/cmd/helm-docs
 
 .PHONY: fmt
 fmt:

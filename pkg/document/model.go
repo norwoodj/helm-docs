@@ -2,9 +2,12 @@ package document
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/norwoodj/helm-docs/pkg/helm"
+	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 )
 
@@ -15,6 +18,8 @@ type valueRow struct {
 	Default         string
 	AutoDescription string
 	Description     string
+	Column          int
+	LineNumber      int
 }
 
 type chartTemplateData struct {
@@ -40,13 +45,35 @@ func getChartTemplateData(chartDocumentationInfo helm.ChartDocumentationInfo, he
 		return chartTemplateData{}, fmt.Errorf("values file must resolve to a map, not %s", strconv.Itoa(int(chartDocumentationInfo.ChartValues.Kind)))
 	}
 
-	valuesTableRows, err := createValueRowsFromObject(
+	valuesTableRows, err := createValueRowsFromField(
 		"",
 		nil,
 		chartDocumentationInfo.ChartValues.Content[0],
 		chartDocumentationInfo.ChartValuesDescriptions,
 		true,
 	)
+
+	sortOrder := viper.GetString("sort-values-order")
+	if sortOrder == FileSortOrder {
+		sort.Slice(valuesTableRows[:], func(i, j int) bool {
+			if valuesTableRows[i].LineNumber < valuesTableRows[j].LineNumber {
+				return true
+			} else if valuesTableRows[i].Column < valuesTableRows[j].Column {
+				return true
+			}
+
+			return false
+		})
+	} else if sortOrder == AlphaNumSortOrder {
+		sort.Slice(valuesTableRows[:], func(i, j int) bool {
+			return valuesTableRows[i].Key < valuesTableRows[j].Key
+		})
+	} else {
+		log.Warnf("Invalid sort order provided %s, defaulting to %s", sortOrder, AlphaNumSortOrder)
+		sort.Slice(valuesTableRows[:], func(i, j int) bool {
+			return valuesTableRows[i].Key < valuesTableRows[j].Key
+		})
+	}
 
 	if err != nil {
 		return chartTemplateData{}, err

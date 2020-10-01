@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
-	"sort"
 	"strings"
 
 	"github.com/norwoodj/helm-docs/pkg/helm"
@@ -69,14 +68,14 @@ func getTypeName(value interface{}) string {
 		return stringType
 	case []interface{}:
 		return listType
-	case jsonableMap:
+	case map[string]interface{}:
 		return objectType
 	}
 
 	return ""
 }
 
-func parseNilValueType(key string, description helm.ChartValueDescription, autoDescription helm.ChartValueDescription) valueRow {
+func parseNilValueType(key string, description helm.ChartValueDescription, autoDescription helm.ChartValueDescription, column int, lineNumber int) valueRow {
 	if len(description.Description) == 0 {
 		description.Description = autoDescription.Description
 	}
@@ -101,6 +100,8 @@ func parseNilValueType(key string, description helm.ChartValueDescription, autoD
 		Default:         description.Default,
 		AutoDescription: autoDescription.Description,
 		Description:     description.Description,
+		Column:          column,
+		LineNumber:      lineNumber,
 	}
 }
 
@@ -117,14 +118,40 @@ func jsonMarshalNoEscape(key string, value interface{}) (string, error) {
 	return strings.TrimRight(outputBuffer.String(), "\n"), nil
 }
 
+func getDescriptionFromNode(node *yaml.Node) helm.ChartValueDescription {
+	if node == nil {
+		return helm.ChartValueDescription{}
+	}
+
+	if node.HeadComment == "" {
+		return helm.ChartValueDescription{}
+	}
+
+	commentLines := strings.Split(node.HeadComment, "\n")
+	match := autoDocCommentRegex.FindStringSubmatch(commentLines[0])
+
+	if len(match) < 2 {
+		return helm.ChartValueDescription{}
+	}
+
+	keyFromComment, c := helm.ParseComment(commentLines)
+	if keyFromComment != "" {
+		return helm.ChartValueDescription{}
+	}
+
+	return c
+}
+
 func createValueRow(
 	key string,
 	value interface{},
 	description helm.ChartValueDescription,
 	autoDescription helm.ChartValueDescription,
+	column int,
+	lineNumber int,
 ) (valueRow, error) {
 	if value == nil {
-		return parseNilValueType(key, description, autoDescription), nil
+		return parseNilValueType(key, description, autoDescription, column, lineNumber), nil
 	}
 
 	autoDefaultValue := autoDescription.Default
@@ -145,92 +172,9 @@ func createValueRow(
 		Default:         defaultValue,
 		AutoDescription: autoDescription.Description,
 		Description:     description.Description,
+		Column:          column,
+		LineNumber:      lineNumber,
 	}, nil
-}
-
-func createValueRowsFromField(
-	nextPrefix string,
-	key *yaml.Node,
-	value *yaml.Node,
-	keysToDescriptions map[string]helm.ChartValueDescription,
-	documentLeafNodes bool,
-) ([]valueRow, error) {
-	switch value.Kind {
-	case yaml.MappingNode:
-		return createValueRowsFromObject(nextPrefix, key, value, keysToDescriptions, documentLeafNodes)
-	case yaml.SequenceNode:
-		return createValueRowsFromList(nextPrefix, key, value, keysToDescriptions, documentLeafNodes)
-	case yaml.AliasNode:
-		return createValueRowsFromField(nextPrefix, key, value.Alias, keysToDescriptions, documentLeafNodes)
-	case yaml.ScalarNode:
-		autoDescription := getDescriptionFromNode(key)
-		description, hasDescription := keysToDescriptions[nextPrefix]
-		if !(documentLeafNodes || hasDescription || autoDescription.Description != "") {
-			return []valueRow{}, nil
-		}
-
-		switch value.Tag {
-		case nullTag:
-			leafValueRow, err := createValueRow(nextPrefix, nil, description, autoDescription)
-			return []valueRow{leafValueRow}, err
-		case strTag:
-			fallthrough
-		case timestampTag:
-			leafValueRow, err := createValueRow(nextPrefix, value.Value, description, autoDescription)
-			return []valueRow{leafValueRow}, err
-		case intTag:
-			var decodedValue int
-			err := value.Decode(&decodedValue)
-			if err != nil {
-				return []valueRow{}, err
-			}
-
-			leafValueRow, err := createValueRow(nextPrefix, decodedValue, description, autoDescription)
-			return []valueRow{leafValueRow}, err
-		case floatTag:
-			var decodedValue float64
-			err := value.Decode(&decodedValue)
-			if err != nil {
-				return []valueRow{}, err
-			}
-			leafValueRow, err := createValueRow(nextPrefix, decodedValue, description, autoDescription)
-			return []valueRow{leafValueRow}, err
-
-		case boolTag:
-			var decodedValue bool
-			err := value.Decode(&decodedValue)
-			if err != nil {
-				return []valueRow{}, err
-			}
-			leafValueRow, err := createValueRow(nextPrefix, decodedValue, description, autoDescription)
-			return []valueRow{leafValueRow}, err
-		}
-	}
-
-	return []valueRow{}, fmt.Errorf("invalid node type %d received", value.Kind)
-}
-
-func getDescriptionFromNode(node *yaml.Node) helm.ChartValueDescription {
-	if node == nil {
-		return helm.ChartValueDescription{}
-	}
-
-	if node.HeadComment == "" {
-		return helm.ChartValueDescription{}
-	}
-
-	commentLines := strings.Split(node.HeadComment, "\n")
-	match := autoDocCommentRegex.FindStringSubmatch(commentLines[0])
-	if len(match) < 2 {
-		return helm.ChartValueDescription{}
-	}
-
-	keyFromComment, c := helm.ParseComment(commentLines)
-	if keyFromComment != "" {
-		return helm.ChartValueDescription{}
-	}
-
-	return c
 }
 
 func createValueRowsFromList(
@@ -250,7 +194,7 @@ func createValueRowsFromList(
 			return []valueRow{}, nil
 		}
 
-		emptyListRow, err := createValueRow(prefix, make([]interface{}, 0), description, autoDescription)
+		emptyListRow, err := createValueRow(prefix, make([]interface{}, 0), description, autoDescription, key.Column, key.Line)
 		if err != nil {
 			return nil, err
 		}
@@ -264,7 +208,7 @@ func createValueRowsFromList(
 	// documented without descriptions
 	if hasDescription || autoDescription.Description != "" {
 		jsonableObject := convertHelmValuesToJsonable(values)
-		listRow, err := createValueRow(prefix, jsonableObject, description, autoDescription)
+		listRow, err := createValueRow(prefix, jsonableObject, description, autoDescription, key.Column, key.Line)
 
 		if err != nil {
 			return nil, err
@@ -290,18 +234,18 @@ func createValueRowsFromList(
 }
 
 func createValueRowsFromObject(
-	prefix string,
+	nextPrefix string,
 	key *yaml.Node,
 	values *yaml.Node,
 	keysToDescriptions map[string]helm.ChartValueDescription,
 	documentLeafNodes bool,
 ) ([]valueRow, error) {
-	description, hasDescription := keysToDescriptions[prefix]
+	description, hasDescription := keysToDescriptions[nextPrefix]
 	autoDescription := getDescriptionFromNode(key)
 
 	if len(values.Content) == 0 {
 		// if the first level of recursion has no values, then there are no values at all, and so we return zero rows of documentation
-		if prefix == "" {
+		if nextPrefix == "" {
 			return []valueRow{}, nil
 		}
 
@@ -311,7 +255,7 @@ func createValueRowsFromObject(
 			return []valueRow{}, nil
 		}
 
-		documentedRow, err := createValueRow(prefix, jsonableMap{}, description, autoDescription)
+		documentedRow, err := createValueRow(nextPrefix, make(map[string]interface{}), description, autoDescription, key.Column, key.Line)
 		return []valueRow{documentedRow}, err
 	}
 
@@ -321,7 +265,7 @@ func createValueRowsFromObject(
 	// documented without descriptions
 	if hasDescription || autoDescription.Description != "" {
 		jsonableObject := convertHelmValuesToJsonable(values)
-		objectRow, err := createValueRow(prefix, jsonableObject, description, autoDescription)
+		objectRow, err := createValueRow(nextPrefix, jsonableObject, description, autoDescription, key.Column, key.Line)
 
 		if err != nil {
 			return nil, err
@@ -334,7 +278,7 @@ func createValueRowsFromObject(
 	for i := 0; i < len(values.Content); i += 2 {
 		k := values.Content[i]
 		v := values.Content[i+1]
-		nextPrefix := formatNextObjectKeyPrefix(prefix, k.Value)
+		nextPrefix := formatNextObjectKeyPrefix(nextPrefix, k.Value)
 		valueRowsForObjectField, err := createValueRowsFromField(nextPrefix, k, v, keysToDescriptions, documentLeafNodes)
 
 		if err != nil {
@@ -344,12 +288,67 @@ func createValueRowsFromObject(
 		valueRows = append(valueRows, valueRowsForObjectField...)
 	}
 
-	// At the top level of recursion, sort value rows by key
-	if prefix == "" {
-		sort.Slice(valueRows[:], func(i, j int) bool {
-			return valueRows[i].Key < valueRows[j].Key
-		})
+	return valueRows, nil
+}
+
+func createValueRowsFromField(
+	prefix string,
+	key *yaml.Node,
+	value *yaml.Node,
+	keysToDescriptions map[string]helm.ChartValueDescription,
+	documentLeafNodes bool,
+) ([]valueRow, error) {
+	switch value.Kind {
+	case yaml.MappingNode:
+		return createValueRowsFromObject(prefix, key, value, keysToDescriptions, documentLeafNodes)
+	case yaml.SequenceNode:
+		return createValueRowsFromList(prefix, key, value, keysToDescriptions, documentLeafNodes)
+	case yaml.AliasNode:
+		return createValueRowsFromField(prefix, key, value.Alias, keysToDescriptions, documentLeafNodes)
+	case yaml.ScalarNode:
+		autoDescription := getDescriptionFromNode(key)
+		description, hasDescription := keysToDescriptions[prefix]
+		if !(documentLeafNodes || hasDescription || autoDescription.Description != "") {
+			return []valueRow{}, nil
+		}
+
+		switch value.Tag {
+		case nullTag:
+			leafValueRow, err := createValueRow(prefix, nil, description, autoDescription, key.Column, key.Line)
+			return []valueRow{leafValueRow}, err
+		case strTag:
+			fallthrough
+		case timestampTag:
+			leafValueRow, err := createValueRow(prefix, value.Value, description, autoDescription, key.Column, key.Line)
+			return []valueRow{leafValueRow}, err
+		case intTag:
+			var decodedValue int
+			err := value.Decode(&decodedValue)
+			if err != nil {
+				return []valueRow{}, err
+			}
+
+			leafValueRow, err := createValueRow(prefix, decodedValue, description, autoDescription, key.Column, key.Line)
+			return []valueRow{leafValueRow}, err
+		case floatTag:
+			var decodedValue float64
+			err := value.Decode(&decodedValue)
+			if err != nil {
+				return []valueRow{}, err
+			}
+			leafValueRow, err := createValueRow(prefix, decodedValue, description, autoDescription, key.Column, key.Line)
+			return []valueRow{leafValueRow}, err
+
+		case boolTag:
+			var decodedValue bool
+			err := value.Decode(&decodedValue)
+			if err != nil {
+				return []valueRow{}, err
+			}
+			leafValueRow, err := createValueRow(prefix, decodedValue, description, autoDescription, key.Column, key.Line)
+			return []valueRow{leafValueRow}, err
+		}
 	}
 
-	return valueRows, nil
+	return []valueRow{}, fmt.Errorf("invalid node type %d received", value.Kind)
 }

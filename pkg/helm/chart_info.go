@@ -49,6 +49,7 @@ type ChartRequirements struct {
 }
 
 type ChartValueDescription struct {
+	Order       int
 	Description string
 	Default     string
 }
