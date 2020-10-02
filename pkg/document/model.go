@@ -1,14 +1,19 @@
 package document
 
 import (
+	"fmt"
+	"strconv"
+
 	"github.com/norwoodj/helm-docs/pkg/helm"
+	"gopkg.in/yaml.v3"
 )
 
 type valueRow struct {
-	Key         string
-	Type        string
-	Default     string
-	Description string
+	Key             string
+	Type            string
+	Default         string
+	AutoDescription string
+	Description     string
 }
 
 type chartTemplateData struct {
@@ -17,9 +22,25 @@ type chartTemplateData struct {
 }
 
 func getChartTemplateData(chartDocumentationInfo helm.ChartDocumentationInfo) (chartTemplateData, error) {
+	// handle empty values file case
+	if chartDocumentationInfo.ChartValues.Kind == 0 {
+		return chartTemplateData{
+			ChartDocumentationInfo: chartDocumentationInfo,
+			Values:                 make([]valueRow, 0),
+		}, nil
+	}
+
+	if chartDocumentationInfo.ChartValues.Kind != yaml.DocumentNode {
+		return chartTemplateData{}, fmt.Errorf("invalid node kind supplied: %d", chartDocumentationInfo.ChartValues.Kind)
+	}
+	if chartDocumentationInfo.ChartValues.Content[0].Kind != yaml.MappingNode {
+		return chartTemplateData{}, fmt.Errorf("values file must resolve to a map, not %s", strconv.Itoa(int(chartDocumentationInfo.ChartValues.Kind)))
+	}
+
 	valuesTableRows, err := createValueRowsFromObject(
 		"",
-		chartDocumentationInfo.ChartValues,
+		nil,
+		chartDocumentationInfo.ChartValues.Content[0],
 		chartDocumentationInfo.ChartValuesDescriptions,
 		true,
 	)

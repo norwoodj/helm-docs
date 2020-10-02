@@ -10,6 +10,23 @@ The markdown generation is entirely [gotemplate](https://golang.org/pkg/text/tem
 from charts and generates a number of sub-templates that can be referenced in a template file (by default `README.md.gotmpl`).
 If no template file is provided, the tool has a default internal template that will generate a reasonably formatted README.
 
+In particular, this tool will auto-detect descriptions of fields from comments:
+```yaml
+controller:
+  # -- Configure the healthcheck for the ingress controller
+  livenessProbe:
+    httpGet:
+      # -- This is the liveness check endpoint
+      path: /healthz
+```
+
+Resulting in a resulting README section like so:
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| controller.livenessProbe | object | `{"httpGet":{"path":"/healthz","port":8080}}` | Configure the healthcheck for the ingress controller |
+| controller.livenessProbe.httpGet.path | string | `"/healthz"` | This is the liveness check endpoint |
+
 
 ## Installation
 helm-docs can be installed using [homebrew](https://brew.sh/):
@@ -36,7 +53,20 @@ GO111MODULE=on go get github.com/norwoodj/helm-docs/cmd/helm-docs
 
 ## Usage
 
-## Using binary directly
+## Pre-commit hook
+
+If you want to automatically generate `README.md` files with a pre-commit hook, make sure you
+[install the pre-commit binary](https://pre-commit.com/#install), and add a [.pre-commit-config.yaml file](./.pre-commit-config.yaml)
+to your project. Then run:
+
+```bash
+pre-commit install
+pre-commit install-hooks
+```
+
+Future changes to your chart's `requirements.yaml`, `values.yaml`, `Chart.yaml`, or `README.md.gotmpl` files will cause an update to documentation when you commit.
+
+## Running the binary directly
 
 To run and generate documentation into READMEs for all helm charts within or recursively contained by a directory:
 
@@ -51,22 +81,15 @@ for every chart that it finds.
 
 ## Using docker
 
-You can mount directory with charts under `/helm-docs` within container.
+You can mount a directory with charts under `/helm-docs` within the container.
 
-Print generated documentation to stdout rather than modifying READMEs:
-
-```bash
-docker run --rm -v "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:latest --dry-run
-```
-
-Overwrite READMEs within mounted directory:
+Then run:
 
 ```bash
-docker run --rm -v "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:latest
+docker run --rm --volume "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:latest
 ```
 
 # Building from source
-
 Notice that you need to have build chain toolkit for given platform and golang installed.
 Next you may need to export some vars to build standalone, non-linked binary for given platform and architecture:
 
@@ -153,9 +176,10 @@ Chart.yaml file for a chart to skip processing for it.
 
 ## values.yaml metadata
 This tool can parse descriptions and defaults of values from `values.yaml` files. The defaults are pulled directly from
-the yaml in the file. Descriptions can be added for parameters by specifying the full path of the value and
-a particular comment format. I invite you to check out the [example-charts](./example-charts) to see how this is done in
-practice. In order to add a description for a parameter you need only put a comment somewhere in the file of the format:
+the yaml in the file. 
+
+It was formerly the case that descriptions had to be specified with the full path of the yaml field. This is no longer
+the case, although it is still supported. Where before you would document a values.yaml like so:
 
 ```yaml
 controller:
@@ -168,8 +192,28 @@ controller:
   replicas: 2
 ```
 
-Note that comments can continue on the next line. In that case leave out the double dash, and the lines will simply be
-appended with a space in-between.
+You may now equivelantly write:
+```yaml
+controller:
+  publishService:
+    # -- Whether to expose the ingress controller to the public world
+    enabled: false
+
+  # -- Number of nginx-ingress pods to load balance between. Do not set this below 2.
+  replicas: 2
+```
+
+There are a number of limitations to this comment format, the foremost being that they can only comprise a single line and while
+the old-style comment for a field could appear anywhere in the file, the new comment must appear **on the line immediately preceding the field being documented.**
+
+Additionally, there are a number of methods for encoding more data in the old comment format, documented later in this guide. These
+extensions are largely not supported with the new _auto-detection_ format.
+
+I invite you to check out the [example-charts](./example-charts) to see how this is done in practice. The `but-auto-comments`
+examples in particular document the new comment format.
+
+Note that comments of the old form can continue on the next line. In that case leave out the double dash, and the lines
+will simply be appended with a space in-between.
 
 The following rules are used to determine which values will be added to the values table in the README:
 
@@ -185,10 +229,10 @@ e.g. In this case, both `controller.livenessProbe` and `controller.livenessProbe
 the values table, but `controller.livenessProbe.httpGet.port` will not
 ```yaml
 controller:
-  # controller.livenessProbe -- Configure the healthcheck for the ingress controller
+  # -- Configure the healthcheck for the ingress controller
   livenessProbe:
     httpGet:
-      # controller.livenessProbe.httpGet.path -- This is the liveness check endpoint
+      # -- This is the liveness check endpoint
       path: /healthz
       port: http
 ```
@@ -207,7 +251,7 @@ and `controller.livenessProbe.httpGet.port` will be added to the table, with our
 controller:
   livenessProbe:
     httpGet:
-      # controller.livenessProbe.httpGet.path -- This is the liveness check endpoint
+      # -- This is the liveness check endpoint
       path: /healthz
       port: http
 ```
@@ -222,11 +266,14 @@ Results in:
 
 ### nil values
 If you would like to define a key for a value, but leave the default empty, you can still specify a description for it
-as well as a type. Like so:
+as well as a type. This is possible with both the old and the new comment format:
 ```yaml
 controller:
-  # controller.replicas -- (int) Number of nginx-ingress pods to load balance between
+  # -- (int) Number of nginx-ingress pods to load balance between
   replicas:
+  
+  # controller.image -- (string) Number of nginx-ingress pods to load balance between
+  image:
 ```
 This could be useful when wanting to enforce user-defined values for the chart, where there are no sensible defaults.
 
@@ -242,12 +289,13 @@ service:
 ```
 
 The order is important. The name must be spelled just like the column heading. The first comment must be the
-one specifying the key. The "@default" comment must follow.
+one specifying the key. The "@default" comment must follow. This is only possible with the old comment format
 
 See [here](./example-charts/custom-template/values.yaml) for an example.
 
 ### Spaces and Dots in keys
-If a key name contains any "." or " " characters, that section of the path must be quoted in description comments e.g.
+In the old-style comment, if a key name contains any "." or " " characters, that section of the path must be quoted in
+description comments e.g.
 
 ```yaml
 service:
@@ -259,16 +307,3 @@ configMap:
   # configMap."not real config param" -- A completely fake config parameter for a useful example
   not real config param: value
 ```
-
-## Pre-commit hook
-
-If you want to automatically generate `README.md` files with a pre-commit hook, make sure you
-[install the pre-commit binary](https://pre-commit.com/#install), and add a [.pre-commit-config.yaml file](./.pre-commit-config.yaml)
-to your project. Then run:
-
-```bash
-pre-commit install
-pre-commit install-hooks
-```
-
-Future changes to your chart's `requirements.yaml`, `values.yaml`, `Chart.yaml`, or `README.md.gotmpl` files will cause an update to documentation when you commit.
