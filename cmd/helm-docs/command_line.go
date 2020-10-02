@@ -49,13 +49,8 @@ func newHelmDocsCommand(run func(cmd *cobra.Command, args []string)) (*cobra.Com
 	command.PersistentFlags().StringP("ignore-file", "i", ".helmdocsignore", "The filename to use as an ignore file to exclude chart directories")
 	command.PersistentFlags().StringP("log-level", "l", "info", logLevelUsage)
 	command.PersistentFlags().StringP("output-file", "o", "README.md", "markdown file path relative to each chart directory to which rendered documentation will be written")
-<<<<<<< HEAD
 	command.PersistentFlags().StringP("sort-values-order", "s", document.AlphaNumSortOrder, fmt.Sprintf("order in which to sort the values table (\"%s\" or \"%s\")", document.AlphaNumSortOrder, document.FileSortOrder))
 	command.PersistentFlags().StringSliceP("template-files", "t", []string{"README.md.gotmpl"}, "gotemplate file paths relative to each chart directory from which documentation will be generated")
-=======
-	command.PersistentFlags().StringP("template-file", "t", "README.md.gotmpl", "gotemplate file path relative to each chart directory from which documentation will be generated")
-	command.PersistentFlags().StringP("sort-values-order", "s", "alpha", "order in which to print the values (alpha or file)")
->>>>>>> 18b313e...  change flag
 
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("HELM_DOCS")
