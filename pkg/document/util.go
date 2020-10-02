@@ -1,49 +1,71 @@
 package document
 
 import (
-	"fmt"
+	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
 )
 
 type jsonableMap map[string]interface{}
 
-func convertMapKeyToString(key interface{}) string {
-	switch key.(type) {
-	case string:
-		return key.(string)
-	case int:
-		return fmt.Sprintf("int(%d)", key)
-	case float64:
-		return fmt.Sprintf("float(%f)", key)
-	case bool:
-		return fmt.Sprintf("bool(%t)", key)
-	}
-
-	return fmt.Sprintf("?(%+v)", key)
-}
-
 // The json library can only marshal maps with string keys, and so all of our lists and maps that go into documentation
 // must be converted to have only string keys before marshalling
-func convertHelmValuesToJsonable(values interface{}) interface{} {
-	switch values.(type) {
-	case map[interface{}]interface{}:
+func convertHelmValuesToJsonable(values *yaml.Node) interface{} {
+	switch values.Kind {
+	case yaml.MappingNode:
 		convertedMap := make(jsonableMap)
 
-		for key, value := range values.(map[interface{}]interface{}) {
-			convertedMap[convertMapKeyToString(key)] = convertHelmValuesToJsonable(value)
+		for i := 0; i < len(values.Content); i += 2 {
+			k := values.Content[i]
+			v := values.Content[i+1]
+			convertedMap[k.Value] = convertHelmValuesToJsonable(v)
 		}
 
 		return convertedMap
-
-	case []interface{}:
+	case yaml.SequenceNode:
 		convertedList := make([]interface{}, 0)
 
-		for _, value := range values.([]interface{}) {
-			convertedList = append(convertedList, convertHelmValuesToJsonable(value))
+		for _, v := range values.Content {
+			convertedList = append(convertedList, convertHelmValuesToJsonable(v))
 		}
 
 		return convertedList
+	case yaml.AliasNode:
+		return convertHelmValuesToJsonable(values.Alias)
+	case yaml.ScalarNode:
+		switch values.Tag {
+		case nullTag:
+			return nil
+		case strTag:
+			fallthrough
+		case timestampTag:
+			return values.Value
+		case intTag:
+			var decodedValue int
+			err := values.Decode(&decodedValue)
+			if err != nil {
+				log.Errorf("Failed to decode value from yaml node value %s", values.Value)
+				return 0
+			}
+			return decodedValue
+		case floatTag:
+			var decodedValue float64
+			err := values.Decode(&decodedValue)
+			if err != nil {
+				log.Errorf("Failed to decode value from yaml node value %s", values.Value)
+				return 0
+			}
+			return decodedValue
 
-	default:
-		return values
+		case boolTag:
+			var decodedValue bool
+			err := values.Decode(&decodedValue)
+			if err != nil {
+				log.Errorf("Failed to decode value from yaml node value %s", values.Value)
+				return 0
+			}
+			return decodedValue
+		}
 	}
+
+	return nil
 }

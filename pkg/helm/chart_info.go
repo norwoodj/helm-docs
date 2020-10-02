@@ -10,7 +10,7 @@ import (
 	"sort"
 
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 var valuesDescriptionRegex = regexp.MustCompile("^\\s*# (.*) -- (.*)$")
@@ -58,7 +58,7 @@ type ChartDocumentationInfo struct {
 	ChartRequirements
 
 	ChartDirectory          string
-	ChartValues             map[interface{}]interface{}
+	ChartValues             *yaml.Node
 	ChartValuesDescriptions map[string]ChartValueDescription
 }
 
@@ -76,21 +76,13 @@ func getYamlFileContents(filename string) ([]byte, error) {
 	return []byte(yamlFileContents), nil
 }
 
-func yamlLoadAndCheck(yamlFileContents []byte, out interface{}) {
-	err := yaml.Unmarshal(yamlFileContents, out)
-
-	if err != nil {
-		panic(err)
-	}
-}
-
 func isErrorInReadingNecessaryFile(filePath string, loadError error) bool {
 	if loadError != nil {
 		if os.IsNotExist(loadError) {
-			log.Printf("Required chart file %s missing. Skipping documentation for chart", filePath)
+			log.Warnf("Required chart file %s missing. Skipping documentation for chart", filePath)
 			return true
 		} else {
-			log.Printf("Error occurred in reading chart file %s. Skipping documentation for chart", filePath)
+			log.Warnf("Error occurred in reading chart file %s. Skipping documentation for chart", filePath)
 			return true
 		}
 	}
@@ -107,8 +99,8 @@ func parseChartFile(chartDirectory string) (ChartMeta, error) {
 		return chartMeta, err
 	}
 
-	yamlLoadAndCheck(yamlFileContents, &chartMeta)
-	return chartMeta, nil
+	err = yaml.Unmarshal(yamlFileContents, &chartMeta)
+	return chartMeta, err
 }
 
 func requirementKey(requirement ChartRequirementsItem) string {
@@ -135,7 +127,10 @@ func parseChartRequirementsFile(chartDirectory string, apiVersion string) (Chart
 		return chartRequirements, err
 	}
 
-	yamlLoadAndCheck(yamlFileContents, &chartRequirements)
+	err = yaml.Unmarshal(yamlFileContents, &chartRequirements)
+	if err != nil {
+		return chartRequirements, err
+	}
 
 	sort.Slice(chartRequirements.Dependencies[:], func(i, j int) bool {
 		return requirementKey(chartRequirements.Dependencies[i]) < requirementKey(chartRequirements.Dependencies[j])
@@ -144,17 +139,17 @@ func parseChartRequirementsFile(chartDirectory string, apiVersion string) (Chart
 	return chartRequirements, nil
 }
 
-func parseChartValuesFile(chartDirectory string) (map[interface{}]interface{}, error) {
+func parseChartValuesFile(chartDirectory string) (yaml.Node, error) {
 	valuesPath := path.Join(chartDirectory, "values.yaml")
-	values := make(map[interface{}]interface{})
 	yamlFileContents, err := getYamlFileContents(valuesPath)
 
+	var values yaml.Node
 	if isErrorInReadingNecessaryFile(valuesPath, err) {
 		return values, err
 	}
 
-	yamlLoadAndCheck(yamlFileContents, &values)
-	return values, nil
+	err = yaml.Unmarshal(yamlFileContents, &values)
+	return values, err
 }
 
 func parseChartValuesFileComments(chartDirectory string) (map[string]ChartValueDescription, error) {
@@ -236,11 +231,12 @@ func ParseChartInformation(chartDirectory string) (ChartDocumentationInfo, error
 		return chartDocInfo, err
 	}
 
-	chartDocInfo.ChartValues, err = parseChartValuesFile(chartDirectory)
+	chartValues, err := parseChartValuesFile(chartDirectory)
 	if err != nil {
 		return chartDocInfo, err
 	}
 
+	chartDocInfo.ChartValues = &chartValues
 	chartDocInfo.ChartValuesDescriptions, err = parseChartValuesFileComments(chartDirectory)
 	if err != nil {
 		return chartDocInfo, err
