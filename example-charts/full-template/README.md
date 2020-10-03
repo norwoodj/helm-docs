@@ -16,10 +16,6 @@ A chart for showing every README-element
 
 1.0.0
 
-## `chart.versionLine`
-
-Current chart version is `1.0.0`
-
 ## `chart.versionBadge`
 
 ![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-informational?style=flat-square)
@@ -28,10 +24,6 @@ Current chart version is `1.0.0`
 
 application
 
-## `chart.typeLine`
-
-Current chart type is `application`
-
 ## `chart.typeBadge`
 
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
@@ -39,10 +31,6 @@ Current chart type is `application`
 ## `chart.appVersion`
 
 13.0.0
-
-## `chart.appVersionLine`
-
-Current chart appVersion is `13.0.0`
 
 ## `chart.appVersionBadge`
 

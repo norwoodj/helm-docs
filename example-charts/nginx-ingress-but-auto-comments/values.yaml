@@ -23,14 +23,17 @@ controller:
   # -- Name of the ingress class to route through this controller
   ingressClass: nginx
 
-  # -- The labels to be applied to instances of the controller pod
+  # -- The labels to be applied to instances of the controller pod.
+  # By default, a number of labels will automatically be applied
+  # @default -- A number of chart-specific labels
   podLabels: {}
 
   publishService:
     # -- Whether to expose the ingress controller to the public world
     enabled: false
 
-  # -- (int) Number of nginx-ingress pods to load balance between
+  # -- (int) Number of nginx-ingress pods to load balance between.
+  # Do not set this below 2
   replicas:
 
   service:
