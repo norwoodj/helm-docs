@@ -62,7 +62,7 @@ func getVersionTemplates() string {
 	versionBuilder := strings.Builder{}
 	versionBuilder.WriteString(`{{ define "chart.version" }}{{ .Version }}{{ end }}\n`)
 	versionBuilder.WriteString(`{{ define "chart.versionBadge" }}`)
-	versionBuilder.WriteString("![Version: {{ .Version }}](https://img.shields.io/badge/Version-{{ .Version }}-informational?style=flat-square) ")
+	versionBuilder.WriteString(`![Version: {{ .Version }}](https://img.shields.io/badge/Version-{{ .Version | replace "-" "--" }}-informational?style=flat-square) `)
 	versionBuilder.WriteString("{{ end }}")
 
 	return versionBuilder.String()

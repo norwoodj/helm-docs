@@ -1,0 +1,10 @@
+apiVersion: v2
+name: funky-version
+description: A very simple chart with a funky version
+version: "0.1.0-alpha-rc2"
+home: "https://github.com/norwoodj/helm-docs/tree/master/example-charts/funky-version"
+sources: ["https://github.com/norwoodj/helm-docs/tree/master/example-charts/funky-version"]
+engine: gotpl
+maintainers:
+  - email: norwood.john.m@gmail.com
+    name: John Norwood
