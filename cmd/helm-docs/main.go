@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"path"
 	"strings"
 	"sync"
 
@@ -13,34 +14,48 @@ import (
 	"github.com/norwoodj/helm-docs/pkg/helm"
 )
 
-func retrieveInfoAndPrintDocumentation(chartDirectory string, waitGroup *sync.WaitGroup, dryRun bool) {
+func retrieveInfoAndPrintDocumentation(chartDirectory string, chartSearchRoot string, templateFiles []string, waitGroup *sync.WaitGroup, dryRun bool) {
 	defer waitGroup.Done()
-	chartDocumentationInfo, err := helm.ParseChartInformation(chartDirectory)
+	chartDocumentationInfo, err := helm.ParseChartInformation(path.Join(chartSearchRoot, chartDirectory))
 
 	if err != nil {
 		log.Warnf("Error parsing information for chart %s, skipping: %s", chartDirectory, err)
 		return
 	}
 
-	document.PrintDocumentation(chartDocumentationInfo, dryRun)
+	document.PrintDocumentation(chartDocumentationInfo, chartSearchRoot, templateFiles, dryRun)
 
 }
 
 func helmDocs(cmd *cobra.Command, _ []string) {
 	initializeCli()
-	chartDirs, err := helm.FindChartDirectories()
+
+	chartSearchRoot := viper.GetString("chart-search-root")
+	var fullChartSearchRoot string
+
+	if path.IsAbs(chartSearchRoot) {
+		fullChartSearchRoot = chartSearchRoot
+	} else {
+		cwd, err := os.Getwd()
+		if err != nil {
+			log.Warnf("Error getting working directory: %s", err)
+			return
+		}
+
+		fullChartSearchRoot = path.Join(cwd, chartSearchRoot)
+	}
+
+	chartDirs, err := helm.FindChartDirectories(fullChartSearchRoot)
 	if err != nil {
 		log.Errorf("Error finding chart directories: %s", err)
 		os.Exit(1)
 	}
-	if cmd.PersistentFlags().Changed("template-file") && cmd.PersistentFlags().Changed("template-files") {
-		log.Errorf("you cannot use both template-file and template-files. consider using just template-files")
-	} else if cmd.PersistentFlags().Changed("template-files") {
-		viper.Set("template-type", "template-files")
-	} else {
-		viper.Set("template-type", "template-file")
-	}
+
 	log.Infof("Found Chart directories [%s]", strings.Join(chartDirs, ", "))
+
+	templateFiles := viper.GetStringSlice("template-files")
+	log.Debugf("Rendering from optional template files [%s]", strings.Join(templateFiles, ", "))
+
 	dryRun := viper.GetBool("dry-run")
 	waitGroup := sync.WaitGroup{}
 
@@ -49,9 +64,9 @@ func helmDocs(cmd *cobra.Command, _ []string) {
 
 		// On dry runs all output goes to stdout, and so as to not jumble things, generate serially
 		if dryRun {
-			retrieveInfoAndPrintDocumentation(c, &waitGroup, dryRun)
+			retrieveInfoAndPrintDocumentation(c, fullChartSearchRoot, templateFiles, &waitGroup, dryRun)
 		} else {
-			go retrieveInfoAndPrintDocumentation(c, &waitGroup, dryRun)
+			go retrieveInfoAndPrintDocumentation(c, fullChartSearchRoot, templateFiles, &waitGroup, dryRun)
 		}
 	}
 

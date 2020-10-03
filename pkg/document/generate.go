@@ -2,8 +2,8 @@ package document
 
 import (
 	"bytes"
-	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 
@@ -18,7 +18,7 @@ func getOutputFile(chartDirectory string, dryRun bool) (*os.File, error) {
 	}
 
 	outputFile := viper.GetString("output-file")
-	f, err := os.Create(fmt.Sprintf("%s/%s", chartDirectory, outputFile))
+	f, err := os.Create(path.Join(chartDirectory, outputFile))
 
 	if err != nil {
 		return nil, err
@@ -27,10 +27,15 @@ func getOutputFile(chartDirectory string, dryRun bool) (*os.File, error) {
 	return f, err
 }
 
-func PrintDocumentation(chartDocumentationInfo helm.ChartDocumentationInfo, dryRun bool) {
+func PrintDocumentation(chartDocumentationInfo helm.ChartDocumentationInfo, chartSearchRoot string, templateFiles []string, dryRun bool) {
 	log.Infof("Generating README Documentation for chart %s", chartDocumentationInfo.ChartDirectory)
 
-	chartDocumentationTemplate, err := newChartDocumentationTemplate(chartDocumentationInfo)
+	chartDocumentationTemplate, err := newChartDocumentationTemplate(
+		chartDocumentationInfo,
+		chartSearchRoot,
+		templateFiles,
+	)
+
 	if err != nil {
 		log.Warnf("Error generating gotemplates for chart %s: %s", chartDocumentationInfo.ChartDirectory, err)
 		return
@@ -57,6 +62,7 @@ func PrintDocumentation(chartDocumentationInfo helm.ChartDocumentationInfo, dryR
 	if err != nil {
 		log.Warnf("Error generating documentation for chart %s: %s", chartDocumentationInfo.ChartDirectory, err)
 	}
+
 	output = applyMarkDownFormat(output)
 	_, err = output.WriteTo(outputFile)
 	if err != nil {

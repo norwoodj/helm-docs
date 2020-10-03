@@ -3,3 +3,8 @@ repos:
     rev: v0.8.0
     hooks:
       - id: helm-docs
+        args:
+          - --chart-search-root=example-charts
+          - --template-files=./_templates.gotmpl
+          - --template-files=README.gotmpl
+          - --log-level=debug

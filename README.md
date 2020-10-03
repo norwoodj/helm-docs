@@ -107,17 +107,26 @@ when searching for charts. Directories specified need not be charts themselves, 
 many charts can be ignored and none of the charts underneath them will be processed. You may also directly reference the
 Chart.yaml file for a chart to skip processing for it.
 
-
 ## Markdown Rendering
-The helm-docs tool uses go-templates to render output documentation. There are a number of sub-templates that are
-referenced in the internal default template and can be used by custom `README.md.gotmpl` templates your repository provides as well.
+There are two important paramaters to be aware of when running helm-docs. `--chart-serach-root` specifies the directory
+under which the tool will recursively search for charts to render documentation for. `--template-files` specifies the list
+of gotemplate files that should be used in rendering the resulting markdown file for each chart found. By default
+`--chart-search-root=.` and `--template-files=README.md.gotmpl`.
 
-Templates can be invoked like so:
-```
-{{ template "template-name" . }}
-```
+If a template file is specified as a filename only as with the default above, the file is interpreted as being _relative to each chart directory found_.
+If however a template file is specified as a relative path, e.g. the first of `--template-files=./_templates.gotmpl --template-files=README.md.gotmpl`
+then the file is interpreted as being relative to the `chart-search-root`.
 
-And the complete listing of available templates is below:
+This repo is a good example of this in action. If you take a look at the [.pre-commit-config.yaml file](./.pre-commit-config.yaml)
+here, you'll see our search root is set to [example-charts](./example-charts) and the list of templates used for each chart
+is the [_templates.gotmpl file in that directory](./example-charts/_templates.gotmpl) and the README.md.gotmpl file in
+each chart directory.
+
+If any of the specified template files is not found for a chart (you'll notice most of the example charts do not have a README.md.gotmpl)
+file, then the internal default template is used instead.
+
+In addition to extra defined templates you specify in these template files, there are quite a few built-in templates that
+can be used as well:
 
 | Name | Description |
 |------|-------------|
@@ -148,11 +157,7 @@ And the complete listing of available templates is below:
 | chart.valuesTable         | A table of the chart's values parsed from the `values.yaml` file (see below) |
 | chart.valuesSection       | A section headed by the valuesHeader from above containing the valuesTable from above or "" if there are no values |
 
-For an example of how these various templates can be used in a `README.md.gotmpl` file to generate a reasonable markdown file,
-look at the charts in [example-charts](./example-charts).
-
-If there is no `README.md.gotmpl` (or other specified gotmpl file) present, the default template is used to generate the README.
-That template looks like so:
+The default internal template mentioned above uses many of these and looks like this:
 ```
 {{ template "chart.header" . }}
 {{ template "chart.deprecationWarning" . }}
@@ -172,9 +177,8 @@ That template looks like so:
 {{ template "chart.valuesSection" . }}
 ```
 
-The tool includes the [sprig templating library](https://github.com/Masterminds/sprig), so those functions can be used
+The tool also includes the [sprig templating library](https://github.com/Masterminds/sprig), so those functions can be used
 in the templates you supply.
-
 
 ### values.yaml metadata
 This tool can parse descriptions and defaults of values from `values.yaml` files. The defaults are pulled directly from
