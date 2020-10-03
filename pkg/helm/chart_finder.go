@@ -9,12 +9,12 @@ import (
 	"github.com/spf13/viper"
 )
 
-func FindChartDirectories() ([]string, error) {
+func FindChartDirectories(chartSearchRoot string) ([]string, error) {
 	ignoreFilename := viper.GetString("ignore-file")
 	ignoreContext := util.NewIgnoreContext(ignoreFilename)
 	chartDirs := make([]string, 0)
 
-	err := filepath.Walk(".", func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(chartSearchRoot, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -31,8 +31,13 @@ func FindChartDirectories() ([]string, error) {
 				log.Debugf("Ignoring chart file %s", path)
 				return nil
 			}
+			relativeChartDir, err := filepath.Rel(chartSearchRoot, filepath.Dir(path))
 
-			chartDirs = append(chartDirs, filepath.Dir(path))
+			if err != nil {
+				return err
+			}
+
+			chartDirs = append(chartDirs, relativeChartDir)
 		}
 
 		return nil

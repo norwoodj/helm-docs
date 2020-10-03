@@ -1,7 +1,21 @@
 # full-template
 
-## `chart.deprecationWarning`
+## `extra.flower`
+```
+          ,-.
+ ,     ,-.   ,-.
+/ \   (   )-(   )
+\ |  ,.>-(   )-<
+ \|,' (   )-(   )
+  Y ___`-'   `-'
+  |/__/   `-'
+  |
+  |
+  |    -hi-
+__|_____________
+```
 
+## `chart.deprecationWarning`
 > **:exclamation: This Helm Chart is deprecated!**
 
 ## `chart.name`

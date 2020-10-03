@@ -1,6 +1,7 @@
 package document
 
 import (
+	"github.com/norwoodj/helm-docs/pkg/util"
 	"io/ioutil"
 	"os"
 	"path"
@@ -9,7 +10,6 @@ import (
 
 	"github.com/Masterminds/sprig"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 
 	"github.com/norwoodj/helm-docs/pkg/helm"
 )
@@ -83,7 +83,7 @@ func getAppVersionTemplate() string {
 	appVersionBuilder := strings.Builder{}
 	appVersionBuilder.WriteString(`{{ define "chart.appVersion" }}{{ .AppVersion }}{{ end }}\n`)
 	appVersionBuilder.WriteString(`{{ define "chart.appVersionBadge" }}`)
-	appVersionBuilder.WriteString("{{ if .AppVersion }}![AppVersion: {{ .AppVersion }}](https://img.shields.io/badge/AppVersion-{{ .AppVersion }}-informational?style=flat-square) {{ end }}")
+	appVersionBuilder.WriteString(`{{ if .AppVersion }}![AppVersion: {{ .AppVersion }}](https://img.shields.io/badge/AppVersion-{{ .AppVersion | replace "-" "--" }}-informational?style=flat-square) {{ end }}`)
 	appVersionBuilder.WriteString("{{ end }}")
 
 	return appVersionBuilder.String()
@@ -209,23 +209,28 @@ func getValuesTableTemplates() string {
 	return valuesSectionBuilder.String()
 }
 
-func getDocumentationTemplate(chartDirectory string) (string, error) {
-	templateFiles := make([]string, 0)
-	templateType := viper.GetString("template-type")
-	if templateType == "template-file" {
-		templateFiles = append(templateFiles, viper.GetString("template-file"))
-	} else {
-		templateFiles = append(templateFiles, viper.GetStringSlice("template-files")...)
-	}
+func getDocumentationTemplate(chartDirectory string, chartSearchRoot string, templateFiles []string) (string, error) {
 	templateFilesForChart := make([]string, 0)
+
 	for _, templateFile := range templateFiles {
-		templateFileForChart := path.Join(chartDirectory, templateFile)
-		if _, err := os.Stat(templateFileForChart); os.IsNotExist(err) {
+		var fullTemplatePath string
+
+		if util.IsRelativePath(templateFile) {
+			fullTemplatePath = path.Join(chartSearchRoot, templateFile)
+		} else if util.IsBaseFilename(templateFile) {
+			fullTemplatePath = path.Join(chartDirectory, templateFile)
+		} else {
+			fullTemplatePath = templateFile
+		}
+
+		if _, err := os.Stat(fullTemplatePath); os.IsNotExist(err) {
 			log.Debugf("Did not find template file %s for chart %s, using default template", templateFile, chartDirectory)
 			return defaultDocumentationTemplate, nil
 		}
-		templateFilesForChart = append(templateFilesForChart, templateFileForChart)
+
+		templateFilesForChart = append(templateFilesForChart, fullTemplatePath)
 	}
+
 	log.Debugf("Using template files %s for chart %s", templateFiles, chartDirectory)
 	allTemplateContents := make([]byte, 0)
 	for _, templateFileForChart := range templateFilesForChart {
@@ -238,8 +243,8 @@ func getDocumentationTemplate(chartDirectory string) (string, error) {
 	return string(allTemplateContents), nil
 }
 
-func getDocumentationTemplates(chartDirectory string) ([]string, error) {
-	documentationTemplate, err := getDocumentationTemplate(chartDirectory)
+func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, templateFiles []string) ([]string, error) {
+	documentationTemplate, err := getDocumentationTemplate(chartDirectory, chartSearchRoot, templateFiles)
 
 	if err != nil {
 		log.Errorf("Failed to read documentation template for chart %s: %s", chartDirectory, err)
@@ -263,10 +268,10 @@ func getDocumentationTemplates(chartDirectory string) ([]string, error) {
 	}, nil
 }
 
-func newChartDocumentationTemplate(chartDocumentationInfo helm.ChartDocumentationInfo) (*template.Template, error) {
+func newChartDocumentationTemplate(chartDocumentationInfo helm.ChartDocumentationInfo, chartSearchRoot string, templateFiles []string) (*template.Template, error) {
 	documentationTemplate := template.New(chartDocumentationInfo.ChartDirectory)
 	documentationTemplate.Funcs(sprig.TxtFuncMap())
-	goTemplateList, err := getDocumentationTemplates(chartDocumentationInfo.ChartDirectory)
+	goTemplateList, err := getDocumentationTemplates(chartDocumentationInfo.ChartDirectory, chartSearchRoot, templateFiles)
 
 	if err != nil {
 		return nil, err
