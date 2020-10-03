@@ -5,11 +5,12 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/norwoodj/helm-docs/pkg/document"
-	"github.com/norwoodj/helm-docs/pkg/helm"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/norwoodj/helm-docs/pkg/document"
+	"github.com/norwoodj/helm-docs/pkg/helm"
 )
 
 func retrieveInfoAndPrintDocumentation(chartDirectory string, waitGroup *sync.WaitGroup, dryRun bool) {
@@ -25,15 +26,20 @@ func retrieveInfoAndPrintDocumentation(chartDirectory string, waitGroup *sync.Wa
 
 }
 
-func helmDocs(_ *cobra.Command, _ []string) {
+func helmDocs(cmd *cobra.Command, _ []string) {
 	initializeCli()
 	chartDirs, err := helm.FindChartDirectories()
-
 	if err != nil {
 		log.Errorf("Error finding chart directories: %s", err)
 		os.Exit(1)
 	}
-
+	if cmd.PersistentFlags().Changed("template-file") && cmd.PersistentFlags().Changed("template-files") {
+		log.Errorf("you cannot use both template-file and template-files. consider using just template-files")
+	} else if cmd.PersistentFlags().Changed("template-files") {
+		viper.Set("template-type", "template-files")
+	} else {
+		viper.Set("template-type", "template-file")
+	}
 	log.Infof("Found Chart directories [%s]", strings.Join(chartDirs, ", "))
 	dryRun := viper.GetBool("dry-run")
 	waitGroup := sync.WaitGroup{}
