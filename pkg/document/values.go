@@ -76,9 +76,9 @@ func getTypeName(value interface{}) string {
 	return ""
 }
 
-func parseNilValueType(key string, description helm.ChartValueDescription, autoDescription string) valueRow {
+func parseNilValueType(key string, description helm.ChartValueDescription, autoDescription helm.ChartValueDescription) valueRow {
 	if len(description.Description) == 0 {
-		description.Description = autoDescription
+		description.Description = autoDescription.Description
 	}
 	// Grab whatever's in between the parentheses of the description and treat it as the type
 	t := nilValueTypeRegex.FindString(description.Description)
@@ -95,10 +95,12 @@ func parseNilValueType(key string, description helm.ChartValueDescription, autoD
 	}
 
 	return valueRow{
-		Key:         key,
-		Type:        t,
-		Default:     description.Default,
-		Description: description.Description,
+		Key:             key,
+		Type:            t,
+		AutoDefault:     autoDescription.Default,
+		Default:         description.Default,
+		AutoDescription: autoDescription.Description,
+		Description:     description.Description,
 	}
 }
 
@@ -119,14 +121,15 @@ func createValueRow(
 	key string,
 	value interface{},
 	description helm.ChartValueDescription,
-	autoDescription string,
+	autoDescription helm.ChartValueDescription,
 ) (valueRow, error) {
 	if value == nil {
 		return parseNilValueType(key, description, autoDescription), nil
 	}
 
+	autoDefaultValue := autoDescription.Default
 	defaultValue := description.Default
-	if defaultValue == "" {
+	if defaultValue == "" && autoDefaultValue == "" {
 		jsonEncodedValue, err := jsonMarshalNoEscape(key, value)
 		if err != nil {
 			return valueRow{}, fmt.Errorf("failed to marshal default value for %s to json: %s", key, err)
@@ -138,8 +141,9 @@ func createValueRow(
 	return valueRow{
 		Key:             key,
 		Type:            getTypeName(value),
+		AutoDefault:     autoDescription.Default,
 		Default:         defaultValue,
-		AutoDescription: autoDescription,
+		AutoDescription: autoDescription.Description,
 		Description:     description.Description,
 	}, nil
 }
@@ -152,8 +156,6 @@ func createValueRowsFromField(
 	documentLeafNodes bool,
 ) ([]valueRow, error) {
 	switch value.Kind {
-	case yaml.DocumentNode:
-		fallthrough
 	case yaml.MappingNode:
 		return createValueRowsFromObject(nextPrefix, key, value, keysToDescriptions, documentLeafNodes)
 	case yaml.SequenceNode:
@@ -163,7 +165,7 @@ func createValueRowsFromField(
 	case yaml.ScalarNode:
 		autoDescription := getDescriptionFromNode(key)
 		description, hasDescription := keysToDescriptions[nextPrefix]
-		if !(documentLeafNodes || hasDescription || autoDescription != "") {
+		if !(documentLeafNodes || hasDescription || autoDescription.Description != "") {
 			return []valueRow{}, nil
 		}
 
@@ -205,24 +207,26 @@ func createValueRowsFromField(
 		}
 	}
 
-	return []valueRow{}, nil
+	return []valueRow{}, fmt.Errorf("invalid node type %d received", value.Kind)
 }
 
-func getDescriptionFromNode(node *yaml.Node) string {
+func getDescriptionFromNode(node *yaml.Node) helm.ChartValueDescription {
 	if node == nil {
-		return ""
+		return helm.ChartValueDescription{}
 	}
 
 	if node.HeadComment == "" {
-		return node.HeadComment
+		return helm.ChartValueDescription{}
 	}
 
-	match := autoDocCommentRegex.FindStringSubmatch(node.HeadComment)
+	commentLines := strings.Split(node.HeadComment, "\n")
+	match := autoDocCommentRegex.FindStringSubmatch(commentLines[0])
 	if len(match) < 2 {
-		return ""
+		return helm.ChartValueDescription{}
 	}
 
-	return match[1]
+	_, c := helm.ParseComment(match[1], commentLines)
+	return c
 }
 
 func createValueRowsFromList(
@@ -238,7 +242,7 @@ func createValueRowsFromList(
 	// If we encounter an empty list, it should be documented if no parent object or list had a description or if this
 	// list has a description
 	if len(values.Content) == 0 {
-		if !(documentLeafNodes || hasDescription || autoDescription != "") {
+		if !(documentLeafNodes || hasDescription || autoDescription.Description != "") {
 			return []valueRow{}, nil
 		}
 
@@ -254,7 +258,7 @@ func createValueRowsFromList(
 
 	// We have a nonempty list with a description, document it, and mark that leaf nodes underneath it should not be
 	// documented without descriptions
-	if hasDescription || autoDescription != "" {
+	if hasDescription || autoDescription.Description != "" {
 		jsonableObject := convertHelmValuesToJsonable(values)
 		listRow, err := createValueRow(prefix, jsonableObject, description, autoDescription)
 
@@ -299,7 +303,7 @@ func createValueRowsFromObject(
 
 		// Otherwise, we have a leaf empty object node that should be documented if no object up the recursion chain had
 		// a description or if this object has a description
-		if !(documentLeafNodes || hasDescription || autoDescription != "") {
+		if !(documentLeafNodes || hasDescription || autoDescription.Description != "") {
 			return []valueRow{}, nil
 		}
 
@@ -311,7 +315,7 @@ func createValueRowsFromObject(
 
 	// We have a nonempty object with a description, document it, and mark that leaf nodes underneath it should not be
 	// documented without descriptions
-	if hasDescription || autoDescription != "" {
+	if hasDescription || autoDescription.Description != "" {
 		jsonableObject := convertHelmValuesToJsonable(values)
 		objectRow, err := createValueRow(prefix, jsonableObject, description, autoDescription)
 

@@ -61,9 +61,6 @@ func getDeprecatedTemplate() string {
 func getVersionTemplates() string {
 	versionBuilder := strings.Builder{}
 	versionBuilder.WriteString(`{{ define "chart.version" }}{{ .Version }}{{ end }}\n`)
-	versionBuilder.WriteString(`{{ define "chart.versionLine" }}`)
-	versionBuilder.WriteString("{{ if .Version }}Current chart version is `{{ .Version }}`{{ end }}")
-	versionBuilder.WriteString("{{ end }}")
 	versionBuilder.WriteString(`{{ define "chart.versionBadge" }}`)
 	versionBuilder.WriteString("![Version: {{ .Version }}](https://img.shields.io/badge/Version-{{ .Version }}-informational?style=flat-square) ")
 	versionBuilder.WriteString("{{ end }}")
@@ -74,9 +71,6 @@ func getVersionTemplates() string {
 func getTypeTemplate() string {
 	typeBuilder := strings.Builder{}
 	typeBuilder.WriteString(`{{ define "chart.type" }}{{ .Type }}{{ end }}\n`)
-	typeBuilder.WriteString(`{{ define "chart.typeLine" }}`)
-	typeBuilder.WriteString("{{ if .Type }}Current chart type is `{{ .Type }}`{{ end }}")
-	typeBuilder.WriteString("{{ end }}")
 	typeBuilder.WriteString(`{{ define "chart.typeBadge" }}`)
 	typeBuilder.WriteString("{{ if .Type }}![Type: {{ .Type }}](https://img.shields.io/badge/Type-{{ .Type }}-informational?style=flat-square) {{ end }}")
 	typeBuilder.WriteString("{{ end }}")
@@ -87,9 +81,6 @@ func getTypeTemplate() string {
 func getAppVersionTemplate() string {
 	appVersionBuilder := strings.Builder{}
 	appVersionBuilder.WriteString(`{{ define "chart.appVersion" }}{{ .AppVersion }}{{ end }}\n`)
-	appVersionBuilder.WriteString(`{{ define "chart.appVersionLine" }}`)
-	appVersionBuilder.WriteString("{{ if .AppVersion }}Current chart appVersion is `{{ .AppVersion }}`{{ end }}")
-	appVersionBuilder.WriteString("{{ end }}")
 	appVersionBuilder.WriteString(`{{ define "chart.appVersionBadge" }}`)
 	appVersionBuilder.WriteString("{{ if .AppVersion }}![AppVersion: {{ .AppVersion }}](https://img.shields.io/badge/AppVersion-{{ .AppVersion }}-informational?style=flat-square) {{ end }}")
 	appVersionBuilder.WriteString("{{ end }}")
@@ -202,7 +193,7 @@ func getValuesTableTemplates() string {
 	valuesSectionBuilder.WriteString("| Key | Type | Default | Description |\n")
 	valuesSectionBuilder.WriteString("|-----|------|---------|-------------|\n")
 	valuesSectionBuilder.WriteString("  {{- range .Values }}")
-	valuesSectionBuilder.WriteString("\n| {{ .Key }} | {{ .Type }} | {{ .Default }} | {{ if .Description }}{{ .Description }}{{ else }}{{ .AutoDescription }}{{ end }} |")
+	valuesSectionBuilder.WriteString("\n| {{ .Key }} | {{ .Type }} | {{ if .Default }}{{ .Default }}{{ else }}{{ .AutoDefault }}{{ end }} | {{ if .Description }}{{ .Description }}{{ else }}{{ .AutoDescription }}{{ end }} |")
 	valuesSectionBuilder.WriteString("  {{- end }}")
 	valuesSectionBuilder.WriteString("{{ end }}")
 

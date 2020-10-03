@@ -34,8 +34,8 @@ A simple wrapper around the stable/nginx-ingress chart that adds a few of our co
 | controller.livenessProbe.httpGet.path | string | `"/healthz"` | This is the liveness check endpoint |
 | controller.name | string | `"controller"` |  |
 | controller.persistentVolumeClaims | list | `[]` | List of persistent volume claims to create |
-| controller.podLabels | object | `{}` | The labels to be applied to instances of the controller pod |
+| controller.podLabels | object | A number of chart-specific labels | The labels to be applied to instances of the controller pod. By default, a number of labels will automatically be applied |
 | controller.publishService.enabled | bool | `false` | Whether to expose the ingress controller to the public world |
-| controller.replicas | int | `nil` | Number of nginx-ingress pods to load balance between |
+| controller.replicas | int | `nil` | Number of nginx-ingress pods to load balance between. Do not set this below 2 |
 | controller.service.annotations."external-dns.alpha.kubernetes.io/hostname" | string | `"stupidchess.jmn23.com"` | Hostname to be assigned to the ELB for the service |
 | controller.service.type | string | `"LoadBalancer"` |  |

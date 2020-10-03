@@ -13,7 +13,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var valuesDescriptionRegex = regexp.MustCompile("^\\s*# (.*) -- (.*)$")
+var valuesDescriptionRegex = regexp.MustCompile("^\\s*#\\s*(.*)\\s+--\\s*(.*)$")
 var commentContinuationRegex = regexp.MustCompile("^\\s*# (.*)$")
 var defaultValueRegex = regexp.MustCompile("^\\s*# @default -- (.*)$")
 
@@ -162,10 +162,10 @@ func parseChartValuesFileComments(chartDirectory string) (map[string]ChartValueD
 
 	defer valuesFile.Close()
 
-	var description, key string
 	keyToDescriptions := make(map[string]ChartValueDescription)
 	scanner := bufio.NewScanner(valuesFile)
 	foundValuesComment := false
+	commentLines := make([]string, 0)
 
 	for scanner.Scan() {
 		currentLine := scanner.Text()
@@ -176,40 +176,30 @@ func parseChartValuesFileComments(chartDirectory string) (map[string]ChartValueD
 			if len(match) < 3 {
 				continue
 			}
+			if match[1] == "" {
+				continue
+			}
 
 			foundValuesComment = true
-			key = match[1]
-			description = match[2]
+			commentLines = append(commentLines, currentLine)
 			continue
 		}
 
 		// If we've already found a values comment, on the next line try and parse a custom default value. If we find one
 		// that completes parsing for this key, add it to the list and reset to searching for a new key
-		match := defaultValueRegex.FindStringSubmatch(currentLine)
+		defaultCommentMatch := defaultValueRegex.FindStringSubmatch(currentLine)
+		commentContinuationMatch := commentContinuationRegex.FindStringSubmatch(currentLine)
 
-		if len(match) > 1 {
-			keyToDescriptions[key] = ChartValueDescription{
-				Description: description,
-				Default:     match[1],
-			}
-
-			foundValuesComment = false
-			continue
-		}
-
-		// Otherwise, see if there's a comment continuing the description from the previous line
-		match = commentContinuationRegex.FindStringSubmatch(currentLine)
-		if len(match) > 1 {
-			description = description + " " + match[1]
+		if len(defaultCommentMatch) > 1 || len(commentContinuationMatch) > 1 {
+			commentLines = append(commentLines, currentLine)
 			continue
 		}
 
 		// If we haven't continued by this point, we didn't match any of the comment formats we want, so we need to add
 		// the in progress value to the map, and reset to looking for a new key
-		keyToDescriptions[key] = ChartValueDescription{
-			Description: description,
-		}
-
+		key, description := ParseComment("", commentLines)
+		keyToDescriptions[key] = description
+		commentLines = make([]string, 0)
 		foundValuesComment = false
 	}
 

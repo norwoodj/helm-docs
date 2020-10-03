@@ -18,4 +18,5 @@ htmlSnippets:
   two: ""
 
   # -- Another description
-  three: "<html><head></head></html>"
+  # @default -- `"<html><head></head></html>"`
+  three: ""
