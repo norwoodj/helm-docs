@@ -23,7 +23,7 @@ func retrieveInfoAndPrintDocumentation(chartDirectory string, chartSearchRoot st
 		return
 	}
 
-	document.PrintDocumentation(chartDocumentationInfo, chartSearchRoot, templateFiles, dryRun)
+	document.PrintDocumentation(chartDocumentationInfo, chartSearchRoot, templateFiles, dryRun, version)
 
 }
 
