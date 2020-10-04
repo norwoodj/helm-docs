@@ -28,6 +28,7 @@ func getChartTemplateData(chartDocumentationInfo helm.ChartDocumentationInfo, he
 	if chartDocumentationInfo.ChartValues.Kind == 0 {
 		return chartTemplateData{
 			ChartDocumentationInfo: chartDocumentationInfo,
+			HelmDocsVersion: helmDocsVersion,
 			Values:                 make([]valueRow, 0),
 		}, nil
 	}

@@ -6,5 +6,5 @@ repos:
         args:
           - --chart-search-root=example-charts
           - --template-files=./_templates.gotmpl
-          - --template-files=README.gotmpl
+          - --template-files=README.md.gotmpl
           - --log-level=debug
