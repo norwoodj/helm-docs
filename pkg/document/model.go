@@ -19,10 +19,11 @@ type valueRow struct {
 
 type chartTemplateData struct {
 	helm.ChartDocumentationInfo
+	HelmDocsVersion string
 	Values []valueRow
 }
 
-func getChartTemplateData(chartDocumentationInfo helm.ChartDocumentationInfo) (chartTemplateData, error) {
+func getChartTemplateData(chartDocumentationInfo helm.ChartDocumentationInfo, helmDocsVersion string) (chartTemplateData, error) {
 	// handle empty values file case
 	if chartDocumentationInfo.ChartValues.Kind == 0 {
 		return chartTemplateData{
@@ -52,6 +53,7 @@ func getChartTemplateData(chartDocumentationInfo helm.ChartDocumentationInfo) (c
 
 	return chartTemplateData{
 		ChartDocumentationInfo: chartDocumentationInfo,
+		HelmDocsVersion: helmDocsVersion,
 		Values:                 valuesTableRows,
 	}, nil
 }

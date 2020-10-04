@@ -27,7 +27,7 @@ func getOutputFile(chartDirectory string, dryRun bool) (*os.File, error) {
 	return f, err
 }
 
-func PrintDocumentation(chartDocumentationInfo helm.ChartDocumentationInfo, chartSearchRoot string, templateFiles []string, dryRun bool) {
+func PrintDocumentation(chartDocumentationInfo helm.ChartDocumentationInfo, chartSearchRoot string, templateFiles []string, dryRun bool, helmDocsVersion string) {
 	log.Infof("Generating README Documentation for chart %s", chartDocumentationInfo.ChartDirectory)
 
 	chartDocumentationTemplate, err := newChartDocumentationTemplate(
@@ -41,7 +41,7 @@ func PrintDocumentation(chartDocumentationInfo helm.ChartDocumentationInfo, char
 		return
 	}
 
-	chartTemplateDataObject, err := getChartTemplateData(chartDocumentationInfo)
+	chartTemplateDataObject, err := getChartTemplateData(chartDocumentationInfo, helmDocsVersion)
 	if err != nil {
 		log.Warnf("Error generating template data for chart %s: %s", chartDocumentationInfo.ChartDirectory, err)
 		return
