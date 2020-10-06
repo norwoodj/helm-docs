@@ -225,7 +225,11 @@ func getDescriptionFromNode(node *yaml.Node) helm.ChartValueDescription {
 		return helm.ChartValueDescription{}
 	}
 
-	_, c := helm.ParseComment(match[1], commentLines)
+	keyFromComment, c := helm.ParseComment(commentLines)
+	if keyFromComment != "" {
+		return helm.ChartValueDescription{}
+	}
+
 	return c
 }
 

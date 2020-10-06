@@ -1,6 +1,7 @@
 package helm
 
-func ParseComment(valueKey string, commentLines []string) (string, ChartValueDescription) {
+func ParseComment(commentLines []string) (string, ChartValueDescription) {
+	var valueKey string
 	var c ChartValueDescription
 
 	match := valuesDescriptionRegex.FindStringSubmatch(commentLines[0])

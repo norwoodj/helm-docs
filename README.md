@@ -2,31 +2,58 @@ helm-docs
 =========
 [![Go Report Card](https://goreportcard.com/badge/github.com/norwoodj/helm-docs)](https://goreportcard.com/report/github.com/norwoodj/helm-docs)
 
-The helm-docs tool generates automatic documentation from helm charts into a markdown file. The resulting
-file contains metadata about the chart and a table with all of your charts' values, their defaults, and an
+The helm-docs tool auto-generates documentation from helm charts into markdown files. The resulting
+files contain metadata about their respective chart and a table with each of the chart's values, their defaults, and an
 optional description parsed from comments.
 
 The markdown generation is entirely [gotemplate](https://golang.org/pkg/text/template) driven. The tool parses metadata
 from charts and generates a number of sub-templates that can be referenced in a template file (by default `README.md.gotmpl`).
 If no template file is provided, the tool has a default internal template that will generate a reasonably formatted README.
 
-In particular, this tool will auto-detect descriptions of fields from comments:
+The most useful aspect of this tool is the auto-detection of field descriptions from comments:
 ```yaml
-controller:
-  # -- Configure the healthcheck for the ingress controller
-  livenessProbe:
-    httpGet:
-      # -- This is the liveness check endpoint
-      path: /healthz
+config:
+  databasesToCreate:
+    # -- default database for storage of database metadata
+    - postgres
+
+    # -- database for the [hashbash](https://github.com/norwoodj/hashbash) project
+    - hashbash
+
+  usersToCreate:
+    # -- admin user
+    - {name: root, admin: true}
+
+    # -- user with access to the database with the same name
+    - {name: hashbash, readwriteDatabases: [hashbash]}
+
+statefulset:
+  image:
+    # -- Image to use for deploying, must support an entrypoint which creates users/databases from appropriate config files
+    repository: jnorwood/postgresql
+    tag: "11"
+
+  # -- Additional volumes to be mounted into the database container
+  extraVolumes:
+    - name: data
+      emptyDir: {}
 ```
 
 Resulting in a resulting README section like so:
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| controller.livenessProbe | object | `{"httpGet":{"path":"/healthz","port":8080}}` | Configure the healthcheck for the ingress controller |
-| controller.livenessProbe.httpGet.path | string | `"/healthz"` | This is the liveness check endpoint |
+| config.databasesToCreate[0] | string | `"postgresql"` | default database for storage of database metadata |
+| config.databasesToCreate[1] | string | `"hashbash"` | database for the [hashbash](https://github.com/norwoodj/hashbash) project |
+| config.usersToCreate[0] | object | `{"admin":true,"name":"root"}` | admin user |
+| config.usersToCreate[1] | object | `{"name":"hashbash","readwriteDatabases":["hashbash"]}` | user with access to the database with the same name |
+| statefulset.extraVolumes | list | `[{"emptyDir":{},"name":"data"}]` | Additional volumes to be mounted into the database container |
+| statefulset.image.repository | string | `"jnorwood/postgresql:11"` | Image to use for deploying, must support an entrypoint which creates users/databases from appropriate config files |
+| statefulset.image.tag | string | `"18.0831"` |  |
 
+You'll notice that some complex fields (lists and objects) are documented while others aren't, and that some simple fields
+like `statefulset.image.tag` are documented even without a description comment. The rules for what is and isn't documented in
+the final table will be described in detail later in this document.
 
 ## Installation
 helm-docs can be installed using [homebrew](https://brew.sh/):
@@ -87,18 +114,6 @@ Then run:
 
 ```bash
 docker run --rm --volume "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:latest
-```
-
-### Building from source
-Notice that you need to have build chain toolkit for given platform and golang installed.
-Next you may need to export some vars to build standalone, non-linked binary for given platform and architecture:
-
-```bash
-export CGO_ENABLED=0 GOOS=linux GOARCH=amd64
-make clean
-make fmt
-make test
-make
 ```
 
 ## Ignoring Chart Directories
@@ -249,7 +264,7 @@ Results in:
 | controller.livenessProbe.httpGet.path | string | `"/healthz"` | This is the liveness check endpoint |
 
 If we remove the comment for `controller.livenessProbe` however, both leaf nodes `controller.livenessProbe.httpGet.path`
-and `controller.livenessProbe.httpGet.port` will be added to the table, with our without description comments:
+and `controller.livenessProbe.httpGet.port` will be added to the table, with or without description comments:
 
 ```yaml
 controller:

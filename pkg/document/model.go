@@ -20,7 +20,7 @@ type valueRow struct {
 type chartTemplateData struct {
 	helm.ChartDocumentationInfo
 	HelmDocsVersion string
-	Values []valueRow
+	Values          []valueRow
 }
 
 func getChartTemplateData(chartDocumentationInfo helm.ChartDocumentationInfo, helmDocsVersion string) (chartTemplateData, error) {
@@ -28,7 +28,7 @@ func getChartTemplateData(chartDocumentationInfo helm.ChartDocumentationInfo, he
 	if chartDocumentationInfo.ChartValues.Kind == 0 {
 		return chartTemplateData{
 			ChartDocumentationInfo: chartDocumentationInfo,
-			HelmDocsVersion: helmDocsVersion,
+			HelmDocsVersion:        helmDocsVersion,
 			Values:                 make([]valueRow, 0),
 		}, nil
 	}
@@ -54,7 +54,7 @@ func getChartTemplateData(chartDocumentationInfo helm.ChartDocumentationInfo, he
 
 	return chartTemplateData{
 		ChartDocumentationInfo: chartDocumentationInfo,
-		HelmDocsVersion: helmDocsVersion,
+		HelmDocsVersion:        helmDocsVersion,
 		Values:                 valuesTableRows,
 	}, nil
 }
