@@ -1,0 +1,11 @@
+apiVersion: v2
+name: best-values-example
+description: One of the best values parsing example charts here, exhibits several more complicated examples
+version: "0.2.0"
+home: "https://github.com/norwoodj/helm-docs/tree/master/example-charts/best-values-example"
+sources: ["https://github.com/norwoodj/helm-docs/tree/master/example-charts/best-values-example"]
+engine: gotpl
+type: application
+maintainers:
+  - email: norwood.john.m@gmail.com
+    name: John Norwood
