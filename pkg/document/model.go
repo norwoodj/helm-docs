@@ -56,13 +56,11 @@ func getChartTemplateData(chartDocumentationInfo helm.ChartDocumentationInfo, he
 	sortOrder := viper.GetString("sort-values-order")
 	if sortOrder == FileSortOrder {
 		sort.Slice(valuesTableRows, func(i, j int) bool {
-			if valuesTableRows[i].LineNumber < valuesTableRows[j].LineNumber {
-				return true
-			} else if valuesTableRows[i].Column < valuesTableRows[j].Column {
-				return true
+			if valuesTableRows[i].LineNumber == valuesTableRows[j].LineNumber {
+				return valuesTableRows[i].Column < valuesTableRows[j].Column
 			}
 
-			return false
+			return valuesTableRows[i].LineNumber < valuesTableRows[i].LineNumber
 		})
 	} else if sortOrder == AlphaNumSortOrder {
 		sort.Slice(valuesTableRows, func(i, j int) bool {
