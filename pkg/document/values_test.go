@@ -22,7 +22,7 @@ func parseYamlValues(yamlValues string) *yaml.Node {
 
 func TestEmptyValues(t *testing.T) {
 	helmValues := parseYamlValues(`{}`)
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, make(map[string]helm.ChartValueDescription), true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 0)
 }
@@ -35,7 +35,7 @@ hello: "world"
 oscar: 3.14159
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, make(map[string]helm.ChartValueDescription), true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 4)
@@ -84,7 +84,7 @@ oscar: 3.14159
 		"oscar":   {Description: "oscar"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 4)
@@ -133,7 +133,7 @@ oscar: 3.14159
 		"oscar":   {Description: "oscar", Default: "values"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 4)
@@ -174,7 +174,7 @@ recursive:
 oscar: dog
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, make(map[string]helm.ChartValueDescription), true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -206,7 +206,7 @@ oscar: dog
 		"oscar":          {Description: "oscar"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -238,7 +238,7 @@ oscar: dog
 		"oscar":          {Description: "oscar", Default: "default"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -264,7 +264,7 @@ recursive: {}
 oscar: dog
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, make(map[string]helm.ChartValueDescription), true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -294,7 +294,7 @@ oscar: dog
 		"recursive": {Description: "an empty object"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -324,7 +324,7 @@ oscar: dog
 		"recursive": {Description: "an empty object", Default: "default"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -349,7 +349,7 @@ birds: []
 echo: cat
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, make(map[string]helm.ChartValueDescription), true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -380,7 +380,7 @@ echo: cat
 		"echo":  {Description: "echo"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -411,7 +411,7 @@ echo: cat
 		"echo":  {Description: "echo", Default: "default value"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -436,7 +436,7 @@ func TestListOfStrings(t *testing.T) {
 cats: [echo, foxtrot]
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, make(map[string]helm.ChartValueDescription), true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -467,7 +467,7 @@ cats: [echo, foxtrot]
 		"cats[1]": {Description: "the friendly one"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -498,7 +498,7 @@ cats: [echo, foxtrot]
 		"cats[1]": {Description: "the friendly one", Default: "default value"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -528,7 +528,7 @@ animals:
     type: dog
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, make(map[string]helm.ChartValueDescription), true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 5)
@@ -584,7 +584,7 @@ animals:
 		"animals[1].elements[0]": {Description: "the sleepy one"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 5)
@@ -640,7 +640,7 @@ animals:
 		"animals[1].elements[0]": {Description: "the sleepy one", Default: "value"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 5)
@@ -694,7 +694,7 @@ animals:
 		"animals": {Description: "all the animals of the house"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 1)
@@ -720,7 +720,7 @@ animals:
 		"animals": {Description: "all the animals of the house", Default: "cat and dog"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 1)
@@ -746,7 +746,7 @@ animals:
 		"animals[0]": {Description: "all the cats of the house", Default: "only cats here"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 3)
@@ -786,7 +786,7 @@ animals:
 		"animals.byTrait": {Description: "animals listed by their various characteristics"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 1)
@@ -812,7 +812,7 @@ animals:
 		"animals.byTrait": {Description: "animals listed by their various characteristics", Default: "animals, you know"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 1)
@@ -841,7 +841,7 @@ animals:
 		"animals.byTrait.friendly[0]": {Description: "best cat ever"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 4)
@@ -891,7 +891,7 @@ animals:
 		"animals.byTrait.friendly[0]": {Description: "best cat ever", Default: "value"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 4)
@@ -939,7 +939,7 @@ animals:
 		"animals.nonWeirdCats": {Description: "the cats that we have that are not weird"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 3)
@@ -980,7 +980,7 @@ animals:
 		"animals.nonWeirdCats": {Description: "the cats that we have that are not weird", Default: "default"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 3)
@@ -1015,7 +1015,7 @@ fullNames:
   John Norwood: me
 `)
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, make(map[string]helm.ChartValueDescription), true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -1048,7 +1048,7 @@ fullNames:
 		`websites."stupidchess.jmn23.com"`: {Description: "status of the stupidchess website"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -1081,7 +1081,7 @@ fullNames:
 		`websites."stupidchess.jmn23.com"`: {Description: "status of the stupidchess website", Default: "value"},
 	}
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, descriptions, true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -1116,7 +1116,7 @@ hello: "world"
 oscar: 3.14159
 	`)
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, make(map[string]helm.ChartValueDescription), true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 4)
@@ -1165,7 +1165,7 @@ animals:
     oscar: 3.14159
 `)
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, make(map[string]helm.ChartValueDescription), true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 3)
@@ -1202,7 +1202,7 @@ animals:
     - foxtrot
 `)
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, make(map[string]helm.ChartValueDescription), true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -1236,7 +1236,7 @@ animalLocations:
     cats: []
 `)
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, make(map[string]helm.ChartValueDescription), true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 2)
@@ -1267,7 +1267,7 @@ animals:
       - foxtrot
 `)
 
-	valuesRows, err := createValueRowsFromObject("", nil, helmValues, make(map[string]helm.ChartValueDescription), true)
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
 
 	assert.Nil(t, err)
 	assert.Len(t, valuesRows, 1)

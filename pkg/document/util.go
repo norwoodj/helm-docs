@@ -5,14 +5,17 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type jsonableMap map[string]interface{}
+const (
+	AlphaNumSortOrder = "alphanum"
+	FileSortOrder     = "file"
+)
 
 // The json library can only marshal maps with string keys, and so all of our lists and maps that go into documentation
 // must be converted to have only string keys before marshalling
 func convertHelmValuesToJsonable(values *yaml.Node) interface{} {
 	switch values.Kind {
 	case yaml.MappingNode:
-		convertedMap := make(jsonableMap)
+		convertedMap := make(map[string]interface{})
 
 		for i := 0; i < len(values.Content); i += 2 {
 			k := values.Content[i]
