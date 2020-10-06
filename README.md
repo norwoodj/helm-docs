@@ -17,7 +17,7 @@ config:
     # -- default database for storage of database metadata
     - postgres
 
-    # -- database for the [hashbash](https://github.com/norwoodj/hashbash) project
+    # -- database for the [hashbash](https://github.com/norwoodj/hashbash-backend-go) project
     - hashbash
 
   usersToCreate:
@@ -44,7 +44,7 @@ Resulting in a resulting README section like so:
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | config.databasesToCreate[0] | string | `"postgresql"` | default database for storage of database metadata |
-| config.databasesToCreate[1] | string | `"hashbash"` | database for the [hashbash](https://github.com/norwoodj/hashbash) project |
+| config.databasesToCreate[1] | string | `"hashbash"` | database for the [hashbash](https://github.com/norwoodj/hashbash-backend-go) project |
 | config.usersToCreate[0] | object | `{"admin":true,"name":"root"}` | admin user |
 | config.usersToCreate[1] | object | `{"name":"hashbash","readwriteDatabases":["hashbash"]}` | user with access to the database with the same name |
 | statefulset.extraVolumes | list | `[{"emptyDir":{},"name":"data"}]` | Additional volumes to be mounted into the database container |
