@@ -39,7 +39,7 @@ nfpms:
   - rpm
 
 brews:
-  - github:
+  - tap:
       owner: norwoodj
       name: homebrew
     folder: Formula
