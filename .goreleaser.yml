@@ -6,6 +6,17 @@ builds:
   - main: ./cmd/helm-docs
     env:
       - CGO_ENABLED=0
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - 6
+      - 7
+    goos:
+      - darwin
+      - linux
+      - windows
 archives:
   - replacements:
       darwin: Darwin
@@ -39,7 +50,7 @@ nfpms:
   - rpm
 
 brews:
-  - github:
+  - tap:
       owner: norwoodj
       name: homebrew
     folder: Formula
