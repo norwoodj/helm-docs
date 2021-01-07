@@ -1,12 +1,13 @@
 package document
 
 import (
-	"github.com/norwoodj/helm-docs/pkg/util"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
 	"text/template"
+
+	"github.com/norwoodj/helm-docs/pkg/util"
 
 	"github.com/Masterminds/sprig"
 	log "github.com/sirupsen/logrus"
@@ -89,6 +90,15 @@ func getAppVersionTemplate() string {
 	appVersionBuilder.WriteString("{{ end }}")
 
 	return appVersionBuilder.String()
+}
+
+func getBadgesTemplates() string {
+	badgeBuilder := strings.Builder{}
+	badgeBuilder.WriteString(`{{ define "chart.badgesSection" }}`)
+	badgeBuilder.WriteString(`{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}`)
+	badgeBuilder.WriteString("{{ end }}")
+
+	return badgeBuilder.String()
 }
 
 func getDescriptionTemplate() string {
@@ -271,6 +281,7 @@ func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, te
 		getHeaderTemplate(),
 		getDeprecatedTemplate(),
 		getAppVersionTemplate(),
+		getBadgesTemplates(),
 		getDescriptionTemplate(),
 		getVersionTemplates(),
 		getTypeTemplate(),
