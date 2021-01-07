@@ -177,7 +177,7 @@ The default internal template mentioned above uses many of these and looks like 
 {{ template "chart.header" . }}
 {{ template "chart.deprecationWarning" . }}
 
-{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
+{{ template "chart.badgesSection" . }}
 
 {{ template "chart.description" . }}
 
