@@ -8,6 +8,7 @@ import (
 	"path"
 	"regexp"
 	"sort"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
@@ -69,12 +70,11 @@ func getYamlFileContents(filename string) ([]byte, error) {
 	}
 
 	yamlFileContents, err := ioutil.ReadFile(filename)
-
 	if err != nil {
 		panic(err)
 	}
 
-	return []byte(yamlFileContents), nil
+	return []byte(strings.Replace(string(yamlFileContents), "\r\n", "\n", -1)), nil
 }
 
 func isErrorInReadingNecessaryFile(filePath string, loadError error) bool {

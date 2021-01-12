@@ -1,0 +1,18 @@
+# Default values for helmdoc-test.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+livenessProbe:
+  httpGet:
+    # -- This is the liveness check endpoint
+    path: /healthz
+    port: http
+
+controller:
+  publishService:
+    # -- Whether to expose the ingress controller to the public world sdf
+    enabled: false
+
+  # -- Number of nginx-ingress pods to load balance between sdf.
+  # Do not set this below 2.
+  replicas: 2
