@@ -241,6 +241,8 @@ func getHelmDocsVersionTemplates() string {
 func getDocumentationTemplate(chartDirectory string, chartSearchRoot string, templateFiles []string) (string, error) {
 	templateFilesForChart := make([]string, 0)
 
+	var templateNotFound bool
+
 	for _, templateFile := range templateFiles {
 		var fullTemplatePath string
 
@@ -254,7 +256,9 @@ func getDocumentationTemplate(chartDirectory string, chartSearchRoot string, tem
 
 		if _, err := os.Stat(fullTemplatePath); os.IsNotExist(err) {
 			log.Debugf("Did not find template file %s for chart %s, using default template", templateFile, chartDirectory)
-			return defaultDocumentationTemplate, nil
+
+			templateNotFound = true
+			continue
 		}
 
 		templateFilesForChart = append(templateFilesForChart, fullTemplatePath)
@@ -269,6 +273,11 @@ func getDocumentationTemplate(chartDirectory string, chartSearchRoot string, tem
 		}
 		allTemplateContents = append(allTemplateContents, templateContents...)
 	}
+
+	if templateNotFound {
+		allTemplateContents = append(allTemplateContents, []byte(defaultDocumentationTemplate)...)
+	}
+
 	return string(allTemplateContents), nil
 }
 
