@@ -89,7 +89,8 @@ func parseNilValueType(key string, description helm.ChartValueDescription, autoD
 		t = stringType
 	}
 
-	if description.Default == "" {
+	// only set description.Default if no fallback (autoDescription.Default) is available
+	if description.Default == "" && autoDescription.Default == "" {
 		description.Default = "`nil`"
 	}
 

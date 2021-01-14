@@ -1279,3 +1279,23 @@ animals:
 	assert.Equal(t, "", valuesRows[0].Description)
 	assert.Equal(t, "The best kind of animal probably, allow me to list their many varied benefits. Cats are very funny, and quite friendly, in almost all cases", valuesRows[0].AutoDescription)
 }
+
+func TestAutoMultilineDescriptionWithoutValue(t *testing.T) {
+	helmValues := parseYamlValues(`
+animals:
+  # -- (list) I mean, dogs are quite nice too...
+  # @default -- The list of dogs that _I_ own
+  dogs:
+`)
+
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 1)
+
+	assert.Equal(t, "animals.dogs", valuesRows[0].Key)
+	assert.Equal(t, listType, valuesRows[0].Type)
+	assert.Equal(t, "The list of dogs that _I_ own", valuesRows[0].AutoDefault)
+	assert.Equal(t, "", valuesRows[0].Default)
+	assert.Equal(t, "I mean, dogs are quite nice too...", valuesRows[0].Description)
+}
