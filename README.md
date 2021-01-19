@@ -123,7 +123,7 @@ many charts can be ignored and none of the charts underneath them will be proces
 Chart.yaml file for a chart to skip processing for it.
 
 ## Markdown Rendering
-There are two important parameters to be aware of when running helm-docs. `--chart-serach-root` specifies the directory
+There are two important parameters to be aware of when running helm-docs. `--chart-search-root` specifies the directory
 under which the tool will recursively search for charts to render documentation for. `--template-files` specifies the list
 of gotemplate files that should be used in rendering the resulting markdown file for each chart found. By default
 `--chart-search-root=.` and `--template-files=README.md.gotmpl`.
