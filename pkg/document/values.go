@@ -18,6 +18,8 @@ const (
 	listType   = "list"
 	objectType = "object"
 	stringType = "string"
+	yamlType   = "yaml"
+	tplType    = "tpl"
 )
 
 // Yaml tags that differentiate the type of scalar object in the node
@@ -89,6 +91,9 @@ func parseNilValueType(key string, description helm.ChartValueDescription, autoD
 		} else {
 			description.Description = ""
 		}
+	} else if autoDescription.ValueType != "" {
+		// Use whatever the type recognized by autoDescription parser
+		t = autoDescription.ValueType
 	} else {
 		t = stringType
 	}
@@ -158,7 +163,18 @@ func createValueRow(
 
 	autoDefaultValue := autoDescription.Default
 	defaultValue := description.Default
-	if defaultValue == "" && autoDefaultValue == "" {
+	notationType := autoDescription.NotationType
+	defaultType := getTypeName(value)
+	if description.ValueType != "" {
+		defaultType = description.ValueType
+	} else if autoDescription.ValueType != "" {
+		defaultType = autoDescription.ValueType
+	} else if notationType != "" {
+		// If nothing can be inferred then infer from notationType
+		defaultType = notationType
+	}
+
+	if defaultValue == "" && autoDefaultValue == "" && notationType == "" {
 		jsonEncodedValue, err := jsonMarshalNoEscape(key, value)
 		if err != nil {
 			return valueRow{}, fmt.Errorf("failed to marshal default value for %s to json: %s", key, err)
@@ -167,9 +183,16 @@ func createValueRow(
 		defaultValue = fmt.Sprintf("`%s`", jsonEncodedValue)
 	}
 
+	if defaultValue == "" && autoDefaultValue == "" && notationType != "" {
+		// We want to render custom styles for custom NotationType
+		// So, output a raw default value for this and let the template handle it
+		defaultValue = fmt.Sprintf("%s", value)
+	}
+
 	return valueRow{
 		Key:             key,
-		Type:            getTypeName(value),
+		Type:            defaultType,
+		NotationType:    notationType,
 		AutoDefault:     autoDescription.Default,
 		Default:         defaultValue,
 		AutoDescription: autoDescription.Description,
@@ -208,12 +231,44 @@ func createValueRowsFromList(
 
 	// We have a nonempty list with a description, document it, and mark that leaf nodes underneath it should not be
 	// documented without descriptions
-	if hasDescription || autoDescription.Description != "" {
+	if hasDescription || (autoDescription.Description != "" && autoDescription.NotationType == "") {
 		jsonableObject := convertHelmValuesToJsonable(values)
 		listRow, err := createValueRow(prefix, jsonableObject, description, autoDescription, key.Column, key.Line)
 
 		if err != nil {
 			return nil, err
+		}
+
+		valueRows = append(valueRows, listRow)
+		documentLeafNodes = false
+	} else if hasDescription || (autoDescription.Description != "" && autoDescription.NotationType != "") {
+		// If it has NotationType described, then use that
+		var notationValue interface{}
+		var err error
+		var listRow valueRow
+		switch autoDescription.NotationType {
+		case yamlType:
+			notationValue, err = yaml.Marshal(values)
+			if err != nil {
+				return nil, err
+			}
+
+			listRow, err = createValueRow(prefix, notationValue, description, autoDescription, key.Column, key.Line)
+
+			if err != nil {
+				return nil, err
+			}
+		default:
+			// Any other case means we let the template renderer to decide how to
+			// format the default value. But the value are stored as raw string
+			fallthrough
+		case tplType:
+			notationValue = values.Value
+			listRow, err = createValueRow(prefix, notationValue, description, autoDescription, key.Column, key.Line)
+
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		valueRows = append(valueRows, listRow)
@@ -265,12 +320,46 @@ func createValueRowsFromObject(
 
 	// We have a nonempty object with a description, document it, and mark that leaf nodes underneath it should not be
 	// documented without descriptions
-	if hasDescription || autoDescription.Description != "" {
+	if hasDescription || (autoDescription.Description != "" && autoDescription.NotationType == "") {
 		jsonableObject := convertHelmValuesToJsonable(values)
 		objectRow, err := createValueRow(nextPrefix, jsonableObject, description, autoDescription, key.Column, key.Line)
 
 		if err != nil {
 			return nil, err
+		}
+
+		valueRows = append(valueRows, objectRow)
+		documentLeafNodes = false
+	} else if hasDescription || (autoDescription.Description != "" && autoDescription.NotationType != "") {
+
+		// If it has NotationType described, then use that
+		var notationValue interface{}
+		var err error
+		var objectRow valueRow
+		switch autoDescription.NotationType {
+		case yamlType:
+			notationValue, err = yaml.Marshal(values)
+			if err != nil {
+				return nil, err
+			}
+
+			objectRow, err = createValueRow(nextPrefix, notationValue, description, autoDescription, key.Column, key.Line)
+
+			if err != nil {
+				return nil, err
+			}
+
+		default:
+			// Any other case means we let the template renderer to decide how to
+			// format the default value. But the value are stored as raw string
+			fallthrough
+		case tplType:
+			notationValue = values.Value
+			objectRow, err = createValueRow(nextPrefix, notationValue, description, autoDescription, key.Column, key.Line)
+
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		valueRows = append(valueRows, objectRow)
@@ -319,6 +408,40 @@ func createValueRowsFromField(
 			leafValueRow, err := createValueRow(prefix, nil, description, autoDescription, key.Column, key.Line)
 			return []valueRow{leafValueRow}, err
 		case strTag:
+			// extra check to see if the node is a string, but @notationType was declared
+			if autoDescription.NotationType != "" {
+				var notationValue interface{}
+				var err error
+				var leafValueRow valueRow
+				switch autoDescription.NotationType {
+				case yamlType:
+					notationValue, err = yaml.Marshal(value)
+					if err != nil {
+						return nil, err
+					}
+
+					leafValueRow, err = createValueRow(prefix, notationValue, description, autoDescription, key.Column, key.Line)
+
+					if err != nil {
+						return nil, err
+					}
+
+					return []valueRow{leafValueRow}, err
+				default:
+					// Any other case means we let the template renderer to decide how to
+					// format the default value. But the value are stored as raw string
+					fallthrough
+				case tplType:
+					notationValue = value.Value
+					leafValueRow, err = createValueRow(prefix, notationValue, description, autoDescription, key.Column, key.Line)
+
+					if err != nil {
+						return nil, err
+					}
+
+					return []valueRow{leafValueRow}, err
+				}
+			}
 			fallthrough
 		case timestampTag:
 			leafValueRow, err := createValueRow(prefix, value.Value, description, autoDescription, key.Column, key.Line)
