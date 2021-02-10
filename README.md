@@ -213,7 +213,7 @@ controller:
   replicas: 2
 ```
 
-You may now equivelantly write:
+You may now equivalently write:
 ```yaml
 controller:
   publishService:
