@@ -62,6 +62,12 @@ helm-docs can be installed using [homebrew](https://brew.sh/):
 brew install norwoodj/tap/helm-docs
 ```
 
+or [scoop](https://scoop.sh):
+
+```bash
+scoop install helm-docs
+```
+
 This will download and install the [latest release](https://github.com/norwoodj/helm-docs/releases/latest)
 of the tool.
 
