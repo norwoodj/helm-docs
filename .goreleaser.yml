@@ -48,6 +48,9 @@ nfpms:
   formats:
   - deb
   - rpm
+  replacements:
+    amd64: x86_64
+    linux: Linux
 
 brews:
   - tap:
