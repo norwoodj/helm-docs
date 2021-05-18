@@ -17,6 +17,8 @@ import (
 var valuesDescriptionRegex = regexp.MustCompile("^\\s*#\\s*(.*)\\s+--\\s*(.*)$")
 var commentContinuationRegex = regexp.MustCompile("^\\s*# (.*)$")
 var defaultValueRegex = regexp.MustCompile("^\\s*# @default -- (.*)$")
+var valueTypeRegex = regexp.MustCompile("^\\((.*?)\\)\\s*(.*)$")
+var valueNotationTypeRegex = regexp.MustCompile("^\\s*#\\s+@notationType\\s+--\\s+(.*)$")
 
 type ChartMetaMaintainer struct {
 	Email string
@@ -51,8 +53,10 @@ type ChartRequirements struct {
 }
 
 type ChartValueDescription struct {
-	Description string
-	Default     string
+	Description  string
+	Default      string
+	ValueType    string
+	NotationType string
 }
 
 type ChartDocumentationInfo struct {

@@ -5,8 +5,8 @@ import (
 	"sort"
 	"strconv"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/norwoodj/helm-docs/pkg/helm"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 )
@@ -14,6 +14,7 @@ import (
 type valueRow struct {
 	Key             string
 	Type            string
+	NotationType    string
 	AutoDefault     string
 	Default         string
 	AutoDescription string
@@ -63,7 +64,6 @@ func getSortedValuesTableRows(documentRoot *yaml.Node, chartValuesDescriptions m
 
 	return valuesTableRows, nil
 }
-
 
 func getChartTemplateData(chartDocumentationInfo helm.ChartDocumentationInfo, helmDocsVersion string) (chartTemplateData, error) {
 	// handle empty values file case

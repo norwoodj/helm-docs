@@ -9,7 +9,7 @@ import (
 
 	"github.com/norwoodj/helm-docs/pkg/util"
 
-	"github.com/Masterminds/sprig"
+	"github.com/Masterminds/sprig/v3"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/norwoodj/helm-docs/pkg/helm"
@@ -221,6 +221,54 @@ func getValuesTableTemplates() string {
 	valuesSectionBuilder.WriteString(`{{ template "chart.valuesTable" . }}`)
 	valuesSectionBuilder.WriteString("{{ end }}")
 	valuesSectionBuilder.WriteString("{{ end }}")
+
+	// For HTML tables
+	valuesSectionBuilder.WriteString(`
+{{ define "chart.valueDefaultColumnRender" }}
+{{- $defaultValue := (default .Default .AutoDefault)  -}}
+{{- $notationType := .NotationType }}
+{{- if (and (hasPrefix "` + "`" + `" $defaultValue) (hasSuffix "` + "`" + `" $defaultValue) ) -}}
+{{- $defaultValue = (toPrettyJson (fromJson (trimAll "` + "`" + `" (default .Default .AutoDefault) ) ) ) -}}
+{{- $notationType = "json" }}
+{{- end -}}
+<pre lang="{{ $notationType }}">
+{{- if (eq $notationType "tpl" ) }}
+{{ .Key }}: |
+{{- $defaultValue | nindent 2 }}
+{{- else }}
+{{ $defaultValue }}
+{{- end }}
+</pre>
+{{ end }}
+
+{{ define "chart.valuesTableHtml" }}
+<table>
+	<thead>
+		<th>Key</th>
+		<th>Type</th>
+		<th>Default</th>
+		<th>Description</th>
+	</thead>
+	<tbody>
+	{{- range .Values }}
+		<tr>
+			<td>{{ .Key }}</td>
+			<td>{{ .Type }}</td>
+			<td>{{ template "chart.valueDefaultColumnRender" . }}</td>
+			<td>{{ if .Description }}{{ .Description }}{{ else }}{{ .AutoDescription }}{{ end }}</td>
+		</tr>
+	{{- end }}
+	</tbody>
+</table>
+{{ end }}
+
+{{ define "chart.valuesSectionHtml" }}
+{{ if .Values }}
+{{ template "chart.valuesHeader" . }}
+{{ template "chart.valuesTableHtml" . }}
+{{ end }}
+{{ end }}
+		`)
 
 	return valuesSectionBuilder.String()
 }

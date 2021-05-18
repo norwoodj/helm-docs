@@ -11,11 +11,23 @@ func ParseComment(commentLines []string) (string, ChartValueDescription) {
 
 	c.Description = match[2]
 
+	valueTypeMatch := valueTypeRegex.FindStringSubmatch(c.Description)
+	if len(valueTypeMatch) > 0 && valueTypeMatch[1] != "" {
+		c.ValueType = valueTypeMatch[1]
+		c.Description = valueTypeMatch[2]
+	}
+
 	for _, line := range commentLines[1:] {
 		defaultCommentMatch := defaultValueRegex.FindStringSubmatch(line)
+		notationTypeCommentMatch := valueNotationTypeRegex.FindStringSubmatch(line)
 
 		if len(defaultCommentMatch) > 1 {
 			c.Default = defaultCommentMatch[1]
+			continue
+		}
+
+		if len(notationTypeCommentMatch) > 1 {
+			c.NotationType = notationTypeCommentMatch[1]
 			continue
 		}
 
