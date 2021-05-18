@@ -12,15 +12,23 @@ on:
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
+    env:
+      DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: docker/setup-qemu-action@v1
+    - uses: docker/setup-buildx-action@v1
     - uses: actions/setup-go@v2
       with:
-        go-version: '^1.15.6'
+        go-version: '^1.16.3'
     - uses: actions/cache@v1
       with:
         path: /home/runner/go/pkg/mod
         key: go-mod
-    - uses: goreleaser/goreleaser-action@v1
+    - uses: goreleaser/goreleaser-action@v2
       with:
         args: release --snapshot --skip-sign
+    - if: always()
+      run: rm -f ${HOME}/.docker/config.json

@@ -48,6 +48,9 @@ nfpms:
   formats:
   - deb
   - rpm
+  replacements:
+    amd64: x86_64
+    linux: Linux
 
 brews:
   - tap:
@@ -64,6 +67,47 @@ dockers:
   - goos: linux
     goarch: amd64
     dockerfile: Dockerfile
+    use_buildx: true
+    build_flag_templates:
+      - --platform=linux/amd64
     image_templates:
-      - jnorwood/{{ .ProjectName }}:latest
-      - jnorwood/{{ .ProjectName }}:{{ .Tag }}
+      - jnorwood/{{ .ProjectName }}:{{ .Tag }}-amd64
+  - goos: linux
+    goarch: arm64
+    dockerfile: Dockerfile
+    use_buildx: true
+    build_flag_templates:
+      - --platform=linux/arm64
+    image_templates:
+      - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64
+  - goos: linux
+    goarch: arm
+    goarm: 6
+    dockerfile: Dockerfile
+    use_buildx: true
+    build_flag_templates:
+      - --platform=linux/arm/v6
+    image_templates:
+      - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v6
+  - goos: linux
+    goarch: arm
+    goarm: 7
+    dockerfile: Dockerfile
+    use_buildx: true
+    build_flag_templates:
+      - --platform=linux/arm/v7
+    image_templates:
+      - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v7
+docker_manifests:
+- name_template: jnorwood/{{ .ProjectName }}:{{ .Tag }}
+  image_templates:
+    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-amd64
+    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64
+    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v6
+    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v7
+- name_template: jnorwood/{{ .ProjectName }}:latest
+  image_templates:
+    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-amd64
+    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64
+    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v6
+    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v7
