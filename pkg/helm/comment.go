@@ -3,15 +3,21 @@ package helm
 func ParseComment(commentLines []string) (string, ChartValueDescription) {
 	var valueKey string
 	var c ChartValueDescription
+	var docStartIdx int
 
-	match := valuesDescriptionRegex.FindStringSubmatch(commentLines[0])
-	if match[1] != "" {
+	for i := range commentLines {
+		match := valuesDescriptionRegex.FindStringSubmatch(commentLines[i])
+		if len(match) < 3 {
+			continue
+		}
+
 		valueKey = match[1]
+		c.Description = match[2]
+		docStartIdx = i
+		break
 	}
 
-	c.Description = match[2]
-
-	for _, line := range commentLines[1:] {
+	for _, line := range commentLines[docStartIdx+ 1:] {
 		defaultCommentMatch := defaultValueRegex.FindStringSubmatch(line)
 
 		if len(defaultCommentMatch) > 1 {

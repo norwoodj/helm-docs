@@ -129,12 +129,6 @@ func getDescriptionFromNode(node *yaml.Node) helm.ChartValueDescription {
 	}
 
 	commentLines := strings.Split(node.HeadComment, "\n")
-	match := autoDocCommentRegex.FindStringSubmatch(commentLines[0])
-
-	if len(match) < 2 {
-		return helm.ChartValueDescription{}
-	}
-
 	keyFromComment, c := helm.ParseComment(commentLines)
 	if keyFromComment != "" {
 		return helm.ChartValueDescription{}

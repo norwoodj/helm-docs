@@ -2,6 +2,9 @@ elasticsearch:
   # elasticsearch.clusterHealthCheckParams -- The Elasticsearch cluster health status params that will be used by readinessProbe command
   clusterHealthCheckParams: "wait_for_status=yellow&timeout=1s"
 
+  # unrelated comments
+  # before
+  #
   # elasticsearch.clusterHealthCheckParamsDescription -- Now let's put some special characters in the description: wait_for_status=yellow&timeout=1s
   clusterHealthCheckParamsDescription: ""
 
