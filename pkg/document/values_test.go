@@ -1373,3 +1373,45 @@ after: 3
 	assert.Equal(t, "", valuesRows[0].Description)
 	assert.Equal(t, "after desc", valuesRows[0].AutoDescription)
 }
+
+func TestIgnoreCommentedFields(t *testing.T) {
+	helmValues := parseYamlValues(`
+# -- Qux!
+qux: 1
+
+# must not appear
+# must not appear too
+
+foo:
+  # -- Bar!
+  bar: true
+  # -- Baz!
+  baz: false
+`)
+
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 3)
+
+	assert.Equal(t, "qux", valuesRows[2].Key)
+	assert.Equal(t, intType, valuesRows[2].Type)
+	assert.Equal(t, "`1`", valuesRows[2].Default)
+	assert.Equal(t, "", valuesRows[2].AutoDefault)
+	assert.Equal(t, "", valuesRows[2].Description)
+	assert.Equal(t, "Qux!", valuesRows[2].AutoDescription)
+
+	assert.Equal(t, "foo.baz", valuesRows[1].Key)
+	assert.Equal(t, boolType, valuesRows[1].Type)
+	assert.Equal(t, "`false`", valuesRows[1].Default)
+	assert.Equal(t, "", valuesRows[1].AutoDefault)
+	assert.Equal(t, "", valuesRows[1].Description)
+	assert.Equal(t, "Baz!", valuesRows[1].AutoDescription)
+
+	assert.Equal(t, "foo.bar", valuesRows[0].Key)
+	assert.Equal(t, boolType, valuesRows[0].Type)
+	assert.Equal(t, "`true`", valuesRows[0].Default)
+	assert.Equal(t, "", valuesRows[0].AutoDefault)
+	assert.Equal(t, "", valuesRows[0].Description)
+	assert.Equal(t, "Bar!", valuesRows[0].AutoDescription)
+}
