@@ -1305,12 +1305,12 @@ func TestMultilineDescriptionSection(t *testing.T) {
 animals:
   # -- (list) I mean, dogs are quite nice too...
   # @section
-  # 
+  #
   # List of default dogs:
   #  - Umbra
   #  - Penumbra
   #  - Somnus
-  # 
+  #
   # @default -- The list of dogs that _I_ own
   dogs:
 `)

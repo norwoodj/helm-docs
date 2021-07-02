@@ -41,17 +41,14 @@ func ParseComment(commentLines []string) (string, ChartValueDescription) {
 		commentContinuationMatch := commentContinuationRegex.FindStringSubmatch(line)
 
 		if isSection {
-			if len(commentContinuationMatch) > 0 {
-				c.Description += "\n"
-			}
 
 			if len(commentContinuationMatch) > 1 {
-				c.Description += commentContinuationMatch[1]
+				c.Description += "\n" + commentContinuationMatch[2]
 			}
 			continue
 		} else {
 			if len(commentContinuationMatch) > 1 {
-				c.Description += " " + commentContinuationMatch[1]
+				c.Description += " " + commentContinuationMatch[2]
 			}
 			continue
 		}
