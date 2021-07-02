@@ -761,6 +761,39 @@ probe: |
 			<td>Probe can be overridden</td>
 		</tr>
 		<tr>
+			<td id="sampleYaml">sampleYaml</td>
+			<td>
+dict
+</td>
+			<td><pre lang="json">
+{}
+</pre>
+</td>
+			<td>Values with long description
+Sometimes you need a very long description
+for your values.
+
+Any comment section for a given key with **@section** attribute
+will be treated as raw string and stored as is.
+Since it generates in Markdown format, you can do something like this:
+
+```yaml
+hello:
+  bar: true
+```
+
+Markdown also accept subset of HTML tags. So you can also do this:
+
+<details>
+<summary>+Expand</summary>
+
+```bash
+execute some command
+```
+
+</details></td>
+		</tr>
+		<tr>
 			<td id="service--annotations">service.annotations</td>
 			<td>
 dict

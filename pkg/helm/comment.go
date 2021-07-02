@@ -17,9 +17,16 @@ func ParseComment(commentLines []string) (string, ChartValueDescription) {
 		c.Description = valueTypeMatch[2]
 	}
 
+	var isSection = false
 	for _, line := range commentLines[1:] {
+		sectionFlagMatch := sectionDescriptionRegex.FindStringSubmatch(line)
 		defaultCommentMatch := defaultValueRegex.FindStringSubmatch(line)
 		notationTypeCommentMatch := valueNotationTypeRegex.FindStringSubmatch(line)
+
+		if !isSection && len(sectionFlagMatch) == 1 {
+			isSection = true
+			continue
+		}
 
 		if len(defaultCommentMatch) > 1 {
 			c.Default = defaultCommentMatch[1]
@@ -33,8 +40,19 @@ func ParseComment(commentLines []string) (string, ChartValueDescription) {
 
 		commentContinuationMatch := commentContinuationRegex.FindStringSubmatch(line)
 
-		if len(commentContinuationMatch) > 1 {
-			c.Description += " " + commentContinuationMatch[1]
+		if isSection {
+			if len(commentContinuationMatch) > 0 {
+				c.Description += "\n"
+			}
+
+			if len(commentContinuationMatch) > 1 {
+				c.Description += commentContinuationMatch[1]
+			}
+			continue
+		} else {
+			if len(commentContinuationMatch) > 1 {
+				c.Description += " " + commentContinuationMatch[1]
+			}
 			continue
 		}
 	}

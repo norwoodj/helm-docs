@@ -1300,6 +1300,33 @@ animals:
 	assert.Equal(t, "I mean, dogs are quite nice too...", valuesRows[0].Description)
 }
 
+func TestMultilineDescriptionSection(t *testing.T) {
+	helmValues := parseYamlValues(`
+animals:
+  # -- (list) I mean, dogs are quite nice too...
+  # @section
+  # 
+  # List of default dogs:
+  #  - Umbra
+  #  - Penumbra
+  #  - Somnus
+  # 
+  # @default -- The list of dogs that _I_ own
+  dogs:
+`)
+
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 1)
+
+	assert.Equal(t, "animals.dogs", valuesRows[0].Key)
+	assert.Equal(t, listType, valuesRows[0].Type)
+	assert.Equal(t, "The list of dogs that _I_ own", valuesRows[0].AutoDefault)
+	assert.Equal(t, "", valuesRows[0].Default)
+	assert.Equal(t, "I mean, dogs are quite nice too...\n\nList of default dogs:\n - Umbra\n - Penumbra\n - Somnus\n", valuesRows[0].Description)
+}
+
 func TestExtractValueNotationType(t *testing.T) {
 	helmValues := parseYamlValues(`
 animals:
