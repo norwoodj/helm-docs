@@ -84,7 +84,11 @@ func parseNilValueType(key string, description helm.ChartValueDescription, autoD
 
 	if len(t) > 0 {
 		t = t[1 : len(t)-1]
-		description.Description = description.Description[len(t)+3:]
+		if len(description.Description) > len(t)+3 {
+			description.Description = description.Description[len(t)+3:]
+		} else {
+			description.Description = ""
+		}
 	} else {
 		t = stringType
 	}
