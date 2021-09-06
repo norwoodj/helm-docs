@@ -931,18 +931,20 @@ animals:
   birds:
   birdCount:
   nonWeirdCats:
+  undescribedCount:
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"animals.birdCount":    {Description: "(int) the number of birds we have"},
-		"animals.birds":        {Description: "(list) the list of birds we have"},
-		"animals.nonWeirdCats": {Description: "the cats that we have that are not weird"},
+		"animals.birdCount":        {Description: "(int) the number of birds we have"},
+		"animals.birds":            {Description: "(list) the list of birds we have"},
+		"animals.nonWeirdCats":     {Description: "the cats that we have that are not weird"},
+		"animals.undescribedCount": {Description: "(int)"},
 	}
 
 	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
 
 	assert.Nil(t, err)
-	assert.Len(t, valuesRows, 3)
+	assert.Len(t, valuesRows, 4)
 
 	assert.Equal(t, "animals.birdCount", valuesRows[0].Key)
 	assert.Equal(t, intType, valuesRows[0].Type)
@@ -964,6 +966,13 @@ animals:
 	assert.Equal(t, "", valuesRows[2].AutoDefault)
 	assert.Equal(t, "the cats that we have that are not weird", valuesRows[2].Description)
 	assert.Equal(t, "", valuesRows[2].AutoDescription)
+
+	assert.Equal(t, "animals.undescribedCount", valuesRows[3].Key)
+	assert.Equal(t, intType, valuesRows[3].Type)
+	assert.Equal(t, "`nil`", valuesRows[3].Default)
+	assert.Equal(t, "", valuesRows[3].AutoDefault)
+	assert.Equal(t, "", valuesRows[3].Description)
+	assert.Equal(t, "", valuesRows[3].AutoDescription)
 }
 
 func TestNilValuesWithDefaults(t *testing.T) {
