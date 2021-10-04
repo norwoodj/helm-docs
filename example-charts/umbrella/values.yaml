@@ -1,0 +1,6 @@
+global:
+  # -- A global key
+  myGlobalKey: my-global-value
+
+# -- A parent key
+myParentKey: my-parent-value

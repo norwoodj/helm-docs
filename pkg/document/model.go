@@ -3,12 +3,13 @@ package document
 import (
 	"fmt"
 	"sort"
-	"strconv"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/norwoodj/helm-docs/pkg/helm"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
+
+	"github.com/norwoodj/helm-docs/pkg/helm"
 )
 
 type valueRow struct {
@@ -20,6 +21,7 @@ type valueRow struct {
 	Description     string
 	Column          int
 	LineNumber      int
+	Dependency      string
 }
 
 type chartTemplateData struct {
@@ -28,68 +30,91 @@ type chartTemplateData struct {
 	Values          []valueRow
 }
 
-func getSortedValuesTableRows(documentRoot *yaml.Node, chartValuesDescriptions map[string]helm.ChartValueDescription) ([]valueRow, error) {
-	valuesTableRows, err := createValueRowsFromField(
-		"",
-		nil,
-		documentRoot,
-		chartValuesDescriptions,
-		true,
-	)
-
-	if err != nil {
-		return nil, err
-	}
-
+func sortValueRows(valueRows []valueRow) {
 	sortOrder := viper.GetString("sort-values-order")
-	if sortOrder == FileSortOrder {
-		sort.Slice(valuesTableRows, func(i, j int) bool {
-			if valuesTableRows[i].LineNumber == valuesTableRows[j].LineNumber {
-				return valuesTableRows[i].Column < valuesTableRows[j].Column
-			}
 
-			return valuesTableRows[i].LineNumber < valuesTableRows[i].LineNumber
-		})
-	} else if sortOrder == AlphaNumSortOrder {
-		sort.Slice(valuesTableRows, func(i, j int) bool {
-			return valuesTableRows[i].Key < valuesTableRows[j].Key
-		})
-	} else {
+	if sortOrder != FileSortOrder && sortOrder != AlphaNumSortOrder {
 		log.Warnf("Invalid sort order provided %s, defaulting to %s", sortOrder, AlphaNumSortOrder)
-		sort.Slice(valuesTableRows, func(i, j int) bool {
-			return valuesTableRows[i].Key < valuesTableRows[j].Key
-		})
+		sortOrder = AlphaNumSortOrder
 	}
 
-	return valuesTableRows, nil
+	sort.Slice(valueRows, func(i, j int) bool {
+		// Always group dependency values together.
+		if valueRows[i].Dependency != valueRows[j].Dependency {
+			return valueRows[i].Dependency < valueRows[j].Dependency
+		}
+
+		// Sort the remaining values within the same values file.
+		switch sortOrder {
+		case FileSortOrder:
+			if valueRows[i].LineNumber == valueRows[j].LineNumber {
+				return valueRows[i].Column < valueRows[j].Column
+			}
+			return valueRows[i].LineNumber < valueRows[i].LineNumber
+		case AlphaNumSortOrder:
+			return valueRows[i].Key < valueRows[j].Key
+		default:
+			panic("cannot get here")
+		}
+	})
 }
 
-
-func getChartTemplateData(chartDocumentationInfo helm.ChartDocumentationInfo, helmDocsVersion string) (chartTemplateData, error) {
-	// handle empty values file case
-	if chartDocumentationInfo.ChartValues.Kind == 0 {
-		return chartTemplateData{
-			ChartDocumentationInfo: chartDocumentationInfo,
-			HelmDocsVersion:        helmDocsVersion,
-			Values:                 make([]valueRow, 0),
-		}, nil
+func getUnsortedValueRows(document *yaml.Node, descriptions map[string]helm.ChartValueDescription) ([]valueRow, error) {
+	// Handle empty values file case.
+	if document.Kind == 0 {
+		return nil, nil
 	}
 
-	if chartDocumentationInfo.ChartValues.Kind != yaml.DocumentNode {
-		return chartTemplateData{}, fmt.Errorf("invalid node kind supplied: %d", chartDocumentationInfo.ChartValues.Kind)
-	}
-	if chartDocumentationInfo.ChartValues.Content[0].Kind != yaml.MappingNode {
-		return chartTemplateData{}, fmt.Errorf("values file must resolve to a map, not %s", strconv.Itoa(int(chartDocumentationInfo.ChartValues.Kind)))
+	if document.Kind != yaml.DocumentNode {
+		return nil, fmt.Errorf("invalid node kind supplied: %d", document.Kind)
 	}
 
-	valuesTableRows, err := getSortedValuesTableRows(chartDocumentationInfo.ChartValues.Content[0], chartDocumentationInfo.ChartValuesDescriptions)
+	if document.Content[0].Kind != yaml.MappingNode {
+		return nil, fmt.Errorf("values file must resolve to a map (was %d)", document.Content[0].Kind)
+	}
 
+	return createValueRowsFromField("", nil, document.Content[0], descriptions, true)
+}
+
+func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion string, dependencyValues []DependencyValues) (chartTemplateData, error) {
+	valuesTableRows, err := getUnsortedValueRows(info.ChartValues, info.ChartValuesDescriptions)
 	if err != nil {
 		return chartTemplateData{}, err
 	}
 
+	if len(dependencyValues) > 0 {
+		globalKeys := make(map[string]bool)
+		for _, row := range valuesTableRows {
+			if strings.HasPrefix(row.Key, "global.") {
+				globalKeys[row.Key] = true
+			}
+		}
+
+		for _, dep := range dependencyValues {
+			depValuesTableRows, err := getUnsortedValueRows(dep.ChartValues, dep.ChartValuesDescriptions)
+			if err != nil {
+				return chartTemplateData{}, err
+			}
+
+			for _, row := range depValuesTableRows {
+				if strings.HasPrefix(row.Key, "global.") {
+					if globalKeys[row.Key] {
+						continue
+					}
+					globalKeys[row.Key] = true
+				}
+
+				row.Key = dep.Prefix + "." + row.Key
+				row.Dependency = dep.Prefix
+				valuesTableRows = append(valuesTableRows, row)
+			}
+		}
+	}
+
+	sortValueRows(valuesTableRows)
+
 	return chartTemplateData{
-		ChartDocumentationInfo: chartDocumentationInfo,
+		ChartDocumentationInfo: info,
 		HelmDocsVersion:        helmDocsVersion,
 		Values:                 valuesTableRows,
 	}, nil
