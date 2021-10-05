@@ -1,0 +1,8 @@
+apiVersion: v2
+name: deep-02
+version: 0.1.0
+dependencies:
+  - name: level-3-a
+    version: 0.1.0
+  - name: level-3-b
+    version: 0.1.0
