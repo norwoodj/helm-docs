@@ -2,9 +2,9 @@ package document
 
 import (
 	"errors"
-	"fmt"
 	"path/filepath"
 
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 
 	"github.com/norwoodj/helm-docs/pkg/helm"
@@ -35,7 +35,8 @@ func getDependencyValuesWithPrefix(root helm.ChartDocumentationInfo, allChartInf
 		searchPath := filepath.Join(root.ChartDirectory, "charts", dep.Name)
 		depInfo, ok := allChartInfoByChartPath[searchPath]
 		if !ok {
-			return nil, fmt.Errorf("dependency with path %q was not found", searchPath)
+			log.Warnf("Dependency with path %q was not found. Dependency values will not be included.", searchPath)
+			continue
 		}
 
 		alias := dep.Alias
