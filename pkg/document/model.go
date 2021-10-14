@@ -22,6 +22,7 @@ type valueRow struct {
 	Column          int
 	LineNumber      int
 	Dependency      string
+	IsGlobal        bool
 }
 
 type chartTemplateData struct {
@@ -39,12 +40,25 @@ func sortValueRows(valueRows []valueRow) {
 	}
 
 	sort.Slice(valueRows, func(i, j int) bool {
-		// Always group dependency values together.
-		if valueRows[i].Dependency != valueRows[j].Dependency {
-			return valueRows[i].Dependency < valueRows[j].Dependency
+		// Globals sort above non-globals.
+		if valueRows[i].IsGlobal != valueRows[j].IsGlobal {
+			return valueRows[i].IsGlobal
 		}
 
-		// Sort the remaining values within the same values file.
+		// Group by dependency for non-globals.
+		if !valueRows[i].IsGlobal && !valueRows[j].IsGlobal {
+			// Values for the main chart sort above values for dependencies.
+			if (valueRows[i].Dependency == "") != (valueRows[j].Dependency == "") {
+				return valueRows[i].Dependency == ""
+			}
+
+			// Group dependency values together.
+			if valueRows[i].Dependency != valueRows[j].Dependency {
+				return valueRows[i].Dependency < valueRows[j].Dependency
+			}
+		}
+
+		// Sort the remaining values within the same section using the configured sort order.
 		switch sortOrder {
 		case FileSortOrder:
 			if valueRows[i].LineNumber == valueRows[j].LineNumber {
@@ -83,10 +97,11 @@ func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion stri
 	}
 
 	if len(dependencyValues) > 0 {
-		globalKeys := make(map[string]bool)
-		for _, row := range valuesTableRows {
+		seenGlobalKeys := make(map[string]bool)
+		for i, row := range valuesTableRows {
 			if strings.HasPrefix(row.Key, "global.") {
-				globalKeys[row.Key] = true
+				valuesTableRows[i].IsGlobal = true
+				seenGlobalKeys[row.Key] = true
 			}
 		}
 
@@ -98,13 +113,15 @@ func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion stri
 
 			for _, row := range depValuesTableRows {
 				if strings.HasPrefix(row.Key, "global.") {
-					if globalKeys[row.Key] {
+					if seenGlobalKeys[row.Key] {
 						continue
 					}
-					globalKeys[row.Key] = true
+					row.IsGlobal = true
+					seenGlobalKeys[row.Key] = true
+				} else {
+					row.Key = dep.Prefix + "." + row.Key
 				}
 
-				row.Key = dep.Prefix + "." + row.Key
 				row.Dependency = dep.Prefix
 				valuesTableRows = append(valuesTableRows, row)
 			}
