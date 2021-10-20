@@ -6,3 +6,12 @@
   language: script
   name: Helm Docs
   require_serial: true
+
+- id: helm-docs-built
+  args: []
+  description: Uses auto built 'helm-docs' to create documentation from the Helm chart's 'values.yaml' file, and inserts the result into a corresponding 'README.md' file.
+  entry: helm-docs
+  files: (README\.md\.gotmpl|(Chart|requirements|values)\.yaml)$
+  language: golang
+  name: Helm Docs Built
+  require_serial: true
