@@ -4,6 +4,12 @@
 
 A sub-chart.
 
+## Requirements
+
+| Repository | Name | Version |
+|------------|------|---------|
+| file://../library | library | 0.1.0 |
+
 ## Values
 
 | Key | Type | Default | Description |

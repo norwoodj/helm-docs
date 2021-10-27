@@ -1,8 +1,8 @@
 package document
 
 import (
-	"errors"
 	"path/filepath"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
@@ -28,11 +28,17 @@ func getDependencyValuesWithPrefix(root helm.ChartDocumentationInfo, allChartInf
 	result := make([]DependencyValues, 0, len(root.Dependencies))
 
 	for _, dep := range root.Dependencies {
-		if dep.Repository != "" {
-			return nil, errors.New("remote dependencies are not yet supported")
+		searchPath := ""
+
+		if strings.HasPrefix(dep.Repository, "file://") {
+			searchPath = filepath.Join(root.ChartDirectory, strings.TrimPrefix(dep.Repository, "file://"))
+		} else if dep.Repository != "" {
+			log.Warnf("Chart in %q has a remote dependency %q. Dependency values will not be included.", root.ChartDirectory, dep.Name)
+			continue
+		} else {
+			searchPath = filepath.Join(root.ChartDirectory, "charts", dep.Name)
 		}
 
-		searchPath := filepath.Join(root.ChartDirectory, "charts", dep.Name)
 		depInfo, ok := allChartInfoByChartPath[searchPath]
 		if !ok {
 			log.Warnf("Dependency with path %q was not found. Dependency values will not be included.", searchPath)

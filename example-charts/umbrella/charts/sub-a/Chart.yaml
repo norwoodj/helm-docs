@@ -3,3 +3,7 @@ name: sub-a
 description: A sub-chart.
 version: "0.1.0"
 type: application
+dependencies:
+  - name: library
+    version: 0.1.0
+    repository: file://../library
