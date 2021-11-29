@@ -1,0 +1,8 @@
+apiVersion: v2
+name: level-2-a
+version: 0.1.0
+dependencies:
+  - name: level-1-a
+    version: 0.1.0
+  - name: level-1-b
+    version: 0.1.0
