@@ -67,7 +67,7 @@ dockers:
   - goos: linux
     goarch: amd64
     dockerfile: Dockerfile
-    use_buildx: true
+    use: buildx
     build_flag_templates:
       - --platform=linux/amd64
     image_templates:
@@ -75,7 +75,7 @@ dockers:
   - goos: linux
     goarch: arm64
     dockerfile: Dockerfile
-    use_buildx: true
+    use: buildx
     build_flag_templates:
       - --platform=linux/arm64
     image_templates:
@@ -84,7 +84,7 @@ dockers:
     goarch: arm
     goarm: 6
     dockerfile: Dockerfile
-    use_buildx: true
+    use: buildx
     build_flag_templates:
       - --platform=linux/arm/v6
     image_templates:
@@ -93,7 +93,7 @@ dockers:
     goarch: arm
     goarm: 7
     dockerfile: Dockerfile
-    use_buildx: true
+    use: buildx
     build_flag_templates:
       - --platform=linux/arm/v7
     image_templates:
