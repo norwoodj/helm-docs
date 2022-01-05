@@ -8,6 +8,7 @@ import (
 	"text/template"
 
 	"github.com/norwoodj/helm-docs/pkg/util"
+	"k8s.io/helm/pkg/engine"
 
 	"github.com/Masterminds/sprig"
 	log "github.com/sirupsen/logrus"
@@ -311,6 +312,7 @@ func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, te
 func newChartDocumentationTemplate(chartDocumentationInfo helm.ChartDocumentationInfo, chartSearchRoot string, templateFiles []string) (*template.Template, error) {
 	documentationTemplate := template.New(chartDocumentationInfo.ChartDirectory)
 	documentationTemplate.Funcs(sprig.TxtFuncMap())
+	documentationTemplate.Funcs(engine.FuncMap())
 	goTemplateList, err := getDocumentationTemplates(chartDocumentationInfo.ChartDirectory, chartSearchRoot, templateFiles)
 
 	if err != nil {

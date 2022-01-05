@@ -37,6 +37,7 @@ type ChartMeta struct {
 	Sources     []string
 	Engine      string
 	Maintainers []ChartMetaMaintainer
+	Annotations	map[string]string
 }
 
 type ChartRequirementsItem struct {

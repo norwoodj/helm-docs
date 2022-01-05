@@ -1,35 +1,32 @@
-name: Release
+# name: Release
 
-on:
-  push:
-    tags:
-    - "*"
+# on:
+#   push:
+#     tags:
+#     - "*"
 
-jobs:
-  goreleaser:
-    runs-on: ubuntu-latest
-    env:
-      DOCKER_CLI_EXPERIMENTAL: "enabled"
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - uses: docker/setup-qemu-action@v1
-    - uses: docker/setup-buildx-action@v1
-    - uses: actions/setup-go@v2
-      with:
-        go-version: '^1.16.3'
-    - uses: actions/cache@v1
-      with:
-        path: /home/runner/go/pkg/mod
-        key: go-mod
-    - name: Login to Docker hub
-      run: docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
-    - uses: goreleaser/goreleaser-action@v2
-      with:
-        args: release
-        key: ${{ secrets.SIGNING_KEY }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.NORWOODJ_ORG_TOKEN }}
-    - if: always()
-      run: rm -f ${HOME}/.docker/config.json
+# jobs:
+#   goreleaser:
+#     runs-on: ubuntu-latest
+#     env:
+#       DOCKER_CLI_EXPERIMENTAL: "enabled"
+#     steps:
+#     - uses: actions/checkout@v2
+#       with:
+#         fetch-depth: 0
+#     - uses: docker/setup-qemu-action@v1
+#     - uses: docker/setup-buildx-action@v1
+#     - uses: actions/setup-go@v2
+#       with:
+#         go-version: '^1.16.3'
+#     - uses: actions/cache@v1
+#       with:
+#         path: /home/runner/go/pkg/mod
+#         key: go-mod
+#     # - name: Login to Docker hub
+#     #   run: docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
+#     - uses: goreleaser/goreleaser-action@v2
+#       with:
+#         args: release
+#     - if: always()
+#       run: rm -f ${HOME}/.docker/config.json
