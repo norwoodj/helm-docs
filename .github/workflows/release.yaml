@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get k8s-at-home token
+        id: get-app-token
+        uses: getsentry/action-github-app-token@v1
+        with:
+          app_id: ${{ secrets.K8S_AT_HOME_APP_ID }}
+          private_key: ${{ secrets.K8S_AT_HOME_APP_PRIVATE_KEY }}
+
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v2
+        with:
+          go-version: "^1.17.5"
+
+      - uses: actions/cache@v1
+        with:
+          path: /home/runner/go/pkg/mod
+          key: go-mod
+
+      - uses: goreleaser/goreleaser-action@v2
+        with:
+          args: release
+        env:
+          GITHUB_TOKEN: ${{ steps.get-app-token.outputs.token }}
