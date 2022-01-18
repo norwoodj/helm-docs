@@ -132,6 +132,9 @@ func getDescriptionFromNode(node *yaml.Node) helm.ChartValueDescription {
 		return helm.ChartValueDescription{}
 	}
 
+	if !strings.Contains(node.HeadComment, "# --") {
+		return helm.ChartValueDescription{}
+	}
 	commentLines := strings.Split(node.HeadComment, "\n")
 	keyFromComment, c := helm.ParseComment(commentLines)
 	if keyFromComment != "" {
