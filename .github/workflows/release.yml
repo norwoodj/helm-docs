@@ -25,11 +25,16 @@ jobs:
         key: go-mod
     - name: Login to Docker hub
       run: docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
+    - name: Import GPG key
+      id: import_gpg
+      uses: crazy-max/ghaction-import-gpg@v4
+      with:
+        gpg_private_key: ${{ secrets.SIGNING_KEY }}
     - uses: goreleaser/goreleaser-action@v2
       with:
         args: release
-        key: ${{ secrets.SIGNING_KEY }}
       env:
         GITHUB_TOKEN: ${{ secrets.NORWOODJ_ORG_TOKEN }}
+        GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
     - if: always()
       run: rm -f ${HOME}/.docker/config.json
