@@ -1,5 +1,5 @@
 helm-docs:
-	go build github.com/norwoodj/helm-docs/cmd/helm-docs
+	GOOS=linux GOARCH=386 go build github.com/norwoodj/helm-docs/cmd/helm-docs
 
 .PHONY: fmt
 fmt:
