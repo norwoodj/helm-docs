@@ -112,7 +112,7 @@ func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion stri
 			}
 
 			for _, row := range depValuesTableRows {
-				if strings.HasPrefix(row.Key, "global.") {
+				if row.Key == "global" || strings.HasPrefix(row.Key, "global.") {
 					if seenGlobalKeys[row.Key] {
 						continue
 					}

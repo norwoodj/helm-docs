@@ -11,11 +11,13 @@ A chart demonstrating that values documentation from child charts are aggregated
 |  | library | 0.1.0 |
 |  | sub-a | 0.1.0 |
 |  | sub-b | 0.1.0 |
+|  | sub-c | 0.1.0 |
 
 ## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| global | object | `{}` |  |
 | global.myGlobalKey | string | `"my-global-value"` | A global key |
 | global.myGlobalSubChartKey | string | `"my-global-sub-chart-value"` | A global key defined in a sub chart |
 | myParentKey | string | `"my-parent-value"` | A parent key |

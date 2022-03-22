@@ -8,5 +8,7 @@ dependencies:
     version: 0.1.0
   - name: sub-b
     version: 0.1.0
+  - name: sub-c
+    version: 0.1.0
   - name: library
     version: 0.1.0
