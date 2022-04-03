@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 )
 
@@ -141,7 +142,7 @@ func parseChartRequirementsFile(chartDirectory string, apiVersion string) (Chart
 }
 
 func parseChartValuesFile(chartDirectory string) (yaml.Node, error) {
-	valuesPath := path.Join(chartDirectory, "values.yaml")
+	valuesPath := path.Join(chartDirectory, viper.GetString("values-file"))
 	yamlFileContents, err := getYamlFileContents(valuesPath)
 
 	var values yaml.Node
@@ -154,7 +155,7 @@ func parseChartValuesFile(chartDirectory string) (yaml.Node, error) {
 }
 
 func parseChartValuesFileComments(chartDirectory string) (map[string]ChartValueDescription, error) {
-	valuesPath := path.Join(chartDirectory, "values.yaml")
+	valuesPath := path.Join(chartDirectory, viper.GetString("values-file"))
 	valuesFile, err := os.Open(valuesPath)
 
 	if isErrorInReadingNecessaryFile(valuesPath, err) {

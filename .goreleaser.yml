@@ -37,7 +37,7 @@ changelog:
 
 signs:
 - artifacts: checksum
-  args: ["-u", "9A43A53360334547EB66A9EEF1BBFDD85DF0F05F", "--output", "${signature}", "--detach-sign", "${artifact}"]
+  args: ["-u", "{{ .Env.GPG_FINGERPRINT }}", "--output", "${signature}", "--detach-sign", "${artifact}"]
 
 nfpms:
 - vendor: helm-docs

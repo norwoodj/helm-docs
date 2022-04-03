@@ -52,6 +52,7 @@ func newHelmDocsCommand(run func(cmd *cobra.Command, args []string)) (*cobra.Com
 	command.PersistentFlags().StringP("sort-values-order", "s", document.AlphaNumSortOrder, fmt.Sprintf("order in which to sort the values table (\"%s\" or \"%s\")", document.AlphaNumSortOrder, document.FileSortOrder))
 	command.PersistentFlags().StringSliceP("template-files", "t", []string{"README.md.gotmpl"}, "gotemplate file paths relative to each chart directory from which documentation will be generated")
 	command.PersistentFlags().StringP("badge-style", "b", "flat-square", "badge style to use for charts")
+	command.PersistentFlags().StringP("values-file", "f", "values.yaml", "Path to values file")
 
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("HELM_DOCS")
