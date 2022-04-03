@@ -129,7 +129,7 @@ func getMaintainersTemplate() string {
 	maintainerBuilder.WriteString("| Name | Email | Url |\n")
 	maintainerBuilder.WriteString("| ---- | ------ | --- |\n")
 	maintainerBuilder.WriteString("  {{- range .Maintainers }}")
-	maintainerBuilder.WriteString("\n| {{ .Name }} | <{{ .Email }}> | <{{ .Url }}> |")
+	maintainerBuilder.WriteString("\n| {{ .Name }} | {{ if .Email }}<{{ .Email }}>{{ end }} | {{ if .Url }}<{{ .Url }}>{{ end }} |")
 	maintainerBuilder.WriteString("  {{- end }}")
 	maintainerBuilder.WriteString("{{ end }}")
 
