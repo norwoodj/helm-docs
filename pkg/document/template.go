@@ -1,6 +1,7 @@
 package document
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -62,31 +63,31 @@ func getDeprecatedTemplate() string {
 	return deprecatedTemplateBuilder.String()
 }
 
-func getVersionTemplates() string {
+func getVersionTemplates(badgeStyle string) string {
 	versionBuilder := strings.Builder{}
 	versionBuilder.WriteString(`{{ define "chart.version" }}{{ .Version }}{{ end }}\n`)
 	versionBuilder.WriteString(`{{ define "chart.versionBadge" }}`)
-	versionBuilder.WriteString(`![Version: {{ .Version }}](https://img.shields.io/badge/Version-{{ .Version | replace "-" "--" }}-informational?style=flat-square) `)
+	versionBuilder.WriteString(fmt.Sprintf(`![Version: {{ .Version }}](https://img.shields.io/badge/Version-{{ .Version | replace "-" "--" }}-informational?style=%s) `, badgeStyle))
 	versionBuilder.WriteString("{{ end }}")
 
 	return versionBuilder.String()
 }
 
-func getTypeTemplate() string {
+func getTypeTemplate(badgeStyle string) string {
 	typeBuilder := strings.Builder{}
 	typeBuilder.WriteString(`{{ define "chart.type" }}{{ .Type }}{{ end }}\n`)
 	typeBuilder.WriteString(`{{ define "chart.typeBadge" }}`)
-	typeBuilder.WriteString("{{ if .Type }}![Type: {{ .Type }}](https://img.shields.io/badge/Type-{{ .Type }}-informational?style=flat-square) {{ end }}")
+	typeBuilder.WriteString(fmt.Sprintf("{{ if .Type }}![Type: {{ .Type }}](https://img.shields.io/badge/Type-{{ .Type }}-informational?style=%s) {{ end }}", badgeStyle))
 	typeBuilder.WriteString("{{ end }}")
 
 	return typeBuilder.String()
 }
 
-func getAppVersionTemplate() string {
+func getAppVersionTemplate(badgeStyle string) string {
 	appVersionBuilder := strings.Builder{}
 	appVersionBuilder.WriteString(`{{ define "chart.appVersion" }}{{ .AppVersion }}{{ end }}\n`)
 	appVersionBuilder.WriteString(`{{ define "chart.appVersionBadge" }}`)
-	appVersionBuilder.WriteString(`{{ if .AppVersion }}![AppVersion: {{ .AppVersion }}](https://img.shields.io/badge/AppVersion-{{ .AppVersion | replace "-" "--" }}-informational?style=flat-square) {{ end }}`)
+	appVersionBuilder.WriteString(fmt.Sprintf(`{{ if .AppVersion }}![AppVersion: {{ .AppVersion }}](https://img.shields.io/badge/AppVersion-{{ .AppVersion | replace "-" "--" }}-informational?style=%s) {{ end }}`, badgeStyle))
 	appVersionBuilder.WriteString("{{ end }}")
 
 	return appVersionBuilder.String()
@@ -281,7 +282,7 @@ func getDocumentationTemplate(chartDirectory string, chartSearchRoot string, tem
 	return string(allTemplateContents), nil
 }
 
-func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, templateFiles []string) ([]string, error) {
+func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, templateFiles []string, badgeStyle string) ([]string, error) {
 	documentationTemplate, err := getDocumentationTemplate(chartDirectory, chartSearchRoot, templateFiles)
 
 	if err != nil {
@@ -293,11 +294,11 @@ func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, te
 		getNameTemplate(),
 		getHeaderTemplate(),
 		getDeprecatedTemplate(),
-		getAppVersionTemplate(),
+		getAppVersionTemplate(badgeStyle),
 		getBadgesTemplates(),
 		getDescriptionTemplate(),
-		getVersionTemplates(),
-		getTypeTemplate(),
+		getVersionTemplates(badgeStyle),
+		getTypeTemplate(badgeStyle),
 		getSourceLinkTemplates(),
 		getRequirementsTableTemplates(),
 		getValuesTableTemplates(),
@@ -308,10 +309,10 @@ func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, te
 	}, nil
 }
 
-func newChartDocumentationTemplate(chartDocumentationInfo helm.ChartDocumentationInfo, chartSearchRoot string, templateFiles []string) (*template.Template, error) {
+func newChartDocumentationTemplate(chartDocumentationInfo helm.ChartDocumentationInfo, chartSearchRoot string, templateFiles []string, badgeStyle string) (*template.Template, error) {
 	documentationTemplate := template.New(chartDocumentationInfo.ChartDirectory)
 	documentationTemplate.Funcs(sprig.TxtFuncMap())
-	goTemplateList, err := getDocumentationTemplates(chartDocumentationInfo.ChartDirectory, chartSearchRoot, templateFiles)
+	goTemplateList, err := getDocumentationTemplates(chartDocumentationInfo.ChartDirectory, chartSearchRoot, templateFiles, badgeStyle)
 
 	if err != nil {
 		return nil, err

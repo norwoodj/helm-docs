@@ -14,7 +14,7 @@ import (
 	"github.com/norwoodj/helm-docs/pkg/helm"
 )
 
-func retrieveInfoAndPrintDocumentation(chartDirectory string, chartSearchRoot string, templateFiles []string, waitGroup *sync.WaitGroup, dryRun bool) {
+func retrieveInfoAndPrintDocumentation(chartDirectory string, chartSearchRoot string, templateFiles []string, waitGroup *sync.WaitGroup, badgeStyle string, dryRun bool) {
 	defer waitGroup.Done()
 	chartDocumentationInfo, err := helm.ParseChartInformation(path.Join(chartSearchRoot, chartDirectory))
 
@@ -23,11 +23,11 @@ func retrieveInfoAndPrintDocumentation(chartDirectory string, chartSearchRoot st
 		return
 	}
 
-	document.PrintDocumentation(chartDocumentationInfo, chartSearchRoot, templateFiles, dryRun, version)
+	document.PrintDocumentation(chartDocumentationInfo, chartSearchRoot, templateFiles, dryRun, version, badgeStyle)
 
 }
 
-func helmDocs(cmd *cobra.Command, _ []string) {
+func helmDocs(_ *cobra.Command, _ []string) {
 	initializeCli()
 
 	chartSearchRoot := viper.GetString("chart-search-root")
@@ -56,6 +56,8 @@ func helmDocs(cmd *cobra.Command, _ []string) {
 	templateFiles := viper.GetStringSlice("template-files")
 	log.Debugf("Rendering from optional template files [%s]", strings.Join(templateFiles, ", "))
 
+	badgeStyle := viper.GetString("badge-style")
+
 	dryRun := viper.GetBool("dry-run")
 	waitGroup := sync.WaitGroup{}
 
@@ -64,9 +66,9 @@ func helmDocs(cmd *cobra.Command, _ []string) {
 
 		// On dry runs all output goes to stdout, and so as to not jumble things, generate serially
 		if dryRun {
-			retrieveInfoAndPrintDocumentation(c, fullChartSearchRoot, templateFiles, &waitGroup, dryRun)
+			retrieveInfoAndPrintDocumentation(c, fullChartSearchRoot, templateFiles, &waitGroup, badgeStyle, dryRun)
 		} else {
-			go retrieveInfoAndPrintDocumentation(c, fullChartSearchRoot, templateFiles, &waitGroup, dryRun)
+			go retrieveInfoAndPrintDocumentation(c, fullChartSearchRoot, templateFiles, &waitGroup, badgeStyle, dryRun)
 		}
 	}
 
