@@ -10,7 +10,7 @@ import (
 
 	"github.com/norwoodj/helm-docs/pkg/util"
 
-	"github.com/Masterminds/sprig"
+	"github.com/Masterminds/sprig/v3"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/norwoodj/helm-docs/pkg/helm"
