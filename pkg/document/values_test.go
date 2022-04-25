@@ -9,6 +9,21 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+func getSortedValuesTableRows(helmValues *yaml.Node, descriptions map[string]helm.ChartValueDescription) ([]valueRow, error) {
+	// Note: This getSortedValuesTableRows function was added as a shim when getSortedValuesTableRows
+	// was removed from the package. In the future it may make sense to rewrite the tests.
+
+	document := &yaml.Node{Kind: yaml.DocumentNode, Content: []*yaml.Node{helmValues}}
+	valueRows, err := getUnsortedValueRows(document, descriptions)
+	if err != nil {
+		return nil, err
+	}
+
+	sortValueRows(valueRows)
+
+	return valueRows, nil
+}
+
 func parseYamlValues(yamlValues string) *yaml.Node {
 	var chartValues yaml.Node
 	err := yaml.Unmarshal([]byte(strings.TrimSpace(yamlValues)), &chartValues)

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -248,9 +248,9 @@ func getDocumentationTemplate(chartDirectory string, chartSearchRoot string, tem
 		var fullTemplatePath string
 
 		if util.IsRelativePath(templateFile) {
-			fullTemplatePath = path.Join(chartSearchRoot, templateFile)
+			fullTemplatePath = filepath.Join(chartSearchRoot, templateFile)
 		} else if util.IsBaseFilename(templateFile) {
-			fullTemplatePath = path.Join(chartDirectory, templateFile)
+			fullTemplatePath = filepath.Join(chartDirectory, templateFile)
 		} else {
 			fullTemplatePath = templateFile
 		}
