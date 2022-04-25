@@ -1,0 +1,14 @@
+apiVersion: v2
+name: umbrella
+description: A chart demonstrating that values documentation from child charts are aggregated on the parent chart.
+version: "0.1.0"
+type: application
+dependencies:
+  - name: sub-a
+    version: 0.1.0
+  - name: sub-b
+    version: 0.1.0
+  - name: sub-c
+    version: 0.1.0
+  - name: library
+    version: 0.1.0

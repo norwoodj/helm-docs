@@ -36,6 +36,7 @@ func parseIgnoreFilePathToRules(filename string) (*ignore.Rules, error) {
 		return nil, fmt.Errorf("failed to parse ignore rules from file %s: %s", filename, err)
 	}
 
+	log.Debugf("Found ignore file at %s, using those ignore rules", filename)
 	return ignoreRules, nil
 }
 

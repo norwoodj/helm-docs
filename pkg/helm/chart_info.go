@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 )
 
@@ -92,7 +93,7 @@ func isErrorInReadingNecessaryFile(filePath string, loadError error) bool {
 }
 
 func parseChartFile(chartDirectory string) (ChartMeta, error) {
-	chartYamlPath := path.Join(chartDirectory, "Chart.yaml")
+	chartYamlPath := filepath.Join(chartDirectory, "Chart.yaml")
 	chartMeta := ChartMeta{}
 	yamlFileContents, err := getYamlFileContents(chartYamlPath)
 
@@ -112,13 +113,13 @@ func parseChartRequirementsFile(chartDirectory string, apiVersion string) (Chart
 	var requirementsPath string
 
 	if apiVersion == "v1" {
-		requirementsPath = path.Join(chartDirectory, "requirements.yaml")
+		requirementsPath = filepath.Join(chartDirectory, "requirements.yaml")
 
 		if _, err := os.Stat(requirementsPath); os.IsNotExist(err) {
 			return ChartRequirements{Dependencies: []ChartRequirementsItem{}}, nil
 		}
 	} else {
-		requirementsPath = path.Join(chartDirectory, "Chart.yaml")
+		requirementsPath = filepath.Join(chartDirectory, "Chart.yaml")
 	}
 
 	chartRequirements := ChartRequirements{}
@@ -141,7 +142,7 @@ func parseChartRequirementsFile(chartDirectory string, apiVersion string) (Chart
 }
 
 func parseChartValuesFile(chartDirectory string) (yaml.Node, error) {
-	valuesPath := path.Join(chartDirectory, "values.yaml")
+	valuesPath := filepath.Join(chartDirectory, viper.GetString("values-file"))
 	yamlFileContents, err := getYamlFileContents(valuesPath)
 
 	var values yaml.Node
@@ -154,7 +155,7 @@ func parseChartValuesFile(chartDirectory string) (yaml.Node, error) {
 }
 
 func parseChartValuesFileComments(chartDirectory string) (map[string]ChartValueDescription, error) {
-	valuesPath := path.Join(chartDirectory, "values.yaml")
+	valuesPath := filepath.Join(chartDirectory, viper.GetString("values-file"))
 	valuesFile, err := os.Open(valuesPath)
 
 	if isErrorInReadingNecessaryFile(valuesPath, err) {
