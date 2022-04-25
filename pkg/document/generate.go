@@ -29,11 +29,14 @@ func getOutputFile(chartDirectory string, dryRun bool) (*os.File, error) {
 func PrintDocumentation(chartDocumentationInfo helm.ChartDocumentationInfo, chartSearchRoot string, templateFiles []string, dryRun bool, helmDocsVersion string, badgeStyle string, dependencyValues []DependencyValues) {
 	log.Infof("Generating README Documentation for chart %s", chartDocumentationInfo.ChartDirectory)
 
+	escapeValuesPipes := viper.GetBool("escape-values-pipes")
+
 	chartDocumentationTemplate, err := newChartDocumentationTemplate(
 		chartDocumentationInfo,
 		chartSearchRoot,
 		templateFiles,
 		badgeStyle,
+		escapeValuesPipes,
 	)
 
 	if err != nil {
