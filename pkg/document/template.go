@@ -203,7 +203,7 @@ func getRequirementsTableTemplates() string {
 	return requirementsSectionBuilder.String()
 }
 
-func getValuesTableTemplates() string {
+func getValuesTableTemplates(escapeValuesPipes bool) string {
 	valuesSectionBuilder := strings.Builder{}
 	valuesSectionBuilder.WriteString(`{{ define "chart.valuesHeader" }}## Values{{ end }}`)
 
@@ -211,7 +211,11 @@ func getValuesTableTemplates() string {
 	valuesSectionBuilder.WriteString("| Key | Type | Default | Description |\n")
 	valuesSectionBuilder.WriteString("|-----|------|---------|-------------|\n")
 	valuesSectionBuilder.WriteString("  {{- range .Values }}")
-	valuesSectionBuilder.WriteString("\n" + `| {{ .Key }} | {{ .Type }} | {{ .Default | replace "|" "\\|" | default .AutoDefault }} | {{ .Description | replace "|" "\\|" | default .AutoDescription }} |`)
+	if escapeValuesPipes {
+		valuesSectionBuilder.WriteString("\n" + `| {{ .Key }} | {{ .Type }} | {{ .Default | replace "|" "\\|" | default .AutoDefault }} | {{ .Description | replace "|" "\\|" | default .AutoDescription }} |`)
+	} else {
+		valuesSectionBuilder.WriteString("\n" + `| {{ .Key }} | {{ .Type }} | {{ .Default | default .AutoDefault }} | {{ .Description | replace "|" "\\|" | default .AutoDescription }} |`)
+	}
 	valuesSectionBuilder.WriteString("  {{- end }}")
 	valuesSectionBuilder.WriteString("{{ end }}")
 
@@ -282,7 +286,7 @@ func getDocumentationTemplate(chartDirectory string, chartSearchRoot string, tem
 	return string(allTemplateContents), nil
 }
 
-func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, templateFiles []string, badgeStyle string) ([]string, error) {
+func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, templateFiles []string, badgeStyle string, escapeValuesPipes bool) ([]string, error) {
 	documentationTemplate, err := getDocumentationTemplate(chartDirectory, chartSearchRoot, templateFiles)
 
 	if err != nil {
@@ -301,7 +305,7 @@ func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, te
 		getTypeTemplate(badgeStyle),
 		getSourceLinkTemplates(),
 		getRequirementsTableTemplates(),
-		getValuesTableTemplates(),
+		getValuesTableTemplates(escapeValuesPipes),
 		getHomepageTemplate(),
 		getMaintainersTemplate(),
 		getHelmDocsVersionTemplates(),
@@ -309,10 +313,10 @@ func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, te
 	}, nil
 }
 
-func newChartDocumentationTemplate(chartDocumentationInfo helm.ChartDocumentationInfo, chartSearchRoot string, templateFiles []string, badgeStyle string) (*template.Template, error) {
+func newChartDocumentationTemplate(chartDocumentationInfo helm.ChartDocumentationInfo, chartSearchRoot string, templateFiles []string, badgeStyle string, escapeValuesPipes bool) (*template.Template, error) {
 	documentationTemplate := template.New(chartDocumentationInfo.ChartDirectory)
 	documentationTemplate.Funcs(sprig.TxtFuncMap())
-	goTemplateList, err := getDocumentationTemplates(chartDocumentationInfo.ChartDirectory, chartSearchRoot, templateFiles, badgeStyle)
+	goTemplateList, err := getDocumentationTemplates(chartDocumentationInfo.ChartDirectory, chartSearchRoot, templateFiles, badgeStyle, escapeValuesPipes)
 
 	if err != nil {
 		return nil, err
