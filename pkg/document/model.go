@@ -29,6 +29,7 @@ type chartTemplateData struct {
 	helm.ChartDocumentationInfo
 	HelmDocsVersion string
 	Values          []valueRow
+	Files           files
 }
 
 func sortValueRows(valueRows []valueRow) {
@@ -130,9 +131,15 @@ func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion stri
 
 	sortValueRows(valuesTableRows)
 
+	files, err := getFiles(info.ChartDirectory)
+	if err != nil {
+		return chartTemplateData{}, err
+	}
+
 	return chartTemplateData{
 		ChartDocumentationInfo: info,
 		HelmDocsVersion:        helmDocsVersion,
 		Values:                 valuesTableRows,
+		Files:                  files,
 	}, nil
 }
