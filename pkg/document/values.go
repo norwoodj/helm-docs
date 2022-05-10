@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/norwoodj/helm-docs/pkg/helm"
@@ -31,9 +30,6 @@ const (
 	floatTag     = "!!float"
 	timestampTag = "!!timestamp"
 )
-
-var autoDocCommentRegex = regexp.MustCompile("^\\s*#\\s*-- (.*)$")
-var nilValueTypeRegex = regexp.MustCompile("^\\(.*?\\)")
 
 func formatNextListKeyPrefix(prefix string, index int) string {
 	return fmt.Sprintf("%s[%d]", prefix, index)
@@ -81,16 +77,10 @@ func parseNilValueType(key string, description helm.ChartValueDescription, autoD
 	if len(description.Description) == 0 {
 		description.Description = autoDescription.Description
 	}
-	// Grab whatever's in between the parentheses of the description and treat it as the type
-	t := nilValueTypeRegex.FindString(description.Description)
 
-	if len(t) > 0 {
-		t = t[1 : len(t)-1]
-		if len(description.Description) > len(t)+3 {
-			description.Description = description.Description[len(t)+3:]
-		} else {
-			description.Description = ""
-		}
+	var t string
+	if description.ValueType != "" {
+		t = description.ValueType
 	} else if autoDescription.ValueType != "" {
 		// Use whatever the type recognized by autoDescription parser
 		t = autoDescription.ValueType
