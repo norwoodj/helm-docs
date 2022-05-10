@@ -146,6 +146,25 @@ func parseChartRequirementsFile(chartDirectory string, apiVersion string) (Chart
 	return chartRequirements, nil
 }
 
+func removeIgnored(rootNode *yaml.Node, rootKind yaml.Kind) {
+	var toDelete []int
+	for i, node := range rootNode.Content {
+		if strings.Contains(node.HeadComment, "# -- @ignore") {
+			toDelete = append(toDelete, i)
+			if rootKind == yaml.MappingNode {
+				toDelete = append(toDelete, i+1)
+			}
+		}
+	}
+	for i := len(toDelete) - 1; i >= 0; i-- {
+		var d int = toDelete[i]
+		rootNode.Content = append(rootNode.Content[:d], rootNode.Content[d+1:]...)
+	}
+	for _, node := range rootNode.Content {
+		removeIgnored(node, node.Kind)
+	}
+}
+
 func parseChartValuesFile(chartDirectory string) (yaml.Node, error) {
 	valuesPath := filepath.Join(chartDirectory, viper.GetString("values-file"))
 	yamlFileContents, err := getYamlFileContents(valuesPath)
@@ -156,6 +175,7 @@ func parseChartValuesFile(chartDirectory string) (yaml.Node, error) {
 	}
 
 	err = yaml.Unmarshal(yamlFileContents, &values)
+	removeIgnored(&values, values.Kind)
 	return values, err
 }
 
