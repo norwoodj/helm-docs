@@ -1439,3 +1439,117 @@ foo:
 	assert.Equal(t, "", valuesRows[0].Description)
 	assert.Equal(t, "Bar!", valuesRows[0].AutoDescription)
 }
+
+func TestMultilineDescriptionSection(t *testing.T) {
+	helmValues := parseYamlValues(`
+animals:
+  # -- (list) I mean, dogs are quite nice too...
+  # @section
+  #
+  # List of default dogs:
+  #  - Umbra
+  #  - Penumbra
+  #  - Somnus
+  #
+  # @default -- The list of dogs that _I_ own
+  dogs:
+`)
+
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 1)
+
+	assert.Equal(t, "animals.dogs", valuesRows[0].Key)
+	assert.Equal(t, listType, valuesRows[0].Type)
+	assert.Equal(t, "The list of dogs that _I_ own", valuesRows[0].AutoDefault)
+	assert.Equal(t, "", valuesRows[0].Default)
+	assert.Equal(t, "I mean, dogs are quite nice too...\n\nList of default dogs:\n - Umbra\n - Penumbra\n - Somnus\n", valuesRows[0].Description)
+}
+
+func TestExtractValueNotationType(t *testing.T) {
+	helmValues := parseYamlValues(`
+animals:
+  # -- (list) My animals lists
+  # @notationType -- yaml
+  cats:
+   - mike
+   - ralph
+  # -- (list) My animal lists, but in tpl string
+  # @notationType -- tpl
+  catsInTpl: |
+   {{- .Values.animals.cats }}
+
+  # -- (object) Declaring object as tpl (to be cascaded with tpl function)
+  # @notationType -- tpl
+  dinosaur: |
+    name: hockney
+    dynamicVar: {{ .Values.fromOtherProperty }}
+
+  # -- (object) Declaring object as yaml
+  # @notationType -- yaml
+  fish:
+    name: nomoby
+`)
+
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 4)
+
+	assert.Equal(t, "animals.cats", valuesRows[0].Key)
+	assert.Equal(t, listType, valuesRows[0].Type)
+	assert.Equal(t, yamlType, valuesRows[0].NotationType)
+	assert.Equal(t, "- mike\n- ralph\n", valuesRows[0].Default)
+	assert.Equal(t, "My animals lists", valuesRows[0].AutoDescription)
+
+	assert.Equal(t, "animals.catsInTpl", valuesRows[1].Key)
+	assert.Equal(t, listType, valuesRows[1].Type)
+	assert.Equal(t, tplType, valuesRows[1].NotationType)
+	assert.Equal(t, "{{- .Values.animals.cats }}\n", valuesRows[1].Default)
+	assert.Equal(t, "My animal lists, but in tpl string", valuesRows[1].AutoDescription)
+
+	assert.Equal(t, "animals.dinosaur", valuesRows[2].Key)
+	assert.Equal(t, objectType, valuesRows[2].Type)
+	assert.Equal(t, tplType, valuesRows[2].NotationType)
+	assert.Equal(t, "name: hockney\ndynamicVar: {{ .Values.fromOtherProperty }}\n", valuesRows[2].Default)
+	assert.Equal(t, "Declaring object as tpl (to be cascaded with tpl function)", valuesRows[2].AutoDescription)
+
+	assert.Equal(t, "animals.fish", valuesRows[3].Key)
+	assert.Equal(t, objectType, valuesRows[3].Type)
+	assert.Equal(t, yamlType, valuesRows[3].NotationType)
+	assert.Equal(t, "name: nomoby\n", valuesRows[3].Default)
+	assert.Equal(t, "My animals lists", valuesRows[0].AutoDescription)
+}
+
+func TestExtractCustomDeclaredType(t *testing.T) {
+	helmValues := parseYamlValues(`
+animals:
+  # -- (list/csv) My animals lists but annotated as csv field
+  cats: mike,ralph
+
+owner:
+  # -- (string/email) This has to be email address
+  # @notationType -- email
+  email: "owner@home.org"
+  `)
+
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 2)
+	assert.Equal(t, "animals.cats", valuesRows[0].Key)
+	// With custom value type, we can convey to the reader that this value is a list, but in a csv format
+	assert.Equal(t, "list/csv", valuesRows[0].Type)
+	assert.Equal(t, "`\"mike,ralph\"`", valuesRows[0].Default)
+	assert.Equal(t, "My animals lists but annotated as csv field", valuesRows[0].AutoDescription)
+
+	assert.Equal(t, "owner.email", valuesRows[1].Key)
+	assert.Equal(t, "string/email", valuesRows[1].Type)
+	assert.Equal(t, "email", valuesRows[1].NotationType)
+	// In case of custom notation type, value in Default must be raw string
+	// So that template can handle the formatting.
+	// In this case, email might be reformatted as <a href="mailto:owner@home.org">owner@home.org</a>
+	assert.Equal(t, "owner@home.org", valuesRows[1].Default)
+	assert.Equal(t, "This has to be email address", valuesRows[1].AutoDescription)
+}

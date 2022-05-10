@@ -15,6 +15,7 @@ import (
 type valueRow struct {
 	Key             string
 	Type            string
+	NotationType    string
 	AutoDefault     string
 	Default         string
 	AutoDescription string
