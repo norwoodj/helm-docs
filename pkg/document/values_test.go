@@ -950,10 +950,10 @@ animals:
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"animals.birdCount":        {Description: "(int) the number of birds we have"},
-		"animals.birds":            {Description: "(list) the list of birds we have"},
+		"animals.birdCount":        {ValueType: intType, Description: "the number of birds we have"},
+		"animals.birds":            {ValueType: listType, Description: "the list of birds we have"},
 		"animals.nonWeirdCats":     {Description: "the cats that we have that are not weird"},
-		"animals.undescribedCount": {Description: "(int)"},
+		"animals.undescribedCount": {ValueType: intType, Description: ""},
 	}
 
 	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
@@ -999,8 +999,8 @@ animals:
 	`)
 
 	descriptions := map[string]helm.ChartValueDescription{
-		"animals.birdCount":    {Description: "(int) the number of birds we have", Default: "some"},
-		"animals.birds":        {Description: "(list) the list of birds we have", Default: "explicit"},
+		"animals.birdCount":    {ValueType: intType, Description: "the number of birds we have", Default: "some"},
+		"animals.birds":        {ValueType: listType, Description: "the list of birds we have", Default: "explicit"},
 		"animals.nonWeirdCats": {Description: "the cats that we have that are not weird", Default: "default"},
 	}
 
