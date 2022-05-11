@@ -27,9 +27,9 @@ type valueRow struct {
 }
 
 type chartValuesSubsection struct {
-	Title 		string
-	TitleLevel  string
-	Values      []valueRow
+	Title      string
+	TitleLevel string
+	Values     []valueRow
 }
 
 type chartTemplateData struct {
@@ -163,6 +163,6 @@ func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion stri
 		ChartDocumentationInfo: info,
 		HelmDocsVersion:        helmDocsVersion,
 		Values:                 valuesTableRows,
-		ValuesSubsections: 		valuesSubsections,
+		ValuesSubsections:      valuesSubsections,
 	}, nil
 }
