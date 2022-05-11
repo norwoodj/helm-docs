@@ -201,11 +201,11 @@ persistence:
 
 
 # -- (dict) Values with long description
-# @section
+# @raw
 # Sometimes you need a very long description
 # for your values.
 #
-# Any comment section for a given key with **@section** attribute
+# Any comment section for a given key with **@raw** attribute
 # will be treated as raw string and stored as is.
 # Since it generates in Markdown format, you can do something like this:
 #
