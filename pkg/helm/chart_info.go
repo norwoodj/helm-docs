@@ -146,23 +146,19 @@ func parseChartRequirementsFile(chartDirectory string, apiVersion string) (Chart
 	return chartRequirements, nil
 }
 
-func removeIgnored(rootNode *yaml.Node, rootKind yaml.Kind) {
-	var toDelete []int
-	for i, node := range rootNode.Content {
-		if strings.Contains(node.HeadComment, "# -- @ignore") {
-			toDelete = append(toDelete, i)
-			if rootKind == yaml.MappingNode {
-				toDelete = append(toDelete, i+1)
-			}
+func removeIgnored(rootNode *yaml.Node, parentKind yaml.Kind) {
+	newContent := make([]*yaml.Node , 0, len(rootNode.Content))
+	for i := 0; i < len(rootNode.Content); i++ {
+		node := rootNode.Content[i]
+		if !strings.Contains(node.HeadComment, "@ignore") {
+			removeIgnored(node, node.Kind)
+			newContent = append(newContent, node)
+		} else if parentKind == yaml.MappingNode {
+			// for parentKind each yaml key is represented by two nodes
+			i++
 		}
 	}
-	for i := len(toDelete) - 1; i >= 0; i-- {
-		var d int = toDelete[i]
-		rootNode.Content = append(rootNode.Content[:d], rootNode.Content[d+1:]...)
-	}
-	for _, node := range rootNode.Content {
-		removeIgnored(node, node.Kind)
-	}
+	rootNode.Content = newContent
 }
 
 func parseChartValuesFile(chartDirectory string) (yaml.Node, error) {

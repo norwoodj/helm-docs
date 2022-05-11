@@ -322,10 +322,10 @@ the description for the field. The `@default` comment must follow.
 
 See [here](./example-charts/custom-template/values.yaml) for an example.
 ### Ignoring values
-In cases you would like to ignore certain values, you can mark it as ignored:
+In cases you would like to ignore certain values, you can mark it with @ignored tag:
 
 ```yaml
-# -- @ignored
+# @ignored
 service:
   port: 8080
 ```

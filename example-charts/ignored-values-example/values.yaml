@@ -32,20 +32,20 @@ config:
     # -- user with access to the database with the same name
     - {name: hashbash, readwriteDatabases: [hashbash]}
 
-    # -- @ignore test
+    # @ignore test
     - {name: test, readDatabases: [test]}
 
-# -- @ignore
+# @ignore
 internalConfig:
   rpcPort: 8080
   # -- this should also be ignored
   generateData: true
 
-# -- @ignore
-ignoredConfig: 5
+# @ignore
+ignoredConfig: 6
 
 configWithAllValuesIgnored:
-  # -- @ignore
+  # @ignore
   ignoredOne: true
-  # -- @ignore
+  # @ignore
   ignoredTwo: "?"
