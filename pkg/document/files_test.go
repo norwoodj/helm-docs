@@ -23,13 +23,17 @@ var cases = []struct {
 func getTestFiles() files {
 	a := make(files, len(cases))
 	for _, c := range cases {
-		a[c.path] = []byte(c.data)
+		a[c.path] = &fileEntry{
+			Path: c.path,
+			data: []byte(c.data),
+		}
 	}
 	return a
 }
 
 func TestNewFiles(t *testing.T) {
 	files := getTestFiles()
+
 	if len(files) != len(cases) {
 		t.Errorf("Expected len() = %d, got %d", len(cases), len(files))
 	}
@@ -97,14 +101,15 @@ func TestGetFiles(t *testing.T) {
 	})
 
 	testFiles := getTestFiles()
-	for filePath, fileData := range testFiles {
+	for filePath, entry := range testFiles {
 		fullPath := path.Join(chartDir, filePath)
 		baseDir := path.Dir(fullPath)
 		if err = os.MkdirAll(baseDir, 0o755); err != nil {
 			t.Fatal(err)
 		}
+		data := entry.GetData()
 
-		if err = os.WriteFile(fullPath, fileData, 0o644); err != nil {
+		if err = os.WriteFile(fullPath, data, 0o644); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -119,7 +124,9 @@ func TestGetFiles(t *testing.T) {
 	}
 
 	// Sanity check the files have been read
-	for filePath, data := range chartFiles {
+	for filePath, entry := range chartFiles {
+		data := entry.GetData()
+
 		if len(data) == 0 {
 			t.Errorf("%s: expected file contents, got 0 bytes", filePath)
 		}

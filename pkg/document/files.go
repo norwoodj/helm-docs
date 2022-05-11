@@ -9,12 +9,31 @@ import (
 	"strings"
 
 	"github.com/gobwas/glob"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
 
 // Near identical to https://github.com/helm/helm/blob/main/pkg/engine/files.go as to preserve the interface.
 
-type files map[string][]byte
+type fileEntry struct {
+	Path string
+	data []byte
+}
+
+func (f *fileEntry) GetData() []byte {
+	if f.data == nil {
+		data, err := ioutil.ReadFile(f.Path)
+		if err != nil {
+			log.Warnf("Error reading file contents for %s: %s", f.Path, err.Error())
+			return []byte{}
+		}
+		f.data = data
+	}
+
+	return f.data
+}
+
+type files map[string]*fileEntry
 
 func getFiles(dir string) (files, error) {
 	result := make(files)
@@ -28,17 +47,11 @@ func getFiles(dir string) (files, error) {
 			return nil
 		}
 
-		data, err := ioutil.ReadFile(path)
-		if err != nil {
-			return err
-		}
-
-		result[path] = data
-
+		result[path] = &fileEntry{Path: path}
 		return nil
 	})
 	if err != nil {
-		return map[string][]byte{}, err
+		return map[string]*fileEntry{}, err
 	}
 
 	return result, nil
@@ -46,7 +59,7 @@ func getFiles(dir string) (files, error) {
 
 func (f files) GetBytes(name string) []byte {
 	if v, ok := f[name]; ok {
-		return v
+		return v.GetData()
 	}
 	return []byte{}
 }
@@ -56,15 +69,16 @@ func (f files) Get(name string) string {
 }
 
 func (f files) Glob(pattern string) files {
+	result := make(files)
 	g, err := glob.Compile(pattern, '/')
 	if err != nil {
-		g, _ = glob.Compile("**")
+		log.Warnf("Error compiling Glob patten %s: %s", pattern, err.Error())
+		return result
 	}
 
-	result := make(files)
-	for name, contents := range f {
-		if g.Match(name) {
-			result[name] = contents
+	for filePath, entry := range f {
+		if g.Match(filePath) {
+			result[filePath] = entry
 		}
 	}
 
@@ -80,7 +94,7 @@ func (f files) AsConfig() string {
 
 	// Explicitly convert to strings, and file names
 	for k, v := range f {
-		m[path.Base(k)] = string(v)
+		m[path.Base(k)] = string(v.GetData())
 	}
 
 	return toYAML(m)
@@ -94,18 +108,22 @@ func (f files) AsSecrets() string {
 	m := make(map[string]string)
 
 	for k, v := range f {
-		m[path.Base(k)] = base64.StdEncoding.EncodeToString(v)
+		m[path.Base(k)] = base64.StdEncoding.EncodeToString(v.GetData())
 	}
 
 	return toYAML(m)
 }
 
 func (f files) Lines(path string) []string {
-	if f == nil || f[path] == nil {
+	if f == nil {
+		return []string{}
+	}
+	entry, exists := f[path]
+	if !exists {
 		return []string{}
 	}
 
-	return strings.Split(string(f[path]), "\n")
+	return strings.Split(string(entry.GetData()), "\n")
 }
 
 func toYAML(v interface{}) string {
