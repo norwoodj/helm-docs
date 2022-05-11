@@ -216,7 +216,17 @@ func getValuesTableTemplates() string {
 	valuesSectionBuilder.WriteString("{{ end }}")
 
 	valuesSectionBuilder.WriteString(`{{ define "chart.valuesSection" }}`)
-	valuesSectionBuilder.WriteString("{{ if .Values }}")
+	valuesSectionBuilder.WriteString(`
+{{- if .ValuesSubsections }}
+{{ template "chart.valuesHeader" . }}
+
+{{ range $val := .ValuesSubsections }}
+{{ $val.TitleLevel }} {{ $val.Title }}
+
+{{ template "chart.valuesTable" $val }}
+{{ end }}
+`)
+	valuesSectionBuilder.WriteString("{{ else if .Values }}")
 	valuesSectionBuilder.WriteString(`{{ template "chart.valuesHeader" . }}`)
 	valuesSectionBuilder.WriteString("\n\n")
 	valuesSectionBuilder.WriteString(`{{ template "chart.valuesTable" . }}`)

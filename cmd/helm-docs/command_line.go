@@ -54,6 +54,7 @@ func newHelmDocsCommand(run func(cmd *cobra.Command, args []string)) (*cobra.Com
 	command.PersistentFlags().StringP("badge-style", "b", "flat-square", "badge style to use for charts")
 	command.PersistentFlags().StringP("values-file", "f", "values.yaml", "Path to values file")
 	command.PersistentFlags().BoolP("document-dependency-values", "u", false, "For charts with dependencies, include the dependency values in the chart values documentation")
+	command.PersistentFlags().BoolP("dependency-values-as-sections", "a", true, "Put dependency values into separate sections")
 
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("HELM_DOCS")

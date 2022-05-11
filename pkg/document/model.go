@@ -26,10 +26,17 @@ type valueRow struct {
 	IsGlobal        bool
 }
 
+type chartValuesSubsection struct {
+	Title 		string
+	TitleLevel  string
+	Values      []valueRow
+}
+
 type chartTemplateData struct {
 	helm.ChartDocumentationInfo
-	HelmDocsVersion string
-	Values          []valueRow
+	HelmDocsVersion   string
+	Values            []valueRow
+	ValuesSubsections []chartValuesSubsection
 }
 
 func sortValueRows(valueRows []valueRow) {
@@ -92,6 +99,8 @@ func getUnsortedValueRows(document *yaml.Node, descriptions map[string]helm.Char
 }
 
 func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion string, dependencyValues []DependencyValues) (chartTemplateData, error) {
+	dependencySectionsEnabled := viper.GetBool("dependency-values-as-sections")
+	var valuesSubsections []chartValuesSubsection
 	valuesTableRows, err := getUnsortedValueRows(info.ChartValues, info.ChartValuesDescriptions)
 	if err != nil {
 		return chartTemplateData{}, err
@@ -112,9 +121,11 @@ func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion stri
 				return chartTemplateData{}, err
 			}
 
-			for _, row := range depValuesTableRows {
+			for i := len(depValuesTableRows) -1; i >= 0; i-- {
+				var row = depValuesTableRows[i]
 				if row.Key == "global" || strings.HasPrefix(row.Key, "global.") {
 					if seenGlobalKeys[row.Key] {
+						depValuesTableRows = append(depValuesTableRows[:i], depValuesTableRows[i+1:]...)
 						continue
 					}
 					row.IsGlobal = true
@@ -124,16 +135,34 @@ func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion stri
 				}
 
 				row.Dependency = dep.Prefix
-				valuesTableRows = append(valuesTableRows, row)
 			}
+			if dependencySectionsEnabled && len(depValuesTableRows) > 0 {
+				valuesSubsections = append(valuesSubsections, chartValuesSubsection{
+					Title: dep.Prefix,
+					TitleLevel : "###",
+					Values: depValuesTableRows,
+				})
+			} else {
+				valuesTableRows = append(valuesTableRows, depValuesTableRows...)
+			}
+
 		}
 	}
 
 	sortValueRows(valuesTableRows)
+	if dependencySectionsEnabled && len(valuesTableRows) > 0 {
+		var section = chartValuesSubsection{
+			Title: "",
+			TitleLevel: "",
+			Values: valuesTableRows,
+		}
+		valuesSubsections = append( []chartValuesSubsection{section}, valuesSubsections...)
+	}
 
 	return chartTemplateData{
 		ChartDocumentationInfo: info,
 		HelmDocsVersion:        helmDocsVersion,
 		Values:                 valuesTableRows,
+		ValuesSubsections: 		valuesSubsections,
 	}, nil
 }
