@@ -122,7 +122,7 @@ func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion stri
 			}
 
 			for i := len(depValuesTableRows) -1; i >= 0; i-- {
-				var row = depValuesTableRows[i]
+				var row = &depValuesTableRows[i]
 				if row.Key == "global" || strings.HasPrefix(row.Key, "global.") {
 					if seenGlobalKeys[row.Key] {
 						depValuesTableRows = append(depValuesTableRows[:i], depValuesTableRows[i+1:]...)
