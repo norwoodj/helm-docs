@@ -128,6 +128,15 @@ when searching for charts. Directories specified need not be charts themselves, 
 many charts can be ignored and none of the charts underneath them will be processed. You may also directly reference the
 Chart.yaml file for a chart to skip processing for it.
 
+## Generating Doc with Dependency values
+Umbrella Helm chart documentation can include dependency values with `document-dependency-values` flag.
+All dependency values will be merged into values of umbrella chart documentation.
+
+If you want to include dependency values, but don't want to generate doc for each dependency:
+* set `chart-search-root` parameter to directory that contains umbrella chart and all dependency charts.
+* list all charts you want to generate doc using `chart-to-generate` flag
+* set `document-dependency-values` flag to true
+
 ## Markdown Rendering
 There are two important parameters to be aware of when running helm-docs. `--chart-search-root` specifies the directory
 under which the tool will recursively search for charts to render documentation for. `--template-files` specifies the list
@@ -206,7 +215,7 @@ in the templates you supply.
 
 ### values.yaml metadata
 This tool can parse descriptions and defaults of values from `values.yaml` files. The defaults are pulled directly from
-the yaml in the file. 
+the yaml in the file.
 
 It was formerly the case that descriptions had to be specified with the full path of the yaml field. This is no longer
 the case, although it is still supported. Where before you would document a values.yaml like so:
@@ -299,7 +308,7 @@ as well as a type. This is possible with both the old and the new comment format
 controller:
   # -- (int) Number of nginx-ingress pods to load balance between
   replicas:
-  
+
   # controller.image -- (string) Number of nginx-ingress pods to load balance between
   image:
 ```
@@ -338,10 +347,10 @@ configMap:
 ```
 
 ### Advanced table rendering
-Some helm chart `values.yaml` uses complicated structure for the key/value 
-pairs. For example, it may uses a multiline string of Go template text instead 
-of plain strings. Some values might also refer to a certain YAML/JSON object 
-structure, like internal k8s value type, or an enum. For these use case, 
+Some helm chart `values.yaml` uses complicated structure for the key/value
+pairs. For example, it may uses a multiline string of Go template text instead
+of plain strings. Some values might also refer to a certain YAML/JSON object
+structure, like internal k8s value type, or an enum. For these use case,
 a standard markdown table format might be inadequate and you want to use HTML
 tags to render the table.
 
@@ -358,32 +367,32 @@ In order to accomodate this, `helm-docs` provides an extensible and flexible way
 1. Use the HTML value renderer instead of the default markdown format
 
 You can use `chart.valuesSectionHtml` to render the values table as HTML tags,
-instead of using `chart.valuesSection`. Using HTML tables provides more 
-flexibility because it can be processed by markdown viewer as a nested blocks, 
-instead of one row per line. This allows you to customize how each columns in a 
+instead of using `chart.valuesSection`. Using HTML tables provides more
+flexibility because it can be processed by markdown viewer as a nested blocks,
+instead of one row per line. This allows you to customize how each columns in a
 row are rendered.
 
 2. Overriding built-in templates
 
 You can always overrides or redefine built-in templates in your own `_templates.
-gotmpl` file. The built-in templates can be thought of as a template hook. 
-For example, if you need to change the HTML table, for example to add a new 
+gotmpl` file. The built-in templates can be thought of as a template hook.
+For example, if you need to change the HTML table, for example to add a new
 column, or define maximum width/height, you can override `chart.valuesTableHtml`. Your overrides will then be called by `chart.valuesSectionHtml`.
 
-You can add your own rendering logic for each column. For example, we have `chart.valueDefaultColumnRender` that is used to render "default value" column for each rows. If you want to override how helm-docs render the 
+You can add your own rendering logic for each column. For example, we have `chart.valueDefaultColumnRender` that is used to render "default value" column for each rows. If you want to override how helm-docs render the
 "type" column, just define your own rendering template and call it from
 `chart.valuesTableHtml` for each of the rows.
 
 3. Using the metadata of each rows of values
 
-Custom styling and rendering can be done as flexible as you want, but you 
-still need a metadata that describes each rows of values. You can access 
+Custom styling and rendering can be done as flexible as you want, but you
+still need a metadata that describes each rows of values. You can access
 this information from the templates.
 
-When you override `chart.valuesTableHtml`, as you can see in the original 
+When you override `chart.valuesTableHtml`, as you can see in the original
 definition in `func getValuesTableTemplates()` [pkg/document/template.go](pkg/document/template.go), we iterates each row of values.
 For each "Value", it is modeled as a struct defined in `valueRow` struct
-in [pkg/document/model.go](pkg/document/model.go). You can then use the 
+in [pkg/document/model.go](pkg/document/model.go). You can then use the
 fields in your template.
 
 Some fields here are directly referenced from `values.yaml`:
@@ -398,19 +407,19 @@ Note that helm-docs only provides these information, but the default behaviour i
 
 4. Use markdown files generated by helm-docs as intermediary files to be processed further
 
-Public helm charts sometimes needs to be published as static content 
-instead of just stored in a repository. This is needed for helm users to 
+Public helm charts sometimes needs to be published as static content
+instead of just stored in a repository. This is needed for helm users to
 be able to view or browse the chart options and dependencies.
 
-It is often more than enough to just browse the chart values options on 
-git hosting that is able to render markdown files as a nice HTML page, like GitHub or GitLab. 
-However, for a certain use case, you may want to use your own 
+It is often more than enough to just browse the chart values options on
+git hosting that is able to render markdown files as a nice HTML page, like GitHub or GitLab.
+However, for a certain use case, you may want to use your own
 documentation generator to host or publish the output of helm-docs.
 
-If you use some kind of Jamstack like Gatsby or Hugo, you can use the 
-output of helm-docs as an input for these doc generator. A typical use 
-case is to override helm-docs built-in template so that it renders a 
-markdown or markdownX files to be processed by Gatsby or Hugo into 
+If you use some kind of Jamstack like Gatsby or Hugo, you can use the
+output of helm-docs as an input for these doc generator. A typical use
+case is to override helm-docs built-in template so that it renders a
+markdown or markdownX files to be processed by Gatsby or Hugo into
 a static Web/Javascript page.
 
 For a more concrete examples on how to do these custom rendering, see [example here](./example-charts/custom-value-notation-type/README.md)
