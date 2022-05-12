@@ -65,7 +65,7 @@ func sortValueRows(valueRows []valueRow) {
 			if valueRows[i].LineNumber == valueRows[j].LineNumber {
 				return valueRows[i].Column < valueRows[j].Column
 			}
-			return valueRows[i].LineNumber < valueRows[i].LineNumber
+			return valueRows[i].LineNumber < valueRows[j].LineNumber
 		case AlphaNumSortOrder:
 			return valueRows[i].Key < valueRows[j].Key
 		default:
