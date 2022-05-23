@@ -46,6 +46,7 @@ func newHelmDocsCommand(run func(cmd *cobra.Command, args []string)) (*cobra.Com
 	logLevelUsage := fmt.Sprintf("Level of logs that should printed, one of (%s)", strings.Join(possibleLogLevels(), ", "))
 	command.PersistentFlags().StringP("chart-search-root", "c", ".", "directory to search recursively within for charts")
 	command.PersistentFlags().BoolP("dry-run", "d", false, "don't actually render any markdown files just print to stdout passed")
+	command.PersistentFlags().Bool("ignore-non-descriptions", false, "ignore values without a comment, this values will not be included in the README")
 	command.PersistentFlags().StringP("ignore-file", "i", ".helmdocsignore", "The filename to use as an ignore file to exclude chart directories")
 	command.PersistentFlags().StringP("log-level", "l", "info", logLevelUsage)
 	command.PersistentFlags().StringP("output-file", "o", "README.md", "markdown file path relative to each chart directory to which rendered documentation will be written")

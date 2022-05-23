@@ -97,6 +97,10 @@ func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion stri
 		return chartTemplateData{}, err
 	}
 
+	if viper.GetBool("ignore-non-descriptions") {
+		valuesTableRows = removeRowsWithoutDescription(valuesTableRows)
+	}
+
 	if len(dependencyValues) > 0 {
 		seenGlobalKeys := make(map[string]bool)
 		for i, row := range valuesTableRows {
@@ -136,4 +140,15 @@ func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion stri
 		HelmDocsVersion:        helmDocsVersion,
 		Values:                 valuesTableRows,
 	}, nil
+}
+
+func removeRowsWithoutDescription(valuesTableRows []valueRow) []valueRow {
+
+	var valuesTableRowsWithoutDescription []valueRow
+	for i := range valuesTableRows {
+		if valuesTableRows[i].AutoDescription != "" || valuesTableRows[i].Description != "" {
+			valuesTableRowsWithoutDescription = append(valuesTableRowsWithoutDescription, valuesTableRows[i])
+		}
+	}
+	return valuesTableRowsWithoutDescription
 }

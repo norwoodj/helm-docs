@@ -4,6 +4,10 @@ import (
 	"strings"
 )
 
+const (
+	PrefixComment = "# --"
+)
+
 func ParseComment(commentLines []string) (string, ChartValueDescription) {
 	var valueKey string
 	var c ChartValueDescription
@@ -13,7 +17,7 @@ func ParseComment(commentLines []string) (string, ChartValueDescription) {
 	// the last "group" of comment lines starting with '# --'.
 	lastIndex := 0
 	for i, v := range commentLines {
-		if strings.HasPrefix(v, "# --") {
+		if strings.HasPrefix(v, PrefixComment) {
 			lastIndex = i
 		}
 	}
