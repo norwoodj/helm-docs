@@ -95,7 +95,7 @@ func readDocumentationInfoByChartPath(chartSearchRoot string, parallelism int) (
 	return documentationInfoByChartPath, nil
 }
 
-func getChartToGenerate(documentationInfoByChartPath map[string]helm.ChartDocumentationInfo)(map[string]helm.ChartDocumentationInfo) {
+func getChartToGenerate(documentationInfoByChartPath map[string]helm.ChartDocumentationInfo) map[string]helm.ChartDocumentationInfo {
 	generateDirectories := viper.GetStringSlice("chart-to-generate")
 	if len(generateDirectories) == 0 {
 		return documentationInfoByChartPath
@@ -111,11 +111,11 @@ func getChartToGenerate(documentationInfoByChartPath map[string]helm.ChartDocume
 		}
 	}
 	if skipped {
-		possibleCharts:= []string{}
-		for path := range(documentationInfoByChartPath) {
+		possibleCharts := []string{}
+		for path := range documentationInfoByChartPath {
 			possibleCharts = append(possibleCharts, path)
 		}
-		log.Warnf("Some charts listed in `chart-to-generate` wasn't found. List of charts to choose", strings.Join(possibleCharts, ", "))
+		log.Warnf("Some charts listed in `chart-to-generate` wasn't found. List of charts to choose: [%s]", strings.Join(possibleCharts, ", "))
 	}
 	return documentationInfoToGenerate
 }

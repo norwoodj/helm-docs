@@ -147,7 +147,7 @@ func parseChartRequirementsFile(chartDirectory string, apiVersion string) (Chart
 }
 
 func removeIgnored(rootNode *yaml.Node, parentKind yaml.Kind) {
-	newContent := make([]*yaml.Node , 0, len(rootNode.Content))
+	newContent := make([]*yaml.Node, 0, len(rootNode.Content))
 	for i := 0; i < len(rootNode.Content); i++ {
 		node := rootNode.Content[i]
 		if !strings.Contains(node.HeadComment, "@ignore") {

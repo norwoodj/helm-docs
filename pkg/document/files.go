@@ -13,11 +13,40 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Near identical to https://github.com/helm/helm/blob/main/pkg/engine/files.go as to preserve the interface.
+type files struct {
+	baseDir    string
+	foundFiles map[string]*fileEntry
+}
 
 type fileEntry struct {
 	Path string
 	data []byte
+}
+
+func getFiles(dir string) (files, error) {
+	result := files{
+		baseDir:    dir,
+		foundFiles: make(map[string]*fileEntry),
+	}
+
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		result.foundFiles[path] = &fileEntry{Path: path}
+		return nil
+	})
+
+	if err != nil {
+		return files{}, err
+	}
+
+	return result, nil
 }
 
 func (f *fileEntry) GetData() []byte {
@@ -33,32 +62,8 @@ func (f *fileEntry) GetData() []byte {
 	return f.data
 }
 
-type files map[string]*fileEntry
-
-func getFiles(dir string) (files, error) {
-	result := make(files)
-
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if info.IsDir() {
-			return nil
-		}
-
-		result[path] = &fileEntry{Path: path}
-		return nil
-	})
-	if err != nil {
-		return map[string]*fileEntry{}, err
-	}
-
-	return result, nil
-}
-
 func (f files) GetBytes(name string) []byte {
-	if v, ok := f[name]; ok {
+	if v, ok := f.foundFiles[filepath.Join(f.baseDir, name)]; ok {
 		return v.GetData()
 	}
 	return []byte{}
@@ -69,16 +74,19 @@ func (f files) Get(name string) string {
 }
 
 func (f files) Glob(pattern string) files {
-	result := make(files)
-	g, err := glob.Compile(pattern, '/')
+	result := files{
+		baseDir:    f.baseDir,
+		foundFiles: make(map[string]*fileEntry),
+	}
+	g, err := glob.Compile(filepath.Join(f.baseDir, pattern), filepath.Separator)
 	if err != nil {
 		log.Warnf("Error compiling Glob patten %s: %s", pattern, err.Error())
 		return result
 	}
 
-	for filePath, entry := range f {
+	for filePath, entry := range f.foundFiles {
 		if g.Match(filePath) {
-			result[filePath] = entry
+			result.foundFiles[filePath] = entry
 		}
 	}
 
@@ -86,14 +94,14 @@ func (f files) Glob(pattern string) files {
 }
 
 func (f files) AsConfig() string {
-	if f == nil {
+	if len(f.foundFiles) == 0 {
 		return ""
 	}
 
 	m := make(map[string]string)
 
 	// Explicitly convert to strings, and file names
-	for k, v := range f {
+	for k, v := range f.foundFiles {
 		m[path.Base(k)] = string(v.GetData())
 	}
 
@@ -101,13 +109,13 @@ func (f files) AsConfig() string {
 }
 
 func (f files) AsSecrets() string {
-	if f == nil {
+	if len(f.foundFiles) == 0 {
 		return ""
 	}
 
 	m := make(map[string]string)
 
-	for k, v := range f {
+	for k, v := range f.foundFiles {
 		m[path.Base(k)] = base64.StdEncoding.EncodeToString(v.GetData())
 	}
 
@@ -115,10 +123,10 @@ func (f files) AsSecrets() string {
 }
 
 func (f files) Lines(path string) []string {
-	if f == nil {
+	if len(f.foundFiles) == 0 {
 		return []string{}
 	}
-	entry, exists := f[path]
+	entry, exists := f.foundFiles[path]
 	if !exists {
 		return []string{}
 	}

@@ -21,21 +21,25 @@ var cases = []struct {
 }
 
 func getTestFiles() files {
-	a := make(files, len(cases))
+	a := files{
+		baseDir:    "",
+		foundFiles: make(map[string]*fileEntry),
+	}
 	for _, c := range cases {
-		a[c.path] = &fileEntry{
+		a.foundFiles[c.path] = &fileEntry{
 			Path: c.path,
 			data: []byte(c.data),
 		}
 	}
+
 	return a
 }
 
 func TestNewFiles(t *testing.T) {
 	files := getTestFiles()
 
-	if len(files) != len(cases) {
-		t.Errorf("Expected len() = %d, got %d", len(cases), len(files))
+	if len(files.foundFiles) != len(cases) {
+		t.Errorf("Expected len() = %d, got %d", len(cases), len(files.foundFiles))
 	}
 
 	for i, f := range cases {
@@ -55,7 +59,7 @@ func TestFileGlob(t *testing.T) {
 
 	matched := f.Glob("story/**")
 
-	as.Len(matched, 2, "Should be two files in glob story/**")
+	as.Len(matched.foundFiles, 2, "Should be two files in glob story/**")
 	as.Equal("Joseph Conrad", matched.Get("story/author.txt"))
 }
 
@@ -101,7 +105,7 @@ func TestGetFiles(t *testing.T) {
 	})
 
 	testFiles := getTestFiles()
-	for filePath, entry := range testFiles {
+	for filePath, entry := range testFiles.foundFiles {
 		fullPath := path.Join(chartDir, filePath)
 		baseDir := path.Dir(fullPath)
 		if err = os.MkdirAll(baseDir, 0o755); err != nil {
@@ -119,12 +123,12 @@ func TestGetFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(chartFiles) != len(testFiles) {
-		t.Errorf("chart files: expected %d, got %d", len(chartFiles), len(testFiles))
+	if len(chartFiles.foundFiles) != len(testFiles.foundFiles) {
+		t.Errorf("chart files: expected %d, got %d", len(chartFiles.foundFiles), len(testFiles.foundFiles))
 	}
 
 	// Sanity check the files have been read
-	for filePath, entry := range chartFiles {
+	for filePath, entry := range chartFiles.foundFiles {
 		data := entry.GetData()
 
 		if len(data) == 0 {
