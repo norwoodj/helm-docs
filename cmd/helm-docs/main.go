@@ -95,6 +95,31 @@ func readDocumentationInfoByChartPath(chartSearchRoot string, parallelism int) (
 	return documentationInfoByChartPath, nil
 }
 
+func getChartToGenerate(documentationInfoByChartPath map[string]helm.ChartDocumentationInfo)(map[string]helm.ChartDocumentationInfo) {
+	generateDirectories := viper.GetStringSlice("chart-to-generate")
+	if len(generateDirectories) == 0 {
+		return documentationInfoByChartPath
+	}
+	documentationInfoToGenerate := make(map[string]helm.ChartDocumentationInfo, len(generateDirectories))
+	var skipped = false
+	for _, chartDirectory := range generateDirectories {
+		if info, ok := documentationInfoByChartPath[chartDirectory]; ok {
+			documentationInfoToGenerate[chartDirectory] = info
+		} else {
+			log.Warnf("Couldn't find documentation Info for <%s> - skipping", chartDirectory)
+			skipped = true
+		}
+	}
+	if skipped {
+		possibleCharts:= []string{}
+		for path := range(documentationInfoByChartPath) {
+			possibleCharts = append(possibleCharts, path)
+		}
+		log.Warnf("Some charts listed in `chart-to-generate` wasn't found. List of charts to choose", strings.Join(possibleCharts, ", "))
+	}
+	return documentationInfoToGenerate
+}
+
 func writeDocumentation(chartSearchRoot string, documentationInfoByChartPath map[string]helm.ChartDocumentationInfo, dryRun bool, parallelism int) {
 	templateFiles := viper.GetStringSlice("template-files")
 	badgeStyle := viper.GetString("badge-style")
@@ -102,8 +127,9 @@ func writeDocumentation(chartSearchRoot string, documentationInfoByChartPath map
 	log.Debugf("Rendering from optional template files [%s]", strings.Join(templateFiles, ", "))
 
 	documentDependencyValues := viper.GetBool("document-dependency-values")
+	documentationInfoToGenerate := getChartToGenerate(documentationInfoByChartPath)
 
-	parallelProcessIterable(documentationInfoByChartPath, parallelism, func(elem interface{}) {
+	parallelProcessIterable(documentationInfoToGenerate, parallelism, func(elem interface{}) {
 		info := documentationInfoByChartPath[elem.(string)]
 		var err error
 		var dependencyValues []document.DependencyValues
