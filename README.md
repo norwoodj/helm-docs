@@ -330,6 +330,14 @@ The order is important. The first comment line(s) must be the one specifying the
 the description for the field. The `@default` comment must follow.
 
 See [here](./example-charts/custom-template/values.yaml) for an example.
+### Ignoring values
+In cases you would like to ignore certain values, you can mark it with @ignored tag:
+
+```yaml
+# @ignored
+service:
+  port: 8080
+```
 
 ### Spaces and Dots in keys
 In the old-style comment, if a key name contains any "." or " " characters, that section of the path must be quoted in

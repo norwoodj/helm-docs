@@ -1,0 +1,51 @@
+statefulset:
+  image:
+    # -- Image to use for deploying, must support an entrypoint
+    # which creates users/databases from appropriate config files
+    repository: jnorwood/postgresq
+    tag: "11"
+
+  # -- Additional volumes to be mounted into the database container
+  extraVolumes:
+    - name: data
+      emptyDir: {}
+
+  # -- Configure the healthcheck for the database
+  livenessProbe:
+    enabled: false
+
+  # -- The labels to be applied to instances of the database
+  podLabels: {}
+
+config:
+  databasesToCreate:
+    # -- default database for storage of database metadata
+    - postgresql
+
+    # -- database for the [hashbash](https://github.com/norwoodj/hashbash) project
+    - hashbash
+
+  usersToCreate:
+    # -- admin user
+    - {name: root, admin: true}
+
+    # -- user with access to the database with the same name
+    - {name: hashbash, readwriteDatabases: [hashbash]}
+
+    # @ignore test
+    - {name: test, readDatabases: [test]}
+
+# @ignore
+internalConfig:
+  rpcPort: 8080
+  # -- this should also be ignored
+  generateData: true
+
+# @ignore
+ignoredConfig: 6
+
+configWithAllValuesIgnored:
+  # @ignore
+  ignoredOne: true
+  # @ignore
+  ignoredTwo: "?"

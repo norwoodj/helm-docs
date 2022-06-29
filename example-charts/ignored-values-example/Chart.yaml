@@ -1,0 +1,11 @@
+apiVersion: v2
+name: ignored-values-example
+description: Based on best-values-example
+version: "0.1.0"
+home: "https://github.com/norwoodj/helm-docs/tree/master/example-charts/ignored-values-example"
+sources: ["https://github.com/norwoodj/helm-docs/tree/master/example-charts/ignored-values-example"]
+engine: gotpl
+type: application
+maintainers:
+  - email: jakub.buczak@gmail.com
+    name: Jakub Buczak
