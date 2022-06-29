@@ -16,7 +16,7 @@ import (
 )
 
 var valuesDescriptionRegex = regexp.MustCompile("^\\s*#\\s*(.*)\\s+--\\s*(.*)$")
-var sectionDescriptionRegex = regexp.MustCompile("^\\s*#\\s+@section")
+var rawDescriptionRegex = regexp.MustCompile("^\\s*#\\s+@raw")
 var commentContinuationRegex = regexp.MustCompile("^\\s*#(\\s?)(.*)$")
 var defaultValueRegex = regexp.MustCompile("^\\s*# @default -- (.*)$")
 var valueTypeRegex = regexp.MustCompile("^\\((.*?)\\)\\s*(.*)$")

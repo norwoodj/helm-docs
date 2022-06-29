@@ -103,7 +103,7 @@ file, you can see that we modified the column `Key` to also be hyperlinked with 
 If you view this README.md files in GitHub and click the value's key, you will be directed to the
 key location in the `values.yaml` file.
 
-You can also render a raw string into the comments using `@section` annotations.
+You can also render a raw string into the comments using `@raw` annotations.
 You can jump to [sampleYaml](#sampleYaml) key and check it's description where it
 uses HTML `<summary>` tag to collapse some part of the comments.
 
@@ -996,7 +996,7 @@ dict
 Sometimes you need a very long description
 for your values.
 
-Any comment section for a given key with **@section** attribute
+Any comment section for a given key with **@raw** attribute
 will be treated as raw string and stored as is.
 Since it generates in Markdown format, you can do something like this:
 

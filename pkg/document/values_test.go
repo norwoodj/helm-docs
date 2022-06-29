@@ -1440,11 +1440,11 @@ foo:
 	assert.Equal(t, "Bar!", valuesRows[0].AutoDescription)
 }
 
-func TestMultilineDescriptionSection(t *testing.T) {
+func TestMultilineRawDescription(t *testing.T) {
 	helmValues := parseYamlValues(`
 animals:
   # -- (list) I mean, dogs are quite nice too...
-  # @section
+  # @raw
   #
   # List of default dogs:
   #  - Umbra
