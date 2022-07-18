@@ -83,6 +83,17 @@ func TestToSecret(t *testing.T) {
 	as.Equal("captain.txt: VGhlIENhcHRhaW4=\nstowaway.txt: TGVnYXR0", out)
 }
 
+func TestToMap(t *testing.T) {
+	as := assert.New(t)
+
+	f := getTestFiles()
+
+	out := f.Glob("ship/**").AsMap()
+	as.Contains(out, "ship/captain.txt")
+	as.Contains(out, "ship/stowaway.txt")
+	as.NotContains(out, "story/name.txt")
+}
+
 func TestLines(t *testing.T) {
 	as := assert.New(t)
 
