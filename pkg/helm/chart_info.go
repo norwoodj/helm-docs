@@ -3,6 +3,7 @@ package helm
 import (
 	"bufio"
 	"fmt"
+	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -12,7 +13,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"gopkg.in/yaml.v3"
 )
 
 var valuesDescriptionRegex = regexp.MustCompile("^\\s*#\\s*(.*)\\s+--\\s*(.*)$")
@@ -43,15 +43,15 @@ type ChartMeta struct {
 	Maintainers []ChartMetaMaintainer
 }
 
-type ChartRequirementsItem struct {
+type ChartDependenciesItem struct {
 	Name       string
 	Version    string
 	Repository string
 	Alias      string
 }
 
-type ChartRequirements struct {
-	Dependencies []ChartRequirementsItem
+type ChartDependencies struct {
+	Dependencies []ChartDependenciesItem
 }
 
 type ChartValueDescription struct {
@@ -63,7 +63,7 @@ type ChartValueDescription struct {
 
 type ChartDocumentationInfo struct {
 	ChartMeta
-	ChartRequirements
+	ChartDependencies
 
 	ChartDirectory          string
 	ChartValues             *yaml.Node
@@ -110,40 +110,40 @@ func parseChartFile(chartDirectory string) (ChartMeta, error) {
 	return chartMeta, err
 }
 
-func requirementKey(requirement ChartRequirementsItem) string {
-	return fmt.Sprintf("%s/%s", requirement.Repository, requirement.Name)
+func dependencyKey(dependency ChartDependenciesItem) string {
+	return fmt.Sprintf("%s/%s", dependency.Repository, dependency.Name)
 }
 
-func parseChartRequirementsFile(chartDirectory string, apiVersion string) (ChartRequirements, error) {
-	var requirementsPath string
+func parseChartDependenciesFile(chartDirectory string, apiVersion string) (ChartDependencies, error) {
+	var dependenciesPath string
 
 	if apiVersion == "v1" {
-		requirementsPath = filepath.Join(chartDirectory, "requirements.yaml")
+		dependenciesPath = filepath.Join(chartDirectory, "requirements.yaml")
 
-		if _, err := os.Stat(requirementsPath); os.IsNotExist(err) {
-			return ChartRequirements{Dependencies: []ChartRequirementsItem{}}, nil
+		if _, err := os.Stat(dependenciesPath); os.IsNotExist(err) {
+			return ChartDependencies{Dependencies: []ChartDependenciesItem{}}, nil
 		}
 	} else {
-		requirementsPath = filepath.Join(chartDirectory, "Chart.yaml")
+		dependenciesPath = filepath.Join(chartDirectory, "Chart.yaml")
 	}
 
-	chartRequirements := ChartRequirements{}
-	yamlFileContents, err := getYamlFileContents(requirementsPath)
+	chartDependencies := ChartDependencies{}
+	yamlFileContents, err := getYamlFileContents(dependenciesPath)
 
-	if isErrorInReadingNecessaryFile(requirementsPath, err) {
-		return chartRequirements, err
+	if isErrorInReadingNecessaryFile(dependenciesPath, err) {
+		return chartDependencies, err
 	}
 
-	err = yaml.Unmarshal(yamlFileContents, &chartRequirements)
+	err = yaml.Unmarshal(yamlFileContents, &chartDependencies)
 	if err != nil {
-		return chartRequirements, err
+		return chartDependencies, err
 	}
 
-	sort.Slice(chartRequirements.Dependencies[:], func(i, j int) bool {
-		return requirementKey(chartRequirements.Dependencies[i]) < requirementKey(chartRequirements.Dependencies[j])
+	sort.Slice(chartDependencies.Dependencies[:], func(i, j int) bool {
+		return dependencyKey(chartDependencies.Dependencies[i]) < dependencyKey(chartDependencies.Dependencies[j])
 	})
 
-	return chartRequirements, nil
+	return chartDependencies, nil
 }
 
 func removeIgnored(rootNode *yaml.Node, parentKind yaml.Kind) {
@@ -239,7 +239,7 @@ func ParseChartInformation(chartDirectory string) (ChartDocumentationInfo, error
 		return chartDocInfo, err
 	}
 
-	chartDocInfo.ChartRequirements, err = parseChartRequirementsFile(chartDirectory, chartDocInfo.ApiVersion)
+	chartDocInfo.ChartDependencies, err = parseChartDependenciesFile(chartDirectory, chartDocInfo.ApiVersion)
 	if err != nil {
 		return chartDocInfo, err
 	}

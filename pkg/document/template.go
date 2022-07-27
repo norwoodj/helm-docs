@@ -29,7 +29,7 @@ const defaultDocumentationTemplate = `{{ template "chart.header" . }}
 
 {{ template "chart.sourcesSection" . }}
 
-{{ template "chart.requirementsSection" . }}
+{{ template "chart.dependenciesSection" . }}
 
 {{ template "chart.valuesSection" . }}
 
@@ -165,42 +165,42 @@ func getSourceLinkTemplates() string {
 	return sourceLinkBuilder.String()
 }
 
-func getRequirementsTableTemplates() string {
-	requirementsSectionBuilder := strings.Builder{}
-	requirementsSectionBuilder.WriteString(`{{ define "chart.requirementsHeader" }}## Requirements{{ end }}`)
+func getDependenciesTableTemplates() string {
+	dependenciesSectionBuilder := strings.Builder{}
+	dependenciesSectionBuilder.WriteString(`{{ define "chart.dependenciesHeader" }}## Dependencies{{ end }}`)
 
-	requirementsSectionBuilder.WriteString(`{{ define "chart.kubeVersion" }}{{ .KubeVersion }}{{ end }}\n`)
-	requirementsSectionBuilder.WriteString(`{{ define "chart.kubeVersionLine" }}`)
-	requirementsSectionBuilder.WriteString("{{ if .KubeVersion }}Kubernetes: `{{ .KubeVersion }}`{{ end }}")
-	requirementsSectionBuilder.WriteString("{{ end }}")
+	dependenciesSectionBuilder.WriteString(`{{ define "chart.kubeVersion" }}{{ .KubeVersion }}{{ end }}\n`)
+	dependenciesSectionBuilder.WriteString(`{{ define "chart.kubeVersionLine" }}`)
+	dependenciesSectionBuilder.WriteString("{{ if .KubeVersion }}Kubernetes: `{{ .KubeVersion }}`{{ end }}")
+	dependenciesSectionBuilder.WriteString("{{ end }}")
 
-	requirementsSectionBuilder.WriteString(`{{ define "chart.requirementsTable" }}`)
-	requirementsSectionBuilder.WriteString("| Repository | Name | Version |\n")
-	requirementsSectionBuilder.WriteString("|------------|------|---------|")
-	requirementsSectionBuilder.WriteString("  {{- range .Dependencies }}")
-	requirementsSectionBuilder.WriteString("    {{- if .Alias }}")
-	requirementsSectionBuilder.WriteString("\n| {{ .Repository }} | {{ .Alias }}({{ .Name }}) | {{ .Version }} |")
-	requirementsSectionBuilder.WriteString("    {{- else }}")
-	requirementsSectionBuilder.WriteString("\n| {{ .Repository }} | {{ .Name }} | {{ .Version }} |")
-	requirementsSectionBuilder.WriteString("    {{- end }}")
-	requirementsSectionBuilder.WriteString("  {{- end }}")
-	requirementsSectionBuilder.WriteString("{{ end }}")
+	dependenciesSectionBuilder.WriteString(`{{ define "chart.dependenciesTable" }}`)
+	dependenciesSectionBuilder.WriteString("| Repository | Name | Version |\n")
+	dependenciesSectionBuilder.WriteString("|------------|------|---------|")
+	dependenciesSectionBuilder.WriteString("  {{- range .Dependencies }}")
+	dependenciesSectionBuilder.WriteString("    {{- if .Alias }}")
+	dependenciesSectionBuilder.WriteString("\n| {{ .Repository }} | {{ .Alias }}({{ .Name }}) | {{ .Version }} |")
+	dependenciesSectionBuilder.WriteString("    {{- else }}")
+	dependenciesSectionBuilder.WriteString("\n| {{ .Repository }} | {{ .Name }} | {{ .Version }} |")
+	dependenciesSectionBuilder.WriteString("    {{- end }}")
+	dependenciesSectionBuilder.WriteString("  {{- end }}")
+	dependenciesSectionBuilder.WriteString("{{ end }}")
 
-	requirementsSectionBuilder.WriteString(`{{ define "chart.requirementsSection" }}`)
-	requirementsSectionBuilder.WriteString("{{ if or .Dependencies .KubeVersion }}")
-	requirementsSectionBuilder.WriteString(`{{ template "chart.requirementsHeader" . }}`)
-	requirementsSectionBuilder.WriteString("\n\n")
-	requirementsSectionBuilder.WriteString("{{ if .KubeVersion }}")
-	requirementsSectionBuilder.WriteString(`{{ template "chart.kubeVersionLine" . }}`)
-	requirementsSectionBuilder.WriteString("\n\n")
-	requirementsSectionBuilder.WriteString("{{ end }}")
-	requirementsSectionBuilder.WriteString("{{ if .Dependencies }}")
-	requirementsSectionBuilder.WriteString(`{{ template "chart.requirementsTable" . }}`)
-	requirementsSectionBuilder.WriteString("{{ end }}")
-	requirementsSectionBuilder.WriteString("{{ end }}")
-	requirementsSectionBuilder.WriteString("{{ end }}")
+	dependenciesSectionBuilder.WriteString(`{{ define "chart.dependenciesSection" }}`)
+	dependenciesSectionBuilder.WriteString("{{ if or .Dependencies .KubeVersion }}")
+	dependenciesSectionBuilder.WriteString(`{{ template "chart.dependenciesHeader" . }}`)
+	dependenciesSectionBuilder.WriteString("\n\n")
+	dependenciesSectionBuilder.WriteString("{{ if .KubeVersion }}")
+	dependenciesSectionBuilder.WriteString(`{{ template "chart.kubeVersionLine" . }}`)
+	dependenciesSectionBuilder.WriteString("\n\n")
+	dependenciesSectionBuilder.WriteString("{{ end }}")
+	dependenciesSectionBuilder.WriteString("{{ if .Dependencies }}")
+	dependenciesSectionBuilder.WriteString(`{{ template "chart.dependenciesTable" . }}`)
+	dependenciesSectionBuilder.WriteString("{{ end }}")
+	dependenciesSectionBuilder.WriteString("{{ end }}")
+	dependenciesSectionBuilder.WriteString("{{ end }}")
 
-	return requirementsSectionBuilder.String()
+	return dependenciesSectionBuilder.String()
 }
 
 func getValuesTableTemplates() string {
@@ -348,7 +348,7 @@ func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, te
 		getVersionTemplates(badgeStyle),
 		getTypeTemplate(badgeStyle),
 		getSourceLinkTemplates(),
-		getRequirementsTableTemplates(),
+		getDependenciesTableTemplates(),
 		getValuesTableTemplates(),
 		getHomepageTemplate(),
 		getMaintainersTemplate(),

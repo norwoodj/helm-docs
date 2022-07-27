@@ -29,7 +29,7 @@ func TestGetDependencyValues(t *testing.T) {
 		{
 			name: "local dependency with name",
 			args: args{
-				root: info([]helm.ChartRequirementsItem{{Name: "sub-name"}}, "root"),
+				root: info([]helm.ChartDependenciesItem{{Name: "sub-name"}}, "root"),
 				all: []helm.ChartDocumentationInfo{
 					info(nil, "root", "charts", "sub-name"),
 				},
@@ -41,7 +41,7 @@ func TestGetDependencyValues(t *testing.T) {
 		{
 			name: "local dependency with alias",
 			args: args{
-				root: info([]helm.ChartRequirementsItem{{Name: "sub-name", Alias: "sub-alias"}}, "root"),
+				root: info([]helm.ChartDependenciesItem{{Name: "sub-name", Alias: "sub-alias"}}, "root"),
 				all: []helm.ChartDocumentationInfo{
 					info(nil, "root", "charts", "sub-name"),
 				},
@@ -53,10 +53,10 @@ func TestGetDependencyValues(t *testing.T) {
 		{
 			name: "nested dependencies",
 			args: args{
-				root: info([]helm.ChartRequirementsItem{{Name: "mid-a"}, {Name: "mid-b"}}, "root"),
+				root: info([]helm.ChartDependenciesItem{{Name: "mid-a"}, {Name: "mid-b"}}, "root"),
 				all: []helm.ChartDocumentationInfo{
-					info([]helm.ChartRequirementsItem{{Name: "leaf-c"}, {Name: "leaf-d"}}, "root", "charts", "mid-a"),
-					info([]helm.ChartRequirementsItem{{Name: "leaf-e"}, {Name: "leaf-f"}}, "root", "charts", "mid-b"),
+					info([]helm.ChartDependenciesItem{{Name: "leaf-c"}, {Name: "leaf-d"}}, "root", "charts", "mid-a"),
+					info([]helm.ChartDependenciesItem{{Name: "leaf-e"}, {Name: "leaf-f"}}, "root", "charts", "mid-b"),
 					info(nil, "root", "charts", "mid-a", "charts", "leaf-c"),
 					info(nil, "root", "charts", "mid-a", "charts", "leaf-d"),
 					info(nil, "root", "charts", "mid-b", "charts", "leaf-e"),
@@ -90,13 +90,13 @@ func TestGetDependencyValues(t *testing.T) {
 	}
 }
 
-func info(dependencies []helm.ChartRequirementsItem, dirParts ...string) helm.ChartDocumentationInfo {
+func info(dependencies []helm.ChartDependenciesItem, dirParts ...string) helm.ChartDocumentationInfo {
 	dir := filepath.Join(dirParts...)
 	return helm.ChartDocumentationInfo{
 		ChartDirectory:          dir,
 		ChartValues:             &yaml.Node{Value: dir},
 		ChartValuesDescriptions: map[string]helm.ChartValueDescription{"value": {Description: dir}},
-		ChartRequirements: helm.ChartRequirements{
+		ChartDependencies: helm.ChartDependencies{
 			Dependencies: dependencies,
 		},
 	}
