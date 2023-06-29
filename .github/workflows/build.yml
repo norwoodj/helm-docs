@@ -27,10 +27,11 @@ jobs:
       with:
         path: /home/runner/go/pkg/mod
         key: go-mod
+    - name: Setting root of the Git checkout as env
+      run:
+        echo PROJECT_ROOT=$(pwd) >> $GITHUB_ENV
     - uses: goreleaser/goreleaser-action@v2
       with:
         args: release --snapshot --skip-sign
-      env:
-        PROJECT_ROOT: ./
     - if: always()
       run: rm -f ${HOME}/.docker/config.json

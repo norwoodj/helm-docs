@@ -30,6 +30,9 @@ jobs:
       uses: crazy-max/ghaction-import-gpg@v4
       with:
         gpg_private_key: ${{ secrets.SIGNING_KEY }}
+    - name: Setting root of the Git checkout as env
+      run:
+        echo PROJECT_ROOT=$(pwd) >> $GITHUB_ENV
     - uses: goreleaser/goreleaser-action@v2
       with:
         args: release
