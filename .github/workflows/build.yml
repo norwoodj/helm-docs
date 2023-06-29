@@ -30,5 +30,7 @@ jobs:
     - uses: goreleaser/goreleaser-action@v2
       with:
         args: release --snapshot --skip-sign
+      env:
+        PROJECT_ROOT: ./
     - if: always()
       run: rm -f ${HOME}/.docker/config.json

@@ -70,6 +70,12 @@ type ChartDocumentationInfo struct {
 	ChartValuesDescriptions map[string]ChartValueDescription
 }
 
+type ChartValuesDocumentationParsingConfig struct {
+	StrictMode                 bool
+	AllowedMissingValuePaths   []string
+	AllowedMissingValueRegexps []*regexp.Regexp
+}
+
 func getYamlFileContents(filename string) ([]byte, error) {
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
 		return nil, err
@@ -175,7 +181,57 @@ func parseChartValuesFile(chartDirectory string) (yaml.Node, error) {
 	return values, err
 }
 
-func parseChartValuesFileComments(chartDirectory string) (map[string]ChartValueDescription, error) {
+func checkDocumentation(rootNode *yaml.Node, comments map[string]ChartValueDescription, config ChartValuesDocumentationParsingConfig) error {
+	valuesWithoutDocs := collectValuesWithoutDoc(rootNode.Content[0], comments, make([]string, 0))
+	valuesWithoutDocsAfterIgnore := make([]string, 0)
+	for _, valueWithoutDoc := range valuesWithoutDocs {
+		ignored := false
+		for _, ignorableValuePath := range config.AllowedMissingValuePaths {
+			ignored = ignored || valueWithoutDoc == ignorableValuePath
+		}
+		for _, ignorableValueRegexp := range config.AllowedMissingValueRegexps {
+			ignored = ignored || ignorableValueRegexp.MatchString(valueWithoutDoc)
+		}
+		if !ignored {
+			valuesWithoutDocsAfterIgnore = append(valuesWithoutDocsAfterIgnore, valueWithoutDoc)
+		}
+	}
+	if len(valuesWithoutDocsAfterIgnore) > 0 {
+		return fmt.Errorf("values without documentation: \n%s", strings.Join(valuesWithoutDocsAfterIgnore, "\n"))
+	}
+	return nil
+}
+
+func collectValuesWithoutDoc(node *yaml.Node, comments map[string]ChartValueDescription, currentPath []string) []string {
+	valuesWithoutDocs := make([]string, 0)
+	switch node.Kind {
+	case yaml.MappingNode:
+		for i := 0; i < len(node.Content); i += 2 {
+			keyNode, valueNode := node.Content[i], node.Content[i+1]
+			currentPath = append(currentPath, keyNode.Value)
+			pathString := strings.Join(currentPath, ".")
+			if _, ok := comments[pathString]; !ok {
+				valuesWithoutDocs = append(valuesWithoutDocs, pathString)
+			}
+
+			childValuesWithoutDoc := collectValuesWithoutDoc(valueNode, comments, currentPath)
+			valuesWithoutDocs = append(valuesWithoutDocs, childValuesWithoutDoc...)
+
+			currentPath = currentPath[:len(currentPath)-1]
+		}
+	case yaml.SequenceNode:
+		for i := 0; i < len(node.Content); i++ {
+			valueNode := node.Content[i]
+			currentPath = append(currentPath, fmt.Sprintf("[%d]", i))
+			childValuesWithoutDoc := collectValuesWithoutDoc(valueNode, comments, currentPath)
+			valuesWithoutDocs = append(valuesWithoutDocs, childValuesWithoutDoc...)
+			currentPath = currentPath[:len(currentPath)-1]
+		}
+	}
+	return valuesWithoutDocs
+}
+
+func parseChartValuesFileComments(chartDirectory string, values *yaml.Node, lintingConfig ChartValuesDocumentationParsingConfig) (map[string]ChartValueDescription, error) {
 	valuesPath := filepath.Join(chartDirectory, viper.GetString("values-file"))
 	valuesFile, err := os.Open(valuesPath)
 
@@ -189,20 +245,18 @@ func parseChartValuesFileComments(chartDirectory string) (map[string]ChartValueD
 	scanner := bufio.NewScanner(valuesFile)
 	foundValuesComment := false
 	commentLines := make([]string, 0)
+	currentLineIdx := -1
 
 	for scanner.Scan() {
+		currentLineIdx++
 		currentLine := scanner.Text()
 
 		// If we've not yet found a values comment with a key name, try and find one on each line
 		if !foundValuesComment {
 			match := valuesDescriptionRegex.FindStringSubmatch(currentLine)
-			if len(match) < 3 {
+			if len(match) < 3 || match[1] == "" {
 				continue
 			}
-			if match[1] == "" {
-				continue
-			}
-
 			foundValuesComment = true
 			commentLines = append(commentLines, currentLine)
 			continue
@@ -225,11 +279,16 @@ func parseChartValuesFileComments(chartDirectory string) (map[string]ChartValueD
 		commentLines = make([]string, 0)
 		foundValuesComment = false
 	}
-
+	if lintingConfig.StrictMode {
+		err := checkDocumentation(values, keyToDescriptions, lintingConfig)
+		if err != nil {
+			return nil, err
+		}
+	}
 	return keyToDescriptions, nil
 }
 
-func ParseChartInformation(chartDirectory string) (ChartDocumentationInfo, error) {
+func ParseChartInformation(chartDirectory string, documentationParsingConfig ChartValuesDocumentationParsingConfig) (ChartDocumentationInfo, error) {
 	var chartDocInfo ChartDocumentationInfo
 	var err error
 
@@ -250,7 +309,7 @@ func ParseChartInformation(chartDirectory string) (ChartDocumentationInfo, error
 	}
 
 	chartDocInfo.ChartValues = &chartValues
-	chartDocInfo.ChartValuesDescriptions, err = parseChartValuesFileComments(chartDirectory)
+	chartDocInfo.ChartValuesDescriptions, err = parseChartValuesFileComments(chartDirectory, &chartValues, documentationParsingConfig)
 	if err != nil {
 		return chartDocInfo, err
 	}

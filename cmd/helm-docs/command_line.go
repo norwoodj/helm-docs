@@ -56,6 +56,9 @@ func newHelmDocsCommand(run func(cmd *cobra.Command, args []string)) (*cobra.Com
 	command.PersistentFlags().StringP("values-file", "f", "values.yaml", "Path to values file")
 	command.PersistentFlags().BoolP("document-dependency-values", "u", false, "For charts with dependencies, include the dependency values in the chart values documentation")
 	command.PersistentFlags().StringSliceP("chart-to-generate", "g", []string{}, "List of charts that will have documentation generated. Comma separated, no space. Empty list - generate for all charts in chart-search-root")
+	command.PersistentFlags().BoolP("documentation-strict-mode", "x", false, "Fail the generation of docs if there are undocumented values")
+	command.PersistentFlags().StringSliceP("documentation-strict-ignore-absent", "y", []string{"service.type", "image.repository", "image.tag"}, "A comma separate values which are allowed not to be documented in strict mode")
+	command.PersistentFlags().StringSliceP("documentation-strict-ignore-absent-regex", "z", []string{".*service\\.type", ".*image\\.repository", ".*image\\.tag"}, "A comma separate values which are allowed not to be documented in strict mode")
 
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("HELM_DOCS")

@@ -36,5 +36,6 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.NORWOODJ_ORG_TOKEN }}
         GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+        PROJECT_ROOT: ./
     - if: always()
       run: rm -f ${HOME}/.docker/config.json
