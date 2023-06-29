@@ -48,9 +48,12 @@ nfpms:
   formats:
   - deb
   - rpm
-  replacements:
-    amd64: x86_64
-    linux: Linux
+  file_name_template: >-
+    {{ .ProjectName }}_
+    {{- title .Os }}_
+    {{- if eq .Arch "amd64" }}x86_64
+    {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
 
 brews:
   - tap:
