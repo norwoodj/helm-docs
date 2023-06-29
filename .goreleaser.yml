@@ -24,6 +24,7 @@ archives:
       {{- title .Os }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
+      {{- else if eq .Arch "arm" }}{{ .Arch }}{{ .Arm }}
       {{- else }}{{ .Arch }}{{ end }}
 
 checksum:
@@ -55,7 +56,8 @@ nfpms:
     {{- title .Os }}_
     {{- if eq .Arch "amd64" }}x86_64
     {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
+    {{- else if eq .Arch "arm" }}{{ .Arch }}{{ .Arm }}
+    {{- else }}{{ .Arch }}{{ end }}
 
 brews:
   - tap:
