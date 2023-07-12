@@ -1490,12 +1490,16 @@ animals:
   # @notationType -- yaml
   fish:
     name: nomoby
+
+  # -- (list) Declaring object as yaml with null value
+  # @notationType -- yaml
+  lizards: 
 `)
 
 	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
 
 	assert.Nil(t, err)
-	assert.Len(t, valuesRows, 4)
+	assert.Len(t, valuesRows, 5)
 
 	assert.Equal(t, "animals.cats", valuesRows[0].Key)
 	assert.Equal(t, listType, valuesRows[0].Type)
@@ -1520,6 +1524,10 @@ animals:
 	assert.Equal(t, yamlType, valuesRows[3].NotationType)
 	assert.Equal(t, "name: nomoby\n", valuesRows[3].Default)
 	assert.Equal(t, "My animals lists", valuesRows[0].AutoDescription)
+
+	assert.Equal(t, "animals.lizards", valuesRows[4].Key)
+	assert.Equal(t, listType, valuesRows[4].Type)
+	assert.Equal(t, yamlType, valuesRows[4].NotationType)
 }
 
 func TestExtractCustomDeclaredType(t *testing.T) {
