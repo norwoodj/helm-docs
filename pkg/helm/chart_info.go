@@ -182,6 +182,9 @@ func parseChartValuesFile(chartDirectory string) (yaml.Node, error) {
 }
 
 func checkDocumentation(rootNode *yaml.Node, comments map[string]ChartValueDescription, config ChartValuesDocumentationParsingConfig) error {
+	if len(rootNode.Content) == 0 {
+		return nil
+	}
 	valuesWithoutDocs := collectValuesWithoutDoc(rootNode.Content[0], comments, make([]string, 0))
 	valuesWithoutDocsAfterIgnore := make([]string, 0)
 	for _, valueWithoutDoc := range valuesWithoutDocs {
