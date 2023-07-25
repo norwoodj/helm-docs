@@ -6,6 +6,7 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"runtime"
 	"strings"
 	"sync"
@@ -53,6 +54,23 @@ func parallelProcessIterable(iterable interface{}, parallelism int, visitFn func
 	wg.Wait()
 }
 
+func getDocumentationParsingConfigFromArgs() (helm.ChartValuesDocumentationParsingConfig, error) {
+	var regexps []*regexp.Regexp
+	regexpStrings := viper.GetStringSlice("documentation-strict-ignore-absent-regex")
+	for _, item := range regexpStrings {
+		regex, err := regexp.Compile(item)
+		if err != nil {
+			return helm.ChartValuesDocumentationParsingConfig{}, err
+		}
+		regexps = append(regexps, regex)
+	}
+	return helm.ChartValuesDocumentationParsingConfig{
+		StrictMode:                 viper.GetBool("documentation-strict-mode"),
+		AllowedMissingValuePaths:   viper.GetStringSlice("documentation-strict-ignore-absent"),
+		AllowedMissingValueRegexps: regexps,
+	}, nil
+}
+
 func readDocumentationInfoByChartPath(chartSearchRoot string, parallelism int) (map[string]helm.ChartDocumentationInfo, error) {
 	var fullChartSearchRoot string
 
@@ -79,10 +97,14 @@ func readDocumentationInfoByChartPath(chartSearchRoot string, parallelism int) (
 
 	documentationInfoByChartPath := make(map[string]helm.ChartDocumentationInfo, len(chartDirs))
 	documentationInfoByChartPathMu := &sync.Mutex{}
+	documentationParsingConfig, err := getDocumentationParsingConfigFromArgs()
+	if err != nil {
+		return nil, fmt.Errorf("error parsing the linting config%w", err)
+	}
 
 	parallelProcessIterable(chartDirs, parallelism, func(elem interface{}) {
 		chartDir := elem.(string)
-		info, err := helm.ParseChartInformation(filepath.Join(chartSearchRoot, chartDir))
+		info, err := helm.ParseChartInformation(filepath.Join(chartSearchRoot, chartDir), documentationParsingConfig)
 		if err != nil {
 			log.Warnf("Error parsing information for chart %s, skipping: %s", chartDir, err)
 			return

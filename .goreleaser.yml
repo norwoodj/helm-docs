@@ -1,3 +1,6 @@
+project_name: helm-docs
+env:
+  - PROJECT_ROOT={{ .Env.PROJECT_ROOT }}
 before:
   hooks:
     - go mod download
@@ -18,12 +21,15 @@ builds:
       - linux
       - windows
 archives:
-  - replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-      386: i386
-      amd64: x86_64
+  - id: default
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else if eq .Arch "arm" }}{{ .Arch }}{{ .Arm }}
+      {{- else }}{{ .Arch }}{{ end }}
+
 checksum:
   name_template: checksums.txt
 snapshot:
@@ -48,12 +54,16 @@ nfpms:
   formats:
   - deb
   - rpm
-  replacements:
-    amd64: x86_64
-    linux: Linux
+  file_name_template: >-
+    {{ .ProjectName }}_
+    {{- title .Os }}_
+    {{- if eq .Arch "amd64" }}x86_64
+    {{- else if eq .Arch "386" }}i386
+    {{- else if eq .Arch "arm" }}{{ .Arch }}{{ .Arm }}
+    {{- else }}{{ .Arch }}{{ end }}
 
 brews:
-  - tap:
+  - repository:
       owner: norwoodj
       name: homebrew
     folder: Formula
