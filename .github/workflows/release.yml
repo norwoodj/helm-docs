@@ -11,18 +11,16 @@ jobs:
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
-    - uses: actions/checkout@v2
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - uses: docker/setup-qemu-action@v1
-    - uses: docker/setup-buildx-action@v1
-    - uses: actions/setup-go@v2
+    - uses: actions/setup-go@v4
       with:
         go-version: '^1.18.0'
-    - uses: actions/cache@v1
-      with:
-        path: /home/runner/go/pkg/mod
-        key: go-mod
     - name: Login to Docker hub
       run: docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
     - name: Import GPG key
@@ -30,15 +28,12 @@ jobs:
       uses: crazy-max/ghaction-import-gpg@v4
       with:
         gpg_private_key: ${{ secrets.SIGNING_KEY }}
-    - name: Setting root of the Git checkout as env
-      run:
-        echo PROJECT_ROOT=$(pwd) >> $GITHUB_ENV
-    - uses: goreleaser/goreleaser-action@v2
+    - uses: goreleaser/goreleaser-action@v4
       with:
         args: release
       env:
         GITHUB_TOKEN: ${{ secrets.NORWOODJ_ORG_TOKEN }}
         GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
-        PROJECT_ROOT: ./
+        PROJECT_ROOT: ${{ env.GITHUB_WORKSPACE }}
     - if: always()
       run: rm -f ${HOME}/.docker/config.json
