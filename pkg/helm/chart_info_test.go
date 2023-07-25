@@ -31,15 +31,15 @@ func TestChartParsingTestSuite(t *testing.T) {
 
 func (suite *ChartParsingTestSuite) TestNotFullyDocumentedChartStrictModeOff() {
 	chartPath := suite.resolveRelativePath("example-charts/full-template/")
-	_, error := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
+	_, err := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
 		StrictMode: false,
 	})
-	suite.NoError(error)
+	suite.NoError(err)
 }
 
 func (suite *ChartParsingTestSuite) TestNotFullyDocumentedChartStrictModeOn() {
 	chartPath := suite.resolveRelativePath("example-charts/full-template/")
-	_, error := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
+	_, err := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
 		StrictMode: true,
 	})
 	expectedError := `values without documentation: 
@@ -57,12 +57,12 @@ controller.service
 controller.service.annotations
 controller.service.annotations.external-dns.alpha.kubernetes.io/hostname
 controller.service.type`
-	suite.EqualError(error, expectedError)
+	suite.EqualError(err, expectedError)
 }
 
 func (suite *ChartParsingTestSuite) TestNotFullyDocumentedChartStrictModeOnIgnores() {
 	chartPath := suite.resolveRelativePath("example-charts/full-template/")
-	_, error := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
+	_, err := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
 		StrictMode: true,
 		AllowedMissingValuePaths: []string{
 			"controller",
@@ -81,24 +81,24 @@ func (suite *ChartParsingTestSuite) TestNotFullyDocumentedChartStrictModeOnIgnor
 			"controller.service.type",
 		},
 	})
-	suite.NoError(error)
+	suite.NoError(err)
 }
 
 func (suite *ChartParsingTestSuite) TestNotFullyDocumentedChartStrictModeOnIgnoresRegexp() {
 	chartPath := suite.resolveRelativePath("example-charts/full-template/")
-	_, error := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
+	_, err := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
 		StrictMode: true,
 		AllowedMissingValueRegexps: []*regexp.Regexp{
 			regexp.MustCompile("controller.*"),
 		},
 	})
-	suite.NoError(error)
+	suite.NoError(err)
 }
 
 func (suite *ChartParsingTestSuite) TestFullyDocumentedChartStrictModeOn() {
 	chartPath := suite.resolveRelativePath("example-charts/fully-documented/")
-	_, error := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
+	_, err := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
 		StrictMode: true,
 	})
-	suite.NoError(error)
+	suite.NoError(err)
 }
