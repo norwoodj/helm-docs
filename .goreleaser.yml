@@ -1,3 +1,6 @@
+project_name: helm-docs
+env:
+  - PROJECT_ROOT={{ .Env.PROJECT_ROOT }}
 before:
   hooks:
     - go mod download
@@ -60,7 +63,7 @@ nfpms:
     {{- else }}{{ .Arch }}{{ end }}
 
 brews:
-  - tap:
+  - repository:
       owner: norwoodj
       name: homebrew
     folder: Formula
