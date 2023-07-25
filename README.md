@@ -502,5 +502,4 @@ controller.livenessProbe.httpGet.port
 controller.publishService
 controller.service.annotations
 controller.service.annotations.external-dns.alpha.kubernetes.io/hostname 
-
 ```
