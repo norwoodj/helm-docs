@@ -81,7 +81,7 @@ go build
 Or install from source:
 
 ```bash
-GO111MODULE=on go get github.com/norwoodj/helm-docs/cmd/helm-docs
+GO111MODULE=on go install github.com/norwoodj/helm-docs/cmd/helm-docs@latest
 ```
 
 ## Usage
