@@ -19,7 +19,7 @@
 - id: helm-docs-container
   args: []
   description: Uses the container image of 'helm-docs' to create documentation from the Helm chart's 'values.yaml' file, and inserts the result into a corresponding 'README.md' file.
-  entry: jnorwood/helm-docs:latest
+  entry: jnorwood/helm-docs:v1.11.0
   files: (README\.md\.gotmpl|(Chart|requirements|values)\.yaml)$
   language: docker_image
   name: Helm Docs Container
