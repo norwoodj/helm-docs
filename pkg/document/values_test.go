@@ -19,9 +19,9 @@ func getSortedValuesTableRows(helmValues *yaml.Node, descriptions map[string]hel
 		return nil, err
 	}
 
-	sortValueRows(valueRows)
+	valueRowsSorted, _ := sortValueRows(valueRows)
 
-	return valueRows, nil
+	return valueRowsSorted, nil
 }
 
 func parseYamlValues(yamlValues string) *yaml.Node {
@@ -1552,4 +1552,106 @@ owner:
 	// In this case, email might be reformatted as <a href="mailto:owner@home.org">owner@home.org</a>
 	assert.Equal(t, "owner@home.org", valuesRows[1].Default)
 	assert.Equal(t, "This has to be email address", valuesRows[1].AutoDescription)
+}
+
+func TestSection(t *testing.T) {
+	helmValues := parseYamlValues(`
+animals:
+  # -- This describes a lion
+  # @section -- Feline Section
+  lion:
+
+  # -- This describes a cat
+  # @section -- Feline Section
+  cat:
+`)
+
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 2)
+	assert.Equal(t, "animals.cat", valuesRows[0].Key)
+	assert.Equal(t, "This describes a cat", valuesRows[0].AutoDescription)
+	assert.Equal(t, "Feline Section", valuesRows[0].Section)
+	assert.Equal(t, "animals.lion", valuesRows[1].Key)
+	assert.Equal(t, "This describes a lion", valuesRows[1].AutoDescription)
+	assert.Equal(t, "Feline Section", valuesRows[1].Section)
+}
+
+func TestSectionWithAnnotations(t *testing.T) {
+	helmValues := parseYamlValues(`
+animals:
+  # -- This describes a lion
+  # @default -- Rawr
+  # @section -- Feline Section
+  lion:
+
+  # -- This describes a cat
+  # @raw
+  # -Rawr
+  # @section -- Feline Section
+  cat:
+
+  # -- (int) This describes a leopard
+  # @section -- Feline Section
+  leopard:
+`)
+
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 3)
+	assert.Equal(t, "animals.cat", valuesRows[0].Key)
+	assert.Equal(t, "This describes a cat\n-Rawr", valuesRows[0].AutoDescription)
+	assert.Equal(t, "Feline Section", valuesRows[0].Section)
+	assert.Equal(t, "animals.leopard", valuesRows[1].Key)
+	assert.Equal(t, "int", valuesRows[1].Type)
+	assert.Equal(t, "This describes a leopard", valuesRows[1].AutoDescription)
+	assert.Equal(t, "Feline Section", valuesRows[1].Section)
+	assert.Equal(t, "animals.lion", valuesRows[2].Key)
+	assert.Equal(t, "This describes a lion", valuesRows[2].AutoDescription)
+	assert.Equal(t, "Rawr", valuesRows[2].AutoDefault)
+	assert.Equal(t, "Feline Section", valuesRows[2].Section)
+}
+
+func TestDifferentSections(t *testing.T) {
+	helmValues := parseYamlValues(`
+animals:
+  # -- This describes a lion
+  # @default -- Rawr
+  # @section -- Feline Section
+  lion:
+
+  # -- This describes a cow
+  # @raw
+  # - Moooe
+  # @section -- Cow Section
+  cow:
+
+  # -- (int) This describes a leopard
+  # @section -- Feline Section
+  leopard:
+
+  # -- This describes a cougar
+  # @section -- Feline Section
+  cougar:
+`)
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 4)
+	assert.Equal(t, "animals.cougar", valuesRows[0].Key)
+	assert.Equal(t, "This describes a cougar", valuesRows[0].AutoDescription)
+	assert.Equal(t, "Feline Section", valuesRows[0].Section)
+	assert.Equal(t, "animals.cow", valuesRows[1].Key)
+	assert.Equal(t, "This describes a cow\n- Moooe", valuesRows[1].AutoDescription)
+	assert.Equal(t, "Cow Section", valuesRows[1].Section)
+	assert.Equal(t, "animals.leopard", valuesRows[2].Key)
+	assert.Equal(t, "int", valuesRows[2].Type)
+	assert.Equal(t, "This describes a leopard", valuesRows[2].AutoDescription)
+	assert.Equal(t, "Feline Section", valuesRows[3].Section)
+	assert.Equal(t, "animals.lion", valuesRows[3].Key)
+	assert.Equal(t, "This describes a lion", valuesRows[3].AutoDescription)
+	assert.Equal(t, "Rawr", valuesRows[3].AutoDefault)
+	assert.Equal(t, "Feline Section", valuesRows[3].Section)
 }
