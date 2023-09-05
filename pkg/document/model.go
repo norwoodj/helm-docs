@@ -20,6 +20,7 @@ type valueRow struct {
 	Default         string
 	AutoDescription string
 	Description     string
+	Section         string
 	Column          int
 	LineNumber      int
 	Dependency      string
@@ -30,15 +31,50 @@ type chartTemplateData struct {
 	helm.ChartDocumentationInfo
 	HelmDocsVersion string
 	Values          []valueRow
+	Sections        []section
 	Files           files
 }
 
-func sortValueRows(valueRows []valueRow) {
+type section struct {
+	SectionName  string
+	SectionItems []valueRow
+}
+
+func sortValueRows(valueRows []valueRow) ([]valueRow, []section) {
 	sortOrder := viper.GetString("sort-values-order")
 
 	if sortOrder != FileSortOrder && sortOrder != AlphaNumSortOrder {
 		log.Warnf("Invalid sort order provided %s, defaulting to %s", sortOrder, AlphaNumSortOrder)
 		sortOrder = AlphaNumSortOrder
+	}
+
+	var valueRowsSectionSorted []section
+	valueRowsSectionSorted = append(valueRowsSectionSorted, section{
+		SectionName:  "General",
+		SectionItems: []valueRow{},
+	})
+
+	for _, row := range valueRows {
+		if row.Section == "" {
+			valueRowsSectionSorted[0].SectionItems = append(valueRowsSectionSorted[0].SectionItems, row)
+			continue
+		}
+
+		containsSection := false
+		for i, section := range valueRowsSectionSorted {
+			if section.SectionName == row.Section {
+				containsSection = true
+				valueRowsSectionSorted[i].SectionItems = append(valueRowsSectionSorted[i].SectionItems, row)
+				break
+			}
+		}
+
+		if !containsSection {
+			valueRowsSectionSorted = append(valueRowsSectionSorted, section{
+				SectionName:  row.Section,
+				SectionItems: []valueRow{row},
+			})
+		}
 	}
 
 	sort.Slice(valueRows, func(i, j int) bool {
@@ -73,6 +109,42 @@ func sortValueRows(valueRows []valueRow) {
 			panic("cannot get here")
 		}
 	})
+
+	for _, section := range valueRowsSectionSorted {
+		sort.Slice(section.SectionItems, func(i, j int) bool {
+			// Globals sort above non-globals.
+			if section.SectionItems[i].IsGlobal != section.SectionItems[j].IsGlobal {
+				return section.SectionItems[i].IsGlobal
+			}
+
+			// Group by dependency for non-globals.
+			if !section.SectionItems[i].IsGlobal && !section.SectionItems[j].IsGlobal {
+				// Values for the main chart sort above values for dependencies.
+				if (section.SectionItems[i].Dependency == "") != (section.SectionItems[j].Dependency == "") {
+					return section.SectionItems[i].Dependency == ""
+				}
+
+				// Group dependency values together.
+				if section.SectionItems[i].Dependency != section.SectionItems[j].Dependency {
+					return section.SectionItems[i].Dependency < section.SectionItems[j].Dependency
+				}
+			}
+
+			// Sort the remaining values within the same section.SectionItems using the configured sort order.
+			switch sortOrder {
+			case FileSortOrder:
+				if section.SectionItems[i].LineNumber == section.SectionItems[j].LineNumber {
+					return section.SectionItems[i].Column < section.SectionItems[j].Column
+				}
+				return section.SectionItems[i].LineNumber < section.SectionItems[j].LineNumber
+			case AlphaNumSortOrder:
+				return section.SectionItems[i].Key < section.SectionItems[j].Key
+			default:
+				panic("cannot get here")
+			}
+		})
+	}
+	return valueRows, valueRowsSectionSorted
 }
 
 func getUnsortedValueRows(document *yaml.Node, descriptions map[string]helm.ChartValueDescription) ([]valueRow, error) {
@@ -134,7 +206,7 @@ func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion stri
 		}
 	}
 
-	sortValueRows(valuesTableRows)
+	valueRowsSorted, valueRowsSectionSorted := sortValueRows(valuesTableRows)
 
 	files, err := getFiles(info.ChartDirectory)
 	if err != nil {
@@ -144,7 +216,8 @@ func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion stri
 	return chartTemplateData{
 		ChartDocumentationInfo: info,
 		HelmDocsVersion:        helmDocsVersion,
-		Values:                 valuesTableRows,
+		Values:                 valueRowsSorted,
+		Sections:               valueRowsSectionSorted,
 		Files:                  files,
 	}, nil
 }

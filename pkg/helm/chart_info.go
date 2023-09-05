@@ -21,6 +21,7 @@ var commentContinuationRegex = regexp.MustCompile("^\\s*#(\\s?)(.*)$")
 var defaultValueRegex = regexp.MustCompile("^\\s*# @default -- (.*)$")
 var valueTypeRegex = regexp.MustCompile("^\\((.*?)\\)\\s*(.*)$")
 var valueNotationTypeRegex = regexp.MustCompile("^\\s*#\\s+@notationType\\s+--\\s+(.*)$")
+var sectionRegex = regexp.MustCompile("^\\s*# @section -- (.*)$")
 
 type ChartMetaMaintainer struct {
 	Email string
@@ -57,6 +58,7 @@ type ChartRequirements struct {
 type ChartValueDescription struct {
 	Description  string
 	Default      string
+	Section      string
 	ValueType    string
 	NotationType string
 }
@@ -268,9 +270,10 @@ func parseChartValuesFileComments(chartDirectory string, values *yaml.Node, lint
 		// If we've already found a values comment, on the next line try and parse a custom default value. If we find one
 		// that completes parsing for this key, add it to the list and reset to searching for a new key
 		defaultCommentMatch := defaultValueRegex.FindStringSubmatch(currentLine)
+		sectionCommentMatch := sectionRegex.FindStringSubmatch(currentLine)
 		commentContinuationMatch := commentContinuationRegex.FindStringSubmatch(currentLine)
 
-		if len(defaultCommentMatch) > 1 || len(commentContinuationMatch) > 1 {
+		if len(defaultCommentMatch) > 1 || len(sectionCommentMatch) > 1 || len(commentContinuationMatch) > 1 {
 			commentLines = append(commentLines, currentLine)
 			continue
 		}

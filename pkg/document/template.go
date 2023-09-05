@@ -274,6 +274,84 @@ func getValuesTableTemplates() string {
 	return valuesSectionBuilder.String()
 }
 
+func getValuesTableSectionedTemplates() string {
+	valuesSectionBuilder := strings.Builder{}
+	valuesSectionBuilder.WriteString(`{{ define "chart.valuesSectionedHeader" }}## Values{{ end }}`)
+
+	valuesSectionBuilder.WriteString(`{{ define "chart.valuesSectionedTable" }}`)
+	valuesSectionBuilder.WriteString("{{ range .Sections }}")
+	valuesSectionBuilder.WriteString("\n")
+	valuesSectionBuilder.WriteString("\n### {{ .SectionName }}\n")
+	valuesSectionBuilder.WriteString("| Key | Type | Default | Description |\n")
+	valuesSectionBuilder.WriteString("|-----|------|---------|-------------|\n")
+	valuesSectionBuilder.WriteString("  {{- range .SectionItems }}")
+	valuesSectionBuilder.WriteString("\n| {{ .Key }} | {{ .Type }} | {{ if .Default }}{{ .Default }}{{ else }}{{ .AutoDefault }}{{ end }} | {{ if .Description }}{{ .Description }}{{ else }}{{ .AutoDescription }}{{ end }} |")
+	valuesSectionBuilder.WriteString("  {{- end }}")
+	valuesSectionBuilder.WriteString("{{ end }}")
+	valuesSectionBuilder.WriteString("{{ end }}")
+
+	valuesSectionBuilder.WriteString(`{{ define "chart.valuesSectionedSection" }}`)
+	valuesSectionBuilder.WriteString("{{ if .Values }}")
+	valuesSectionBuilder.WriteString(`{{ template "chart.valuesSectionedHeader" . }}`)
+	valuesSectionBuilder.WriteString("\n\n")
+	valuesSectionBuilder.WriteString(`{{ template "chart.valuesSectionedTable" . }}`)
+	valuesSectionBuilder.WriteString("{{ end }}")
+	valuesSectionBuilder.WriteString("{{ end }}")
+
+	// For HTML tables
+	valuesSectionBuilder.WriteString(`
+{{ define "chart.valueDefaultColumnRender" }}
+{{- $defaultValue := (default .Default .AutoDefault)  -}}
+{{- $notationType := .NotationType }}
+{{- if (and (hasPrefix "` + "`" + `" $defaultValue) (hasSuffix "` + "`" + `" $defaultValue) ) -}}
+{{- $defaultValue = (toPrettyJson (fromJson (trimAll "` + "`" + `" (default .Default .AutoDefault) ) ) ) -}}
+{{- $notationType = "json" }}
+{{- end -}}
+<pre lang="{{ $notationType }}">
+{{- if (eq $notationType "tpl" ) }}
+{{ .Key }}: |
+{{- $defaultValue | nindent 2 }}
+{{- else }}
+{{ $defaultValue }}
+{{- end }}
+</pre>
+{{ end }}
+
+{{ define "chart.valuesSectionedTableHtml" }}
+{{- range .Sections }}
+<h3>{{- .SectionName }}</h3>
+<table>
+	<thead>
+		<th>Key</th>
+		<th>Type</th>
+		<th>Default</th>
+		<th>Description</th>
+	</thead>
+	<tbody>
+	{{- range .SectionItems }}
+		<tr>
+			<td>{{ .Key }}</td>
+			<td>{{ .Type }}</td>
+			<td>{{ template "chart.valueDefaultColumnRender" . }}</td>
+			<td>{{ if .Description }}{{ .Description }}{{ else }}{{ .AutoDescription }}{{ end }}</td>
+		</tr>
+	{{- end }}
+	</tbody>
+</table>
+{{- end }}
+{{ end }}
+
+{{ define "chart.valuesSectionedSectionHtml" }}
+{{ if .Sections }}
+{{ template "chart.valuesSectionedHeader" . }}
+{{ template "chart.valuesSectionedTableHtml" . }}
+{{ end }}
+{{ end }}
+		`)
+
+	return valuesSectionBuilder.String()
+}
+
 func getHelmDocsVersionTemplates() string {
 	versionSectionBuilder := strings.Builder{}
 	versionSectionBuilder.WriteString(`{{ define "helm-docs.version" }}{{ if .HelmDocsVersion }}{{ .HelmDocsVersion }}{{ end }}{{ end }}`)
@@ -350,6 +428,7 @@ func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, te
 		getSourceLinkTemplates(),
 		getRequirementsTableTemplates(),
 		getValuesTableTemplates(),
+		getValuesTableSectionedTemplates(),
 		getHomepageTemplate(),
 		getMaintainersTemplate(),
 		getHelmDocsVersionTemplates(),
