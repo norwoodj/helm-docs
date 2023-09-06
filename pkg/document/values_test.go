@@ -19,9 +19,9 @@ func getSortedValuesTableRows(helmValues *yaml.Node, descriptions map[string]hel
 		return nil, err
 	}
 
-	valueRowsSorted, _ := sortValueRows(valueRows)
+	sortValueRows(valueRows)
 
-	return valueRowsSorted, nil
+	return valueRows, nil
 }
 
 func parseYamlValues(yamlValues string) *yaml.Node {

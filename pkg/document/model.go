@@ -40,41 +40,12 @@ type section struct {
 	SectionItems []valueRow
 }
 
-func sortValueRows(valueRows []valueRow) ([]valueRow, []section) {
+func sortValueRows(valueRows []valueRow) {
 	sortOrder := viper.GetString("sort-values-order")
 
 	if sortOrder != FileSortOrder && sortOrder != AlphaNumSortOrder {
 		log.Warnf("Invalid sort order provided %s, defaulting to %s", sortOrder, AlphaNumSortOrder)
 		sortOrder = AlphaNumSortOrder
-	}
-
-	var valueRowsSectionSorted []section
-	valueRowsSectionSorted = append(valueRowsSectionSorted, section{
-		SectionName:  "General",
-		SectionItems: []valueRow{},
-	})
-
-	for _, row := range valueRows {
-		if row.Section == "" {
-			valueRowsSectionSorted[0].SectionItems = append(valueRowsSectionSorted[0].SectionItems, row)
-			continue
-		}
-
-		containsSection := false
-		for i, section := range valueRowsSectionSorted {
-			if section.SectionName == row.Section {
-				containsSection = true
-				valueRowsSectionSorted[i].SectionItems = append(valueRowsSectionSorted[i].SectionItems, row)
-				break
-			}
-		}
-
-		if !containsSection {
-			valueRowsSectionSorted = append(valueRowsSectionSorted, section{
-				SectionName:  row.Section,
-				SectionItems: []valueRow{row},
-			})
-		}
 	}
 
 	sort.Slice(valueRows, func(i, j int) bool {
@@ -109,8 +80,17 @@ func sortValueRows(valueRows []valueRow) ([]valueRow, []section) {
 			panic("cannot get here")
 		}
 	})
+}
 
-	for _, section := range valueRowsSectionSorted {
+func sortSectionedValueRows(sectionedValueRows []section) {
+	sortOrder := viper.GetString("sort-values-order")
+
+	if sortOrder != FileSortOrder && sortOrder != AlphaNumSortOrder {
+		log.Warnf("Invalid sort order provided %s, defaulting to %s", sortOrder, AlphaNumSortOrder)
+		sortOrder = AlphaNumSortOrder
+	}
+
+	for _, section := range sectionedValueRows {
 		sort.Slice(section.SectionItems, func(i, j int) bool {
 			// Globals sort above non-globals.
 			if section.SectionItems[i].IsGlobal != section.SectionItems[j].IsGlobal {
@@ -144,7 +124,6 @@ func sortValueRows(valueRows []valueRow) ([]valueRow, []section) {
 			}
 		})
 	}
-	return valueRows, valueRowsSectionSorted
 }
 
 func getUnsortedValueRows(document *yaml.Node, descriptions map[string]helm.ChartValueDescription) ([]valueRow, error) {
@@ -162,6 +141,39 @@ func getUnsortedValueRows(document *yaml.Node, descriptions map[string]helm.Char
 	}
 
 	return createValueRowsFromField("", nil, document.Content[0], descriptions, true)
+}
+
+func getUnsortedSectionedValueRows(valueRows []valueRow) []section {
+	var valueRowsSectionSorted []section
+	valueRowsSectionSorted = append(valueRowsSectionSorted, section{
+		SectionName:  "General",
+		SectionItems: []valueRow{},
+	})
+
+	for _, row := range valueRows {
+		if row.Section == "" {
+			valueRowsSectionSorted[0].SectionItems = append(valueRowsSectionSorted[0].SectionItems, row)
+			continue
+		}
+
+		containsSection := false
+		for i, section := range valueRowsSectionSorted {
+			if section.SectionName == row.Section {
+				containsSection = true
+				valueRowsSectionSorted[i].SectionItems = append(valueRowsSectionSorted[i].SectionItems, row)
+				break
+			}
+		}
+
+		if !containsSection {
+			valueRowsSectionSorted = append(valueRowsSectionSorted, section{
+				SectionName:  row.Section,
+				SectionItems: []valueRow{row},
+			})
+		}
+	}
+
+	return valueRowsSectionSorted
 }
 
 func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion string, dependencyValues []DependencyValues) (chartTemplateData, error) {
@@ -206,7 +218,9 @@ func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion stri
 		}
 	}
 
-	valueRowsSorted, valueRowsSectionSorted := sortValueRows(valuesTableRows)
+	sortValueRows(valuesTableRows)
+	valueRowsSectionSorted := getUnsortedSectionedValueRows(valuesTableRows)
+	sortSectionedValueRows(valueRowsSectionSorted)
 
 	files, err := getFiles(info.ChartDirectory)
 	if err != nil {
@@ -216,7 +230,7 @@ func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion stri
 	return chartTemplateData{
 		ChartDocumentationInfo: info,
 		HelmDocsVersion:        helmDocsVersion,
-		Values:                 valueRowsSorted,
+		Values:                 valuesTableRows,
 		Sections:               valueRowsSectionSorted,
 		Files:                  files,
 	}, nil
