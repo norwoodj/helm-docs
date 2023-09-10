@@ -10,7 +10,7 @@ on:
     types: [opened, reopened]
 
 jobs:
-  goreleaser:
+  build:
     runs-on: ubuntu-latest
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
