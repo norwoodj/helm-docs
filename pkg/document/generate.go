@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
 
 	"github.com/norwoodj/helm-docs/pkg/helm"
 	log "github.com/sirupsen/logrus"
@@ -78,7 +77,6 @@ func applyMarkDownFormat(output bytes.Buffer) bytes.Buffer {
 
 	re = regexp.MustCompile(`\n{3,}`)
 	outputString = re.ReplaceAllString(outputString, "\n\n")
-	outputString = strings.TrimSuffix(outputString, "\n")
 
 	output.Reset()
 	output.WriteString(outputString)
