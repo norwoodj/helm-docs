@@ -1,6 +1,4 @@
 project_name: helm-docs
-env:
-  - PROJECT_ROOT={{ .Env.PROJECT_ROOT }}
 before:
   hooks:
     - go mod download
@@ -43,7 +41,7 @@ changelog:
 
 signs:
 - artifacts: checksum
-  args: ["-u", "{{ .Env.GPG_FINGERPRINT }}", "--output", "${signature}", "--detach-sign", "${artifact}"]
+  args: [ '{{ if index .Env "GPG_FINGERPRINT"  }}-u {{ .Env.GPG_FINGERPRINT }}{{ else }}-s{{ end }}', "--output", "${signature}","--detach-sign", "${artifact}"]
 
 nfpms:
 - vendor: helm-docs

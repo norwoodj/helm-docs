@@ -1,0 +1,10 @@
+# controller -- The controller
+controller:
+  # controller.name -- The name of the controller
+  name: controller
+  # controller.image -- The image of the controller
+  image:
+    # controller.image.repository -- The repository of the controller
+    repository: nginx-ingress-controller
+    # controller.image.tag -- The tag of the image of the controller
+    tag: "18.0831"

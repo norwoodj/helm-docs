@@ -10,7 +10,7 @@ on:
     types: [opened, reopened]
 
 jobs:
-  goreleaser:
+  build:
     runs-on: ubuntu-latest
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
@@ -29,8 +29,6 @@ jobs:
       uses: goreleaser/goreleaser-action@v4
       with:
         args: release --snapshot --skip-sign
-      env:
-        PROJECT_ROOT: ${{ github.workspace }}
     - if: always()
       run: rm -f ${HOME}/.docker/config.json
 

@@ -4,7 +4,6 @@ import (
 	"github.com/norwoodj/helm-docs/pkg/helm"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
-	"os"
 	"path/filepath"
 	"regexp"
 	"testing"
@@ -18,19 +17,12 @@ func (_ *ChartParsingTestSuite) SetupTest() {
 	viper.Set("values-file", "values.yaml")
 }
 
-func (suite *ChartParsingTestSuite) resolveRelativePath(chartPath string) string {
-	projectRoot := os.Getenv("PROJECT_ROOT")
-	if projectRoot == "" {
-		suite.T().Fatal("PROJECT_ROOT environment variable is not set")
-	}
-	return filepath.Join(projectRoot, chartPath)
-}
 func TestChartParsingTestSuite(t *testing.T) {
 	suite.Run(t, new(ChartParsingTestSuite))
 }
 
 func (suite *ChartParsingTestSuite) TestNotFullyDocumentedChartStrictModeOff() {
-	chartPath := suite.resolveRelativePath("example-charts/full-template/")
+	chartPath := filepath.Join("test-fixtures", "full-template")
 	_, err := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
 		StrictMode: false,
 	})
@@ -38,7 +30,7 @@ func (suite *ChartParsingTestSuite) TestNotFullyDocumentedChartStrictModeOff() {
 }
 
 func (suite *ChartParsingTestSuite) TestNotFullyDocumentedChartStrictModeOn() {
-	chartPath := suite.resolveRelativePath("example-charts/full-template/")
+	chartPath := filepath.Join("test-fixtures", "full-template")
 	_, err := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
 		StrictMode: true,
 	})
@@ -61,7 +53,7 @@ controller.service.type`
 }
 
 func (suite *ChartParsingTestSuite) TestNotFullyDocumentedChartStrictModeOnIgnores() {
-	chartPath := suite.resolveRelativePath("example-charts/full-template/")
+	chartPath := filepath.Join("test-fixtures", "full-template")
 	_, err := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
 		StrictMode: true,
 		AllowedMissingValuePaths: []string{
@@ -85,7 +77,7 @@ func (suite *ChartParsingTestSuite) TestNotFullyDocumentedChartStrictModeOnIgnor
 }
 
 func (suite *ChartParsingTestSuite) TestNotFullyDocumentedChartStrictModeOnIgnoresRegexp() {
-	chartPath := suite.resolveRelativePath("example-charts/full-template/")
+	chartPath := filepath.Join("test-fixtures", "full-template")
 	_, err := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
 		StrictMode: true,
 		AllowedMissingValueRegexps: []*regexp.Regexp{
@@ -96,7 +88,7 @@ func (suite *ChartParsingTestSuite) TestNotFullyDocumentedChartStrictModeOnIgnor
 }
 
 func (suite *ChartParsingTestSuite) TestFullyDocumentedChartStrictModeOn() {
-	chartPath := suite.resolveRelativePath("example-charts/fully-documented/")
+	chartPath := filepath.Join("test-fixtures", "fully-documented")
 	_, err := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
 		StrictMode: true,
 	})

@@ -17,8 +17,7 @@ import (
 //
 // To run benchmarks, run the command:
 //
-//   go test -run=^$ -bench=. ./cmd/helm-docs
-//
+//	go test -run=^$ -bench=. ./cmd/helm-docs
 func BenchmarkHelmDocs(b *testing.B) {
 	// Copy testdata to a new temporary directory, to keep the working directory clean.
 	tmp := copyToTempDir(b, os.DirFS(filepath.Join("testdata", "benchmark")))
@@ -89,6 +88,7 @@ func (v *testFlagValue) ValueType() string {
 // copyToTempDir copies the specified readonly filesystem into a new temporary directory and returns
 // the path to the temporary directory. It fails the benchmark on any error and handles cleanup when
 // the benchmark finishes.
+// TODO make use of B.TempDir instead of implementing directly https://pkg.go.dev/testing#B.TempDir
 func copyToTempDir(b *testing.B, fsys fs.FS) string {
 	// Create the temporary directory.
 	tmp, err := os.MkdirTemp("", "")
