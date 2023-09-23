@@ -5,3 +5,6 @@ dist
 *.iml
 .vscode/
 vendor/
+
+## Any README generated from tests
+cmd/**/README.md
