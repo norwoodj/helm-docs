@@ -22,6 +22,7 @@ archives:
   - id: default
     name_template: >-
       {{ .ProjectName }}_
+      {{- .Version }}_
       {{- title .Os }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
@@ -54,6 +55,7 @@ nfpms:
   - rpm
   file_name_template: >-
     {{ .ProjectName }}_
+    {{- .Version}}_
     {{- title .Os }}_
     {{- if eq .Arch "amd64" }}x86_64
     {{- else if eq .Arch "386" }}i386
