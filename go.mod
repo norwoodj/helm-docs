@@ -1,6 +1,6 @@
 module github.com/norwoodj/helm-docs
 
-go 1.14
+go 1.17
 
 require (
 	github.com/Masterminds/sprig/v3 v3.2.2
