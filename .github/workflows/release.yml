@@ -24,6 +24,9 @@ jobs:
     - name: Login to Docker hub
       if: ${{ !env.ACT }}
       run: docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
+    - name: Log in to registry
+      if: ${{ !env.ACT }}
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
     - name: Import GPG key
       if: ${{ !env.ACT }}
       id: import_gpg

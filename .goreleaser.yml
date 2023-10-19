@@ -82,6 +82,7 @@ dockers:
       - --platform=linux/amd64
     image_templates:
       - jnorwood/{{ .ProjectName }}:{{ .Tag }}-amd64
+      - norwoodj/{{ .ProjectName }}:{{ .Tag }}-amd64
   - goos: linux
     goarch: arm64
     dockerfile: Dockerfile
@@ -90,6 +91,7 @@ dockers:
       - --platform=linux/arm64
     image_templates:
       - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64
+      - norwoodj/{{ .ProjectName }}:{{ .Tag }}-arm64
   - goos: linux
     goarch: arm
     goarm: 6
@@ -99,6 +101,7 @@ dockers:
       - --platform=linux/arm/v6
     image_templates:
       - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v6
+      - norwoodj/{{ .ProjectName }}:{{ .Tag }}-arm64v6
   - goos: linux
     goarch: arm
     goarm: 7
@@ -108,7 +111,9 @@ dockers:
       - --platform=linux/arm/v7
     image_templates:
       - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v7
+      - norwoodj/{{ .ProjectName }}:{{ .Tag }}-arm64v7
 docker_manifests:
+# Pushing to Docker Hub
 - name_template: jnorwood/{{ .ProjectName }}:{{ .Tag }}
   image_templates:
     - jnorwood/{{ .ProjectName }}:{{ .Tag }}-amd64
@@ -121,3 +126,17 @@ docker_manifests:
     - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64
     - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v6
     - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v7
+
+# Pushing to GitHub Registry
+- name_template: norwoodj/{{ .ProjectName }}:{{ .Tag }}
+  image_templates:
+    - gcr.io/norwoodj/{{ .ProjectName }}:{{ .Tag }}-amd64
+    - gcr.io/norwoodj/{{ .ProjectName }}:{{ .Tag }}-arm64
+    - gcr.io/norwoodj/{{ .ProjectName }}:{{ .Tag }}-arm64v6
+    - gcr.io/norwoodj/{{ .ProjectName }}:{{ .Tag }}-arm64v7
+- name_template: norwoodj/{{ .ProjectName }}:latest
+  image_templates:
+    - gcr.io/norwoodj/{{ .ProjectName }}:{{ .Tag }}-amd64
+    - gcr.io/norwoodj/{{ .ProjectName }}:{{ .Tag }}-arm64
+    - gcr.io/norwoodj/{{ .ProjectName }}:{{ .Tag }}-arm64v6
+    - gcr.io/norwoodj/{{ .ProjectName }}:{{ .Tag }}-arm64v7
