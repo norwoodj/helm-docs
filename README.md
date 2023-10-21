@@ -99,6 +99,73 @@ pre-commit install-hooks
 
 Future changes to your chart's `requirements.yaml`, `values.yaml`, `Chart.yaml`, or `README.md.gotmpl` files will cause an update to documentation when you commit.
 
+There are several variants of `pre-commit` hooks to choose from depending on your use case.
+
+#### `helm-docs`  Uses `helm-docs` binary located in your `PATH`
+
+```yaml
+---
+repos:
+  - repo: https://github.com/jnorwood/helm-docs
+    rev:  ""
+    hooks:
+      - id: helm-docs
+        args:
+          # Make the tool search for charts only under the `charts` directory
+          - --chart-search-root=charts
+
+```
+
+
+#### `helm-docs-built` Uses `helm-docs` built from code in git
+
+```yaml
+---
+repos:
+  - repo: https://github.com/jnorwood/helm-docs
+    rev:  ""
+    hooks:
+      - id: helm-docs-built
+        args:
+          # Make the tool search for charts only under the `charts` directory
+          - --chart-search-root=charts
+
+```
+
+
+#### `helm-docs-container` Uses the container image of `helm-docs:latest`
+
+```yaml
+---
+repos:
+  - repo: https://github.com/jnorwood/helm-docs
+    rev:  ""
+    hooks:
+      - id: helm-docs-container
+        args:
+          # Make the tool search for charts only under the `charts` directory
+          - --chart-search-root=charts
+
+```
+
+#### To pin the `helm-docs` container to a specific tag, follow the example below:
+
+
+```yaml
+---
+repos:
+  - repo: https://github.com/jnorwood/helm-docs
+    rev:  ""
+    hooks:
+      - id: helm-docs-container
+        entry: jnorwood/helm-docs:x.y.z
+        args:
+          # Make the tool search for charts only under the `charts` directory
+          - --chart-search-root=charts
+
+```
+
+
 ### Running the binary directly
 
 To run and generate documentation into READMEs for all helm charts within or recursively contained by a directory:
@@ -441,16 +508,16 @@ By default, this option is turned off:
 
 ```shell
 ./helm-docs -c  example-charts/helm-3
-INFO[2023-06-29T07:54:29-07:00] Found Chart directories [.]                  
-INFO[2023-06-29T07:54:29-07:00] Generating README Documentation for chart example-charts/helm-3 
+INFO[2023-06-29T07:54:29-07:00] Found Chart directories [.]
+INFO[2023-06-29T07:54:29-07:00] Generating README Documentation for chart example-charts/helm-3
 ```
 
 but you can use the `-x` flag to turn it on:
 
 ```shell
 helm-docs -x -c  example-charts/helm-3
-INFO[2023-06-29T07:55:12-07:00] Found Chart directories [.]                  
-WARN[2023-06-29T07:55:12-07:00] Error parsing information for chart ., skipping: values without documentation: 
+INFO[2023-06-29T07:55:12-07:00] Found Chart directories [.]
+WARN[2023-06-29T07:55:12-07:00] Error parsing information for chart ., skipping: values without documentation:
 controller
 controller.name
 controller.image
@@ -469,29 +536,29 @@ The CLI also supports excluding fields by regexp using the `-z` argument
 
 ```shell
 helm-docs -x -z="controller.*" -c  example-charts/helm-3
-INFO[2023-06-29T08:18:55-07:00] Found Chart directories [.]                  
-INFO[2023-06-29T08:18:55-07:00] Generating README Documentation for chart example-charts/helm-3 
+INFO[2023-06-29T08:18:55-07:00] Found Chart directories [.]
+INFO[2023-06-29T08:18:55-07:00] Generating README Documentation for chart example-charts/helm-3
 ```
 
-Multiple regexp can be passed, as in the following example:  
+Multiple regexp can be passed, as in the following example:
 
 ```shell
 helm-docs -x -z="controller.image.*" -z="controller.service.*"  -z="controller.extraVolumes.*"  -c  example-charts/helm-3
-INFO[2023-06-29T08:21:04-07:00] Found Chart directories [.]                  
-WARN[2023-06-29T08:21:04-07:00] Error parsing information for chart ., skipping: values without documentation: 
+INFO[2023-06-29T08:21:04-07:00] Found Chart directories [.]
+WARN[2023-06-29T08:21:04-07:00] Error parsing information for chart ., skipping: values without documentation:
 controller
 controller.name
 controller.livenessProbe.httpGet
 controller.livenessProbe.httpGet.port
-controller.publishService 
+controller.publishService
 ```
 
 It is also possible to ignore specific errors using the `-y` argument.
 
 ```shell
 helm-docs -x -y="controller.name" -y="controller.service"  -c  example-charts/helm-3
-INFO[2023-06-29T08:23:40-07:00] Found Chart directories [.]                  
-WARN[2023-06-29T08:23:40-07:00] Error parsing information for chart ., skipping: values without documentation: 
+INFO[2023-06-29T08:23:40-07:00] Found Chart directories [.]
+WARN[2023-06-29T08:23:40-07:00] Error parsing information for chart ., skipping: values without documentation:
 controller
 controller.image
 controller.extraVolumes.[0].name
@@ -502,5 +569,5 @@ controller.livenessProbe.httpGet.port
 controller.publishService
 controller.service.annotations
 controller.service.annotations.external-dns.alpha.kubernetes.io/hostname
- 
+
 ```
