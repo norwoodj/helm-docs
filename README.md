@@ -449,8 +449,8 @@ row are rendered.
 
 2. Overriding built-in templates
 
-You can always overrides or redefine built-in templates in your own `_templates.
-gotmpl` file. The built-in templates can be thought of as a template hook.
+You can always overrides or redefine built-in templates in your own `_templates.gotmpl` 
+file. The built-in templates can be thought of as a template hook.
 For example, if you need to change the HTML table, for example to add a new
 column, or define maximum width/height, you can override `chart.valuesTableHtml`. Your overrides will then be called by `chart.valuesSectionHtml`.
 
