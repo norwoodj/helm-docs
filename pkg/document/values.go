@@ -96,6 +96,7 @@ func parseNilValueType(key string, description helm.ChartValueDescription, autoD
 	return valueRow{
 		Key:             key,
 		Type:            t,
+		NotationType:    autoDescription.NotationType,
 		AutoDefault:     autoDescription.Default,
 		Default:         description.Default,
 		AutoDescription: autoDescription.Description,
