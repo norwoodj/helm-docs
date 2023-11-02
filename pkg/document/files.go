@@ -122,6 +122,10 @@ func (f files) AsSecrets() string {
 	return toYAML(m)
 }
 
+func (f files) AsMap() map[string]*fileEntry {
+	return f.foundFiles
+}
+
 func (f files) Lines(path string) []string {
 	if len(f.foundFiles) == 0 {
 		return []string{}

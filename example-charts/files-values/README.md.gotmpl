@@ -39,6 +39,10 @@ dataSecret:
 {{ (.Files.Glob "templates/**.yaml").AsSecrets | indent 2 }}
 ```
 
+{{ range $path, $_ :=  (.Files.Glob  "**.yaml").AsMap -}}
+File: {{$path}}
+{{ end }}
+
 {{ template "chart.requirementsSection" . }}
 
 {{ template "chart.valuesSection" . }}
