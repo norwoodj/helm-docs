@@ -1,16 +1,8 @@
 # Sections
 
-## Values
+This creates values, but sectioned into own section tables if a seciton comment is provided.
 
-### General
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| controller.extraVolumes[0].name | string | `"config-volume"` |  |
-| controller.image.repository | string | `"nginx-ingress-controller"` |  |
-| controller.image.tag | string | `"18.0831"` |  |
-| controller.name | string | `"controller"` |  |
-| controller.service.annotations."external-dns.alpha.kubernetes.io/hostname" | string | `"stupidchess.jmn23.com"` | Hostname to be assigned to the ELB for the service |
-| controller.service.type | string | `"LoadBalancer"` |  |
+## Values
 
 ### Some Section
 | Key | Type | Default | Description |
@@ -26,73 +18,18 @@
 | controller.publishService | object | `{"enabled":false}` | This is a publishService |
 | controller.replicas | int | `nil` | Number of nginx-ingress pods to load balance between |
 
+### Other Values
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| controller.extraVolumes[0].name | string | `"config-volume"` |  |
+| controller.image.repository | string | `"nginx-ingress-controller"` |  |
+| controller.image.tag | string | `"18.0831"` |  |
+| controller.name | string | `"controller"` |  |
+| controller.service.annotations."external-dns.alpha.kubernetes.io/hostname" | string | `"stupidchess.jmn23.com"` | Hostname to be assigned to the ELB for the service |
+| controller.service.type | string | `"LoadBalancer"` |  |
+
 ## Values
 
-<h3>General</h3>
-<table>
-	<thead>
-		<th>Key</th>
-		<th>Type</th>
-		<th>Default</th>
-		<th>Description</th>
-	</thead>
-	<tbody>
-		<tr>
-			<td>controller.extraVolumes[0].name</td>
-			<td>string</td>
-			<td><pre lang="json">
-"config-volume"
-</pre>
-</td>
-			<td></td>
-		</tr>
-		<tr>
-			<td>controller.image.repository</td>
-			<td>string</td>
-			<td><pre lang="json">
-"nginx-ingress-controller"
-</pre>
-</td>
-			<td></td>
-		</tr>
-		<tr>
-			<td>controller.image.tag</td>
-			<td>string</td>
-			<td><pre lang="json">
-"18.0831"
-</pre>
-</td>
-			<td></td>
-		</tr>
-		<tr>
-			<td>controller.name</td>
-			<td>string</td>
-			<td><pre lang="json">
-"controller"
-</pre>
-</td>
-			<td></td>
-		</tr>
-		<tr>
-			<td>controller.service.annotations."external-dns.alpha.kubernetes.io/hostname"</td>
-			<td>string</td>
-			<td><pre lang="json">
-"stupidchess.jmn23.com"
-</pre>
-</td>
-			<td>Hostname to be assigned to the ELB for the service</td>
-		</tr>
-		<tr>
-			<td>controller.service.type</td>
-			<td>string</td>
-			<td><pre lang="json">
-"LoadBalancer"
-</pre>
-</td>
-			<td></td>
-		</tr>
-	</tbody>
-</table>
 <h3>Some Section</h3>
 <table>
 	<thead>
@@ -169,5 +106,71 @@ null
 </td>
 			<td>Number of nginx-ingress pods to load balance between</td>
 		</tr>
+	</tbody>
+</table>
+
+<h3>Other Values</h3>
+<table>
+	<thead>
+		<th>Key</th>
+		<th>Type</th>
+		<th>Default</th>
+		<th>Description</th>
+	</thead>
+	<tbody>
+	<tr>
+		<td>controller.extraVolumes[0].name</td>
+		<td>string</td>
+		<td><pre lang="json">
+"config-volume"
+</pre>
+</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>controller.image.repository</td>
+		<td>string</td>
+		<td><pre lang="json">
+"nginx-ingress-controller"
+</pre>
+</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>controller.image.tag</td>
+		<td>string</td>
+		<td><pre lang="json">
+"18.0831"
+</pre>
+</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>controller.name</td>
+		<td>string</td>
+		<td><pre lang="json">
+"controller"
+</pre>
+</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>controller.service.annotations."external-dns.alpha.kubernetes.io/hostname"</td>
+		<td>string</td>
+		<td><pre lang="json">
+"stupidchess.jmn23.com"
+</pre>
+</td>
+		<td>Hostname to be assigned to the ELB for the service</td>
+	</tr>
+	<tr>
+		<td>controller.service.type</td>
+		<td>string</td>
+		<td><pre lang="json">
+"LoadBalancer"
+</pre>
+</td>
+		<td></td>
+	</tr>
 	</tbody>
 </table>

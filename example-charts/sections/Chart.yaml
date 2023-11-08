@@ -1,6 +1,5 @@
 apiVersion: v2
 name: sections
-deprecated: true
 version: "1.0.0"
 type: application
 appVersion: "13.0.0"
@@ -10,10 +9,4 @@ maintainers:
   - email: rohdeconstantin@gmail.com
     name: Constantin Rohde
 sources: ["https://github.com/norwoodj/helm-docs/tree/master/example-charts/sections"]
-kubeVersion: "<=1.18"
 engine: gotpl
-
-dependencies:
-  - name: nginx-ingress
-    version: "0.22.1"
-    repository: "@stable"
