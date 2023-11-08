@@ -31,8 +31,13 @@ type chartTemplateData struct {
 	helm.ChartDocumentationInfo
 	HelmDocsVersion string
 	Values          []valueRow
-	Sections        []section
+	Sections        sections
 	Files           files
+}
+
+type sections struct {
+	DefaultSection section
+	Sections       []section
 }
 
 type section struct {
@@ -40,14 +45,7 @@ type section struct {
 	SectionItems []valueRow
 }
 
-func sortValueRows(valueRows []valueRow) {
-	sortOrder := viper.GetString("sort-values-order")
-
-	if sortOrder != FileSortOrder && sortOrder != AlphaNumSortOrder {
-		log.Warnf("Invalid sort order provided %s, defaulting to %s", sortOrder, AlphaNumSortOrder)
-		sortOrder = AlphaNumSortOrder
-	}
-
+func sortValueRowsByOrder(valueRows []valueRow, sortOrder string) {
 	sort.Slice(valueRows, func(i, j int) bool {
 		// Globals sort above non-globals.
 		if valueRows[i].IsGlobal != valueRows[j].IsGlobal {
@@ -82,7 +80,7 @@ func sortValueRows(valueRows []valueRow) {
 	})
 }
 
-func sortSectionedValueRows(sectionedValueRows []section) {
+func sortValueRows(valueRows []valueRow) {
 	sortOrder := viper.GetString("sort-values-order")
 
 	if sortOrder != FileSortOrder && sortOrder != AlphaNumSortOrder {
@@ -90,39 +88,21 @@ func sortSectionedValueRows(sectionedValueRows []section) {
 		sortOrder = AlphaNumSortOrder
 	}
 
-	for _, section := range sectionedValueRows {
-		sort.Slice(section.SectionItems, func(i, j int) bool {
-			// Globals sort above non-globals.
-			if section.SectionItems[i].IsGlobal != section.SectionItems[j].IsGlobal {
-				return section.SectionItems[i].IsGlobal
-			}
+	sortValueRowsByOrder(valueRows, sortOrder)
+}
 
-			// Group by dependency for non-globals.
-			if !section.SectionItems[i].IsGlobal && !section.SectionItems[j].IsGlobal {
-				// Values for the main chart sort above values for dependencies.
-				if (section.SectionItems[i].Dependency == "") != (section.SectionItems[j].Dependency == "") {
-					return section.SectionItems[i].Dependency == ""
-				}
+func sortSectionedValueRows(sectionedValueRows sections) {
+	sortOrder := viper.GetString("sort-values-order")
 
-				// Group dependency values together.
-				if section.SectionItems[i].Dependency != section.SectionItems[j].Dependency {
-					return section.SectionItems[i].Dependency < section.SectionItems[j].Dependency
-				}
-			}
+	if sortOrder != FileSortOrder && sortOrder != AlphaNumSortOrder {
+		log.Warnf("Invalid sort order provided %s, defaulting to %s", sortOrder, AlphaNumSortOrder)
+		sortOrder = AlphaNumSortOrder
+	}
 
-			// Sort the remaining values within the same section.SectionItems using the configured sort order.
-			switch sortOrder {
-			case FileSortOrder:
-				if section.SectionItems[i].LineNumber == section.SectionItems[j].LineNumber {
-					return section.SectionItems[i].Column < section.SectionItems[j].Column
-				}
-				return section.SectionItems[i].LineNumber < section.SectionItems[j].LineNumber
-			case AlphaNumSortOrder:
-				return section.SectionItems[i].Key < section.SectionItems[j].Key
-			default:
-				panic("cannot get here")
-			}
-		})
+	sortValueRowsByOrder(sectionedValueRows.DefaultSection.SectionItems, sortOrder)
+
+	for _, section := range sectionedValueRows.Sections {
+		sortValueRowsByOrder(section.SectionItems, sortOrder)
 	}
 }
 
@@ -143,30 +123,30 @@ func getUnsortedValueRows(document *yaml.Node, descriptions map[string]helm.Char
 	return createValueRowsFromField("", nil, document.Content[0], descriptions, true)
 }
 
-func getUnsortedSectionedValueRows(valueRows []valueRow) []section {
-	var valueRowsSectionSorted []section
-	valueRowsSectionSorted = append(valueRowsSectionSorted, section{
-		SectionName:  "General",
+func getSectionedValueRows(valueRows []valueRow) sections {
+	var valueRowsSectionSorted sections
+	valueRowsSectionSorted.DefaultSection = section{
+		SectionName:  "Other Values",
 		SectionItems: []valueRow{},
-	})
+	}
 
 	for _, row := range valueRows {
 		if row.Section == "" {
-			valueRowsSectionSorted[0].SectionItems = append(valueRowsSectionSorted[0].SectionItems, row)
+			valueRowsSectionSorted.DefaultSection.SectionItems = append(valueRowsSectionSorted.DefaultSection.SectionItems, row)
 			continue
 		}
 
 		containsSection := false
-		for i, section := range valueRowsSectionSorted {
+		for i, section := range valueRowsSectionSorted.Sections {
 			if section.SectionName == row.Section {
 				containsSection = true
-				valueRowsSectionSorted[i].SectionItems = append(valueRowsSectionSorted[i].SectionItems, row)
+				valueRowsSectionSorted.Sections[i].SectionItems = append(valueRowsSectionSorted.Sections[i].SectionItems, row)
 				break
 			}
 		}
 
 		if !containsSection {
-			valueRowsSectionSorted = append(valueRowsSectionSorted, section{
+			valueRowsSectionSorted.Sections = append(valueRowsSectionSorted.Sections, section{
 				SectionName:  row.Section,
 				SectionItems: []valueRow{row},
 			})
@@ -219,7 +199,7 @@ func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion stri
 	}
 
 	sortValueRows(valuesTableRows)
-	valueRowsSectionSorted := getUnsortedSectionedValueRows(valuesTableRows)
+	valueRowsSectionSorted := getSectionedValueRows(valuesTableRows)
 	sortSectionedValueRows(valueRowsSectionSorted)
 
 	files, err := getFiles(info.ChartDirectory)
