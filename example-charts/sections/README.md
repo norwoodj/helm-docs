@@ -1,10 +1,11 @@
 # Sections
 
-This creates values, but sectioned into own section tables if a seciton comment is provided.
+This creates values, but sectioned into own section tables if a section comment is provided.
 
 ## Values
 
 ### Some Section
+
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | controller.extraVolumes[0].configMap.name | string | `"nginx-ingress-config"` | Uses the name of the configmap created by this chart |
@@ -12,6 +13,7 @@ This creates values, but sectioned into own section tables if a seciton comment 
 | controller.podLabels | object | `{}` | The labels to be applied to instances of the controller pod |
 
 ### Special Attention
+
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | controller.ingressClass | string | `"nginx"` | You can also specify value comments like this |
@@ -19,6 +21,7 @@ This creates values, but sectioned into own section tables if a seciton comment 
 | controller.replicas | int | `nil` | Number of nginx-ingress pods to load balance between |
 
 ### Other Values
+
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | controller.extraVolumes[0].name | string | `"config-volume"` |  |
