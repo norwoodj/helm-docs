@@ -74,7 +74,7 @@ type ChartDocumentationInfo struct {
 	ChartFS fs.FS
 }
 
-func New(chartDirectory string) (ChartDocumentationInfo, error) {
+func parseChartFS(chartDirectory string) (ChartDocumentationInfo, error) {
 	chartDocInfo := ChartDocumentationInfo{
 		ChartDirectory: chartDirectory,
 	}
@@ -351,7 +351,7 @@ func (chartDocInfo ChartDocumentationInfo) parseChartValuesFileComments(lintingC
 }
 
 func ParseChartInformation(chartDirectory string, documentationParsingConfig ChartValuesDocumentationParsingConfig) (ChartDocumentationInfo, error) {
-	chartDocInfo, err := New(chartDirectory)
+	chartDocInfo, err := parseChartFS(chartDirectory)
 	if err != nil {
 		return chartDocInfo, err
 	}
