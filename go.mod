@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/gobwas/glob v0.2.3
+	github.com/nlepage/go-tarfs v1.2.1 // indirect
 	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0

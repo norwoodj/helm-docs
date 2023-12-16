@@ -2,14 +2,16 @@ package helm
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
-	"io/ioutil"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
 
+	"github.com/nlepage/go-tarfs"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
@@ -68,6 +70,41 @@ type ChartDocumentationInfo struct {
 	ChartDirectory          string
 	ChartValues             *yaml.Node
 	ChartValuesDescriptions map[string]ChartValueDescription
+
+	ChartFS fs.FS
+}
+
+func New(chartDirectory string) (ChartDocumentationInfo, error) {
+	chartDocInfo := ChartDocumentationInfo{
+		ChartDirectory: chartDirectory,
+	}
+
+	if strings.HasSuffix(chartDirectory, ".tgz") {
+		tf, err := os.Open(chartDirectory)
+		if err != nil {
+			defer tf.Close()
+			return chartDocInfo, fmt.Errorf("could not open Chart archive %s: %w", chartDirectory, err)
+		}
+		defer tf.Close()
+
+		tfs, err := tarfs.New(tf)
+		if err != nil {
+			return chartDocInfo, fmt.Errorf("could not open Chart archive %s: %w", chartDirectory, err)
+		}
+
+		// Do not need to check these errors any further,
+		// they have already been checked by
+		// pkg/helm/chart_finder.go:checkArchiveIsChart
+		dirs, _ := fs.ReadDir(tfs, ".")
+		chartDocInfo.ChartFS, err = fs.Sub(tfs, dirs[0].Name())
+		if err != nil {
+			return chartDocInfo, fmt.Errorf("could not read Chart archive %s: %w", chartDirectory, err)
+		}
+	} else {
+		chartDocInfo.ChartFS = os.DirFS(chartDirectory)
+	}
+
+	return chartDocInfo, nil
 }
 
 type ChartValuesDocumentationParsingConfig struct {
@@ -81,7 +118,20 @@ func getYamlFileContents(filename string) ([]byte, error) {
 		return nil, err
 	}
 
-	yamlFileContents, err := ioutil.ReadFile(filename)
+	yamlFileContents, err := os.ReadFile(filename)
+	if err != nil {
+		panic(err)
+	}
+
+	return []byte(strings.Replace(string(yamlFileContents), "\r\n", "\n", -1)), nil
+}
+
+func getYamlFileContentsFS(fsys fs.FS, filename string) ([]byte, error) {
+	if _, err := fs.Stat(fsys, filename); errors.Is(err, fs.ErrNotExist) {
+		return nil, err
+	}
+
+	yamlFileContents, err := fs.ReadFile(fsys, filename)
 	if err != nil {
 		panic(err)
 	}
@@ -103,8 +153,8 @@ func isErrorInReadingNecessaryFile(filePath string, loadError error) bool {
 	return false
 }
 
-func parseChartFile(chartDirectory string) (ChartMeta, error) {
-	chartYamlPath := filepath.Join(chartDirectory, "Chart.yaml")
+func parseChartFile(chartFS string) (ChartMeta, error) {
+	chartYamlPath := filepath.Join(chartFS, "Chart.yaml")
 	chartMeta := ChartMeta{}
 	yamlFileContents, err := getYamlFileContents(chartYamlPath)
 
@@ -292,30 +342,172 @@ func parseChartValuesFileComments(chartDirectory string, values *yaml.Node, lint
 }
 
 func ParseChartInformation(chartDirectory string, documentationParsingConfig ChartValuesDocumentationParsingConfig) (ChartDocumentationInfo, error) {
-	var chartDocInfo ChartDocumentationInfo
-	var err error
-
-	chartDocInfo.ChartDirectory = chartDirectory
-	chartDocInfo.ChartMeta, err = parseChartFile(chartDirectory)
+	chartDocInfo, err := New(chartDirectory)
 	if err != nil {
 		return chartDocInfo, err
 	}
 
-	chartDocInfo.ChartRequirements, err = parseChartRequirementsFile(chartDirectory, chartDocInfo.ApiVersion)
+	// chartDocInfo.ChartMeta, err = parseChartFile(chartDirectory)
+	// if err != nil {
+	// 	return chartDocInfo, err
+	// }
+	err = chartDocInfo.parseChartFile()
 	if err != nil {
 		return chartDocInfo, err
 	}
 
-	chartValues, err := parseChartValuesFile(chartDirectory)
+	// chartDocInfo.ChartRequirements, err = parseChartRequirementsFile(chartDirectory, chartDocInfo.ApiVersion)
+	// if err != nil {
+	// 	return chartDocInfo, err
+	// }
+	err = chartDocInfo.parseChartRequirementsFile()
 	if err != nil {
 		return chartDocInfo, err
 	}
 
-	chartDocInfo.ChartValues = &chartValues
-	chartDocInfo.ChartValuesDescriptions, err = parseChartValuesFileComments(chartDirectory, &chartValues, documentationParsingConfig)
+	// chartValues, err := parseChartValuesFile(chartDirectory)
+	// if err != nil {
+	// 	return chartDocInfo, err
+	// }
+	// chartDocInfo.ChartValues = &chartValues
+	err = chartDocInfo.parseChartValuesFile()
+	if err != nil {
+		return chartDocInfo, err
+	}
+
+	// chartDocInfo.ChartValuesDescriptions, err = parseChartValuesFileComments(chartDirectory, &chartValues, documentationParsingConfig)
+	// if err != nil {
+	// 	return chartDocInfo, err
+	// }
+	err = chartDocInfo.parseChartValuesFileComments(documentationParsingConfig)
 	if err != nil {
 		return chartDocInfo, err
 	}
 
 	return chartDocInfo, nil
+}
+
+func (chartDocInfo ChartDocumentationInfo) parseChartFile() error {
+	chartYaml := "Chart.yaml"
+	chartYamlPath := filepath.Join(chartDocInfo.ChartDirectory, "Chart.yaml")
+	chartDocInfo.ChartMeta = ChartMeta{}
+	yamlFileContents, err := getYamlFileContents(chartYaml)
+	if isErrorInReadingNecessaryFile(chartYamlPath, err) {
+		return err
+	}
+
+	err = yaml.Unmarshal(yamlFileContents, &chartDocInfo.ChartMeta)
+	return err
+}
+
+func (chartDocInfo ChartDocumentationInfo) parseChartRequirementsFile() error {
+	var requirementsYaml string
+	var requirementsYamlPath string
+
+	if chartDocInfo.ApiVersion == "v1" {
+		requirementsYaml = "requirements.yaml"
+		requirementsYamlPath = filepath.Join(chartDocInfo.ChartDirectory, requirementsYaml)
+
+		if _, err := fs.Stat(chartDocInfo.ChartFS, requirementsYaml); os.IsNotExist(err) {
+			chartDocInfo.ChartRequirements = ChartRequirements{Dependencies: []ChartRequirementsItem{}}
+			return nil
+		}
+	} else {
+		requirementsYaml = "Chart.yaml"
+		requirementsYamlPath = filepath.Join(chartDocInfo.ChartDirectory, requirementsYaml)
+	}
+
+	chartDocInfo.ChartRequirements = ChartRequirements{}
+	yamlFileContents, err := getYamlFileContentsFS(chartDocInfo.ChartFS, requirementsYaml)
+
+	if isErrorInReadingNecessaryFile(requirementsYamlPath, err) {
+		return err
+	}
+
+	err = yaml.Unmarshal(yamlFileContents, &chartDocInfo.ChartRequirements)
+	if err != nil {
+		return err
+	}
+
+	sort.Slice(chartDocInfo.ChartRequirements.Dependencies[:], func(i, j int) bool {
+		return requirementKey(chartDocInfo.ChartRequirements.Dependencies[i]) < requirementKey(chartDocInfo.ChartRequirements.Dependencies[j])
+	})
+
+	return nil
+}
+
+func (chartDocInfo ChartDocumentationInfo) parseChartValuesFile() error {
+	valuesFile := viper.GetString("values-file")
+	valuesFilePath := filepath.Join(chartDocInfo.ChartDirectory, valuesFile)
+	yamlFileContents, err := getYamlFileContentsFS(chartDocInfo.ChartFS, valuesFile)
+	if isErrorInReadingNecessaryFile(valuesFilePath, err) {
+		return err
+	}
+
+	chartDocInfo.ChartValues = &yaml.Node{}
+	err = yaml.Unmarshal(yamlFileContents, chartDocInfo.ChartValues)
+	if err != nil {
+		return err
+	}
+
+	removeIgnored(chartDocInfo.ChartValues, chartDocInfo.ChartValues.Kind)
+
+	return nil
+}
+
+func (chartDocInfo ChartDocumentationInfo) parseChartValuesFileComments(lintingConfig ChartValuesDocumentationParsingConfig) error {
+	valuesFile := viper.GetString("values-file")
+	valuesFilePath := filepath.Join(chartDocInfo.ChartDirectory, valuesFile)
+	values, err := chartDocInfo.ChartFS.Open(valuesFile)
+	if isErrorInReadingNecessaryFile(valuesFilePath, err) {
+		return err
+	}
+
+	defer values.Close()
+
+	chartDocInfo.ChartValuesDescriptions = make(map[string]ChartValueDescription)
+	scanner := bufio.NewScanner(values)
+	foundValuesComment := false
+	commentLines := make([]string, 0)
+	currentLineIdx := -1
+
+	for scanner.Scan() {
+		currentLineIdx++
+		currentLine := scanner.Text()
+
+		// If we've not yet found a values comment with a key name, try and find one on each line
+		if !foundValuesComment {
+			match := valuesDescriptionRegex.FindStringSubmatch(currentLine)
+			if len(match) < 3 || match[1] == "" {
+				continue
+			}
+			foundValuesComment = true
+			commentLines = append(commentLines, currentLine)
+			continue
+		}
+
+		// If we've already found a values comment, on the next line try and parse a custom default value. If we find one
+		// that completes parsing for this key, add it to the list and reset to searching for a new key
+		defaultCommentMatch := defaultValueRegex.FindStringSubmatch(currentLine)
+		commentContinuationMatch := commentContinuationRegex.FindStringSubmatch(currentLine)
+
+		if len(defaultCommentMatch) > 1 || len(commentContinuationMatch) > 1 {
+			commentLines = append(commentLines, currentLine)
+			continue
+		}
+
+		// If we haven't continued by this point, we didn't match any of the comment formats we want, so we need to add
+		// the in progress value to the map, and reset to looking for a new key
+		key, description := ParseComment(commentLines)
+		chartDocInfo.ChartValuesDescriptions[key] = description
+		commentLines = make([]string, 0)
+		foundValuesComment = false
+	}
+	if lintingConfig.StrictMode {
+		err := checkDocumentation(chartDocInfo.ChartValues, chartDocInfo.ChartValuesDescriptions, lintingConfig)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
