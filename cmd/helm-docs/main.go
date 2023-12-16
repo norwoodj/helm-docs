@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -185,6 +186,15 @@ func helmDocs(_ *cobra.Command, _ []string) {
 	}
 
 	writeDocumentation(chartSearchRoot, documentationInfoByChartPath, dryRun, parallelism)
+
+	var closeErr error
+	for _, chartDocsInfo := range documentationInfoByChartPath {
+		// Call all CloseFuncs before recording error so all mem is released cleanly
+		closeErr = errors.Join(closeErr, chartDocsInfo.CloseFunc())
+	}
+	if closeErr != nil {
+		log.Fatal(closeErr)
+	}
 }
 
 func main() {

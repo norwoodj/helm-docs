@@ -71,7 +71,8 @@ type ChartDocumentationInfo struct {
 	ChartValues             *yaml.Node
 	ChartValuesDescriptions map[string]ChartValueDescription
 
-	ChartFS fs.FS
+	ChartFS   fs.FS
+	CloseFunc func() error // closes FS if necessary
 }
 
 func parseChartFS(chartDirectory string) (ChartDocumentationInfo, error) {
@@ -82,10 +83,9 @@ func parseChartFS(chartDirectory string) (ChartDocumentationInfo, error) {
 	if strings.HasSuffix(chartDirectory, ".tgz") {
 		tf, err := os.Open(chartDirectory)
 		if err != nil {
-			defer tf.Close()
 			return chartDocInfo, fmt.Errorf("could not open Chart archive %s: %w", chartDirectory, err)
 		}
-		defer tf.Close()
+		chartDocInfo.CloseFunc = tf.Close
 
 		tfs, err := tarfs.New(tf)
 		if err != nil {
@@ -142,9 +142,11 @@ func getYamlFileContentsFS(fsys fs.FS, filename string) ([]byte, error) {
 func isErrorInReadingNecessaryFile(filePath string, loadError error) bool {
 	if loadError != nil {
 		if os.IsNotExist(loadError) {
+			log.Warn(loadError)
 			log.Warnf("Required chart file %s missing. Skipping documentation for chart", filePath)
 			return true
 		} else {
+			log.Warn(loadError)
 			log.Warnf("Error occurred in reading chart file %s. Skipping documentation for chart", filePath)
 			return true
 		}

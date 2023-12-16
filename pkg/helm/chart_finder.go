@@ -47,7 +47,7 @@ func FindChartDirectories(chartSearchRoot string) ([]string, error) {
 		case strings.HasSuffix(basePath, ".tgz"):
 			isChart, err := checkArchiveIsChart(path)
 			if err != nil {
-				log.Debugf("Could not check .tgz %s: %s", path, err.Error())
+				log.Warnf("Could not check archive %s: %s", path, err.Error())
 				return nil
 			}
 
