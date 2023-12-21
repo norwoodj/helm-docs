@@ -20,6 +20,7 @@ type valueRow struct {
 	Default         string
 	AutoDescription string
 	Description     string
+	Section         string
 	Column          int
 	LineNumber      int
 	Dependency      string
@@ -30,17 +31,21 @@ type chartTemplateData struct {
 	helm.ChartDocumentationInfo
 	HelmDocsVersion string
 	Values          []valueRow
+	Sections        sections
 	Files           files
 }
 
-func sortValueRows(valueRows []valueRow) {
-	sortOrder := viper.GetString("sort-values-order")
+type sections struct {
+	DefaultSection section
+	Sections       []section
+}
 
-	if sortOrder != FileSortOrder && sortOrder != AlphaNumSortOrder {
-		log.Warnf("Invalid sort order provided %s, defaulting to %s", sortOrder, AlphaNumSortOrder)
-		sortOrder = AlphaNumSortOrder
-	}
+type section struct {
+	SectionName  string
+	SectionItems []valueRow
+}
 
+func sortValueRowsByOrder(valueRows []valueRow, sortOrder string) {
 	sort.Slice(valueRows, func(i, j int) bool {
 		// Globals sort above non-globals.
 		if valueRows[i].IsGlobal != valueRows[j].IsGlobal {
@@ -75,6 +80,32 @@ func sortValueRows(valueRows []valueRow) {
 	})
 }
 
+func sortValueRows(valueRows []valueRow) {
+	sortOrder := viper.GetString("sort-values-order")
+
+	if sortOrder != FileSortOrder && sortOrder != AlphaNumSortOrder {
+		log.Warnf("Invalid sort order provided %s, defaulting to %s", sortOrder, AlphaNumSortOrder)
+		sortOrder = AlphaNumSortOrder
+	}
+
+	sortValueRowsByOrder(valueRows, sortOrder)
+}
+
+func sortSectionedValueRows(sectionedValueRows sections) {
+	sortOrder := viper.GetString("sort-values-order")
+
+	if sortOrder != FileSortOrder && sortOrder != AlphaNumSortOrder {
+		log.Warnf("Invalid sort order provided %s, defaulting to %s", sortOrder, AlphaNumSortOrder)
+		sortOrder = AlphaNumSortOrder
+	}
+
+	sortValueRowsByOrder(sectionedValueRows.DefaultSection.SectionItems, sortOrder)
+
+	for _, section := range sectionedValueRows.Sections {
+		sortValueRowsByOrder(section.SectionItems, sortOrder)
+	}
+}
+
 func getUnsortedValueRows(document *yaml.Node, descriptions map[string]helm.ChartValueDescription) ([]valueRow, error) {
 	// Handle empty values file case.
 	if document.Kind == 0 {
@@ -90,6 +121,39 @@ func getUnsortedValueRows(document *yaml.Node, descriptions map[string]helm.Char
 	}
 
 	return createValueRowsFromField("", nil, document.Content[0], descriptions, true)
+}
+
+func getSectionedValueRows(valueRows []valueRow) sections {
+	var valueRowsSectionSorted sections
+	valueRowsSectionSorted.DefaultSection = section{
+		SectionName:  "Other Values",
+		SectionItems: []valueRow{},
+	}
+
+	for _, row := range valueRows {
+		if row.Section == "" {
+			valueRowsSectionSorted.DefaultSection.SectionItems = append(valueRowsSectionSorted.DefaultSection.SectionItems, row)
+			continue
+		}
+
+		containsSection := false
+		for i, section := range valueRowsSectionSorted.Sections {
+			if section.SectionName == row.Section {
+				containsSection = true
+				valueRowsSectionSorted.Sections[i].SectionItems = append(valueRowsSectionSorted.Sections[i].SectionItems, row)
+				break
+			}
+		}
+
+		if !containsSection {
+			valueRowsSectionSorted.Sections = append(valueRowsSectionSorted.Sections, section{
+				SectionName:  row.Section,
+				SectionItems: []valueRow{row},
+			})
+		}
+	}
+
+	return valueRowsSectionSorted
 }
 
 func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion string, dependencyValues []DependencyValues) (chartTemplateData, error) {
@@ -135,6 +199,8 @@ func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion stri
 	}
 
 	sortValueRows(valuesTableRows)
+	valueRowsSectionSorted := getSectionedValueRows(valuesTableRows)
+	sortSectionedValueRows(valueRowsSectionSorted)
 
 	files, err := getFiles(info.ChartDirectory)
 	if err != nil {
@@ -145,6 +211,7 @@ func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion stri
 		ChartDocumentationInfo: info,
 		HelmDocsVersion:        helmDocsVersion,
 		Values:                 valuesTableRows,
+		Sections:               valueRowsSectionSorted,
 		Files:                  files,
 	}, nil
 }

@@ -21,6 +21,7 @@ var commentContinuationRegex = regexp.MustCompile("^\\s*#(\\s?)(.*)$")
 var defaultValueRegex = regexp.MustCompile("^\\s*# @default -- (.*)$")
 var valueTypeRegex = regexp.MustCompile("^\\((.*?)\\)\\s*(.*)$")
 var valueNotationTypeRegex = regexp.MustCompile("^\\s*#\\s+@notationType\\s+--\\s+(.*)$")
+var sectionRegex = regexp.MustCompile("^\\s*# @section -- (.*)$")
 
 type ChartMetaMaintainer struct {
 	Email string
@@ -57,6 +58,7 @@ type ChartRequirements struct {
 type ChartValueDescription struct {
 	Description  string
 	Default      string
+	Section      string
 	ValueType    string
 	NotationType string
 }
@@ -265,12 +267,18 @@ func parseChartValuesFileComments(chartDirectory string, values *yaml.Node, lint
 			continue
 		}
 
-		// If we've already found a values comment, on the next line try and parse a custom default value. If we find one
-		// that completes parsing for this key, add it to the list and reset to searching for a new key
+		// If we've already found a values comment, on the next line try and parse a comment continuation, a custom default value, or a section comment.
+		// If we find continuations we can add them to the list and continue to the next line until we find a section comment or default value.
+		// If we find a default value, we can add it to the list and continue to the next line. In the case we don't find one, we continue looking for a section comment.
+		// When we eventually find a section comment, we add it to the list and conclude matching for the current key. If we don't find one, matching is also concluded.
+		//
+		// NOTE: This isn't readily enforced yet, because we can match the section comment and custom default value more than once and in another order, although this is just overwriting it.
+		// Values comment, possible continuation, default value once or none then section comment once or none should be the preferred order.
 		defaultCommentMatch := defaultValueRegex.FindStringSubmatch(currentLine)
+		sectionCommentMatch := sectionRegex.FindStringSubmatch(currentLine)
 		commentContinuationMatch := commentContinuationRegex.FindStringSubmatch(currentLine)
 
-		if len(defaultCommentMatch) > 1 || len(commentContinuationMatch) > 1 {
+		if len(defaultCommentMatch) > 1 || len(sectionCommentMatch) > 1 || len(commentContinuationMatch) > 1 {
 			commentLines = append(commentLines, currentLine)
 			continue
 		}

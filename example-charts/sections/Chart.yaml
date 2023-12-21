@@ -1,0 +1,12 @@
+apiVersion: v2
+name: sections
+version: "1.0.0"
+type: application
+appVersion: "13.0.0"
+description: A chart for showing how to use sections
+home: "https://github.com/norwoodj/helm-docs/tree/master/example-charts/sections"
+maintainers:
+  - email: rohdeconstantin@gmail.com
+    name: Constantin Rohde
+sources: ["https://github.com/norwoodj/helm-docs/tree/master/example-charts/sections"]
+engine: gotpl

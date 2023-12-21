@@ -1,0 +1,43 @@
+controller:
+  name: controller
+  image:
+    repository: nginx-ingress-controller
+    tag: "18.0831"
+
+  # controller.persistentVolumeClaims -- List of persistent volume claims to create.
+  # @default -- the chart will construct this list internally unless specified
+  # @section -- Some Section
+  persistentVolumeClaims: []
+
+  extraVolumes:
+    - name: config-volume
+      configMap:
+        # controller.extraVolumes[0].configMap.name -- Uses the name of the configmap created by this chart
+        # @section -- Some Section
+        name: nginx-ingress-config
+
+  # -- You can also specify value comments like this
+  # @section -- Special Attention
+  ingressClass: nginx
+
+
+  # controller.podLabels -- The labels to be applied to instances of the controller pod
+  # @section -- Some Section
+  podLabels: {}
+
+  # controller.publishService -- This is a publishService
+  # @section -- Special Attention
+  publishService:
+    enabled: false
+
+  # -- (int) Number of nginx-ingress pods to load balance between
+  # @raw
+  # @section -- Special Attention
+  replicas:
+
+  service:
+    annotations:
+      # controller.service.annotations."external-dns.alpha.kubernetes.io/hostname" -- Hostname to be assigned to the ELB for the service
+      external-dns.alpha.kubernetes.io/hostname: stupidchess.jmn23.com
+
+    type: LoadBalancer
