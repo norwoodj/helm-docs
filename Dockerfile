@@ -1,4 +1,4 @@
-FROM alpine:3.15
+FROM alpine:3.19
 
 COPY helm-docs /usr/bin/
 
