@@ -1,3 +1,17 @@
+1.13.0
+- 2024-02-24 Release v1.13.0
+- 2024-02-24 chore: adds git-cliff configuration, generates historical changelog and adds a release script
+- 2024-02-24 fix: Solves #217 where helm-docs would segfault due in charts with certain comment format
+- 2024-02-24 Merge pull request #212 from chenrui333/update-license-to-use-spdx-id
+- 2024-02-01 license: update to use spdx id
+- 2024-02-24 Merge pull request #209 from UnsolvedCypher/master
+- 2024-01-03 fix: Correct the name of the GitHub repository in the README
+- 2024-02-24 Merge pull request #211 from Footur/update-alpine
+- 2024-01-10 Update Alpine to v3.19
+- 2024-02-24 Merge pull request #213 from chenrui333/go-1.22
+- 2024-02-07 feat: update to use go1.22
+- 2023-12-21 chore: updates generated chart documentation for version v1.12.0
+
 1.12.0
 - 2023-12-21 Merge pull request #194 from Haepaxlog/sections
 - 2023-11-29 conform to MD022
