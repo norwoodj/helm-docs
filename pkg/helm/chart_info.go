@@ -286,7 +286,10 @@ func parseChartValuesFileComments(chartDirectory string, values *yaml.Node, lint
 		// If we haven't continued by this point, we didn't match any of the comment formats we want, so we need to add
 		// the in progress value to the map, and reset to looking for a new key
 		key, description := ParseComment(commentLines)
-		keyToDescriptions[key] = description
+		if key != "" {
+			keyToDescriptions[key] = description
+		}
+
 		commentLines = make([]string, 0)
 		foundValuesComment = false
 	}
