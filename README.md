@@ -106,7 +106,7 @@ There are several variants of `pre-commit` hooks to choose from depending on you
 ```yaml
 ---
 repos:
-  - repo: https://github.com/jnorwood/helm-docs
+  - repo: https://github.com/norwoodj/helm-docs
     rev:  ""
     hooks:
       - id: helm-docs
@@ -122,7 +122,7 @@ repos:
 ```yaml
 ---
 repos:
-  - repo: https://github.com/jnorwood/helm-docs
+  - repo: https://github.com/norwoodj/helm-docs
     rev:  ""
     hooks:
       - id: helm-docs-built
@@ -138,7 +138,7 @@ repos:
 ```yaml
 ---
 repos:
-  - repo: https://github.com/jnorwood/helm-docs
+  - repo: https://github.com/norwoodj/helm-docs
     rev:  ""
     hooks:
       - id: helm-docs-container
@@ -154,7 +154,7 @@ repos:
 ```yaml
 ---
 repos:
-  - repo: https://github.com/jnorwood/helm-docs
+  - repo: https://github.com/norwoodj/helm-docs
     rev:  ""
     hooks:
       - id: helm-docs-container
