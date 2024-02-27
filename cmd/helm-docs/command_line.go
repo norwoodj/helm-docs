@@ -59,6 +59,7 @@ func newHelmDocsCommand(run func(cmd *cobra.Command, args []string)) (*cobra.Com
 	command.PersistentFlags().BoolP("documentation-strict-mode", "x", false, "Fail the generation of docs if there are undocumented values")
 	command.PersistentFlags().StringSliceP("documentation-strict-ignore-absent", "y", []string{"service.type", "image.repository", "image.tag"}, "A comma separate values which are allowed not to be documented in strict mode")
 	command.PersistentFlags().StringSliceP("documentation-strict-ignore-absent-regex", "z", []string{".*service\\.type", ".*image\\.repository", ".*image\\.tag"}, "A comma separate values which are allowed not to be documented in strict mode")
+	command.PersistentFlags().Bool("skip-version-footer", false, "if true the helm-docs version footer will not be shown in the default README template")
 
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("HELM_DOCS")

@@ -145,6 +145,7 @@ func getChartToGenerate(documentationInfoByChartPath map[string]helm.ChartDocume
 func writeDocumentation(chartSearchRoot string, documentationInfoByChartPath map[string]helm.ChartDocumentationInfo, dryRun bool, parallelism int) {
 	templateFiles := viper.GetStringSlice("template-files")
 	badgeStyle := viper.GetString("badge-style")
+	skipVersionFooter := viper.GetBool("skip-version-footer")
 
 	log.Debugf("Rendering from optional template files [%s]", strings.Join(templateFiles, ", "))
 
@@ -162,7 +163,7 @@ func writeDocumentation(chartSearchRoot string, documentationInfoByChartPath map
 				return
 			}
 		}
-		document.PrintDocumentation(info, chartSearchRoot, templateFiles, dryRun, version, badgeStyle, dependencyValues)
+		document.PrintDocumentation(info, chartSearchRoot, templateFiles, dryRun, version, badgeStyle, dependencyValues, skipVersionFooter)
 	})
 }
 
