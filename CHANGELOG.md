@@ -1,3 +1,10 @@
+1.13.1
+- 2024-03-02 Release v1.13.1
+- 2024-03-02 chore: updates golang.org/x/crypto to fix vulnerability
+- 2024-03-02 Merge pull request #219 from mpluhar/master
+- 2024-02-26 Update documentation for default template
+- 2024-02-24 chore: updates chart docs with v1.13.0
+
 1.13.0
 - 2024-02-24 Release v1.13.0
 - 2024-02-24 chore: adds git-cliff configuration, generates historical changelog and adds a release script
