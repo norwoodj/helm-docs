@@ -29,10 +29,11 @@ type valueRow struct {
 
 type chartTemplateData struct {
 	helm.ChartDocumentationInfo
-	HelmDocsVersion string
-	Values          []valueRow
-	Sections        sections
-	Files           files
+	HelmDocsVersion   string
+	Values            []valueRow
+	Sections          sections
+	Files             files
+	SkipVersionFooter bool
 }
 
 type sections struct {
@@ -156,7 +157,7 @@ func getSectionedValueRows(valueRows []valueRow) sections {
 	return valueRowsSectionSorted
 }
 
-func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion string, dependencyValues []DependencyValues) (chartTemplateData, error) {
+func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion string, dependencyValues []DependencyValues, skipVersionFooter bool) (chartTemplateData, error) {
 	valuesTableRows, err := getUnsortedValueRows(info.ChartValues, info.ChartValuesDescriptions)
 	if err != nil {
 		return chartTemplateData{}, err
@@ -213,6 +214,7 @@ func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion stri
 		Values:                 valuesTableRows,
 		Sections:               valueRowsSectionSorted,
 		Files:                  files,
+		SkipVersionFooter:      skipVersionFooter,
 	}, nil
 }
 
