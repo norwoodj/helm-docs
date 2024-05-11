@@ -17,6 +17,12 @@
 {{- end }}
 {{- end }}
 
+### Default resources
+
+```yaml
+{{ $values.resources | toYaml }}
+```
+
 ## Installing the Chart
 
 To install the chart with the release name `my-release`:

@@ -8,3 +8,8 @@ volumeSnapshotClass:
   mask-data:
     parameters:
       resourceGroup: rg-mask-data
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 100m

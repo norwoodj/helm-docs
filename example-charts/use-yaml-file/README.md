@@ -17,6 +17,14 @@ A very simple chart that doesn't even need any values for customization
 | mask-data-incr | true | rg-mask-data |
 | mask-data | false | rg-mask-data |
 
+### Default resources
+
+```yaml
+requests:
+    cpu: 10m
+    memory: 100m
+```
+
 ## Installing the Chart
 
 To install the chart with the release name `my-release`:
@@ -30,6 +38,8 @@ $ helm install my-release foo-bar/no-values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| resources.requests.cpu | string | `"10m"` |  |
+| resources.requests.memory | string | `"100m"` |  |
 | volumeSnapshotClass.azure.parameters | object | `{}` |  |
 | volumeSnapshotClass.local.parameters | object | `{}` |  |
 | volumeSnapshotClass.mask-data.parameters.resourceGroup | string | `"rg-mask-data"` |  |
