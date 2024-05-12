@@ -1,0 +1,39 @@
+{{ template "chart.header" . }}
+{{ template "chart.description" . }}
+
+{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
+
+## Additional Information
+
+{{ $values := (.Files.Get "values.yaml") | fromYaml }}
+
+### Snapshot classes
+
+| name     | resource group | incremental |
+|----------|----------------|-------------|
+{{- range $name, $spec := $values.volumeSnapshotClass }}
+{{- range $parameterIncr := list "true" "false" }}
+| {{ $name }}{{- if eq $parameterIncr "true" -}}-incr{{- end }} | {{ $parameterIncr }} | {{ $spec.parameters.resourceGroup | default "" }} |
+{{- end }}
+{{- end }}
+
+### Default resources
+
+```yaml
+{{ $values.resources | toYaml }}
+```
+
+## Installing the Chart
+
+To install the chart with the release name `my-release`:
+
+```console
+$ helm repo add foo-bar http://charts.foo-bar.com
+$ helm install my-release foo-bar/{{ template "chart.name" . }}
+```
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "helm-docs.versionFooter" . }}
