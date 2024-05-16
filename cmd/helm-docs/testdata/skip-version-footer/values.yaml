@@ -1,0 +1,4 @@
+config:
+  databasesToCreate:
+    # -- default database for storage of database metadata
+    - postgresql
