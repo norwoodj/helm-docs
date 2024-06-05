@@ -1,0 +1,12 @@
+apiVersion: v2
+name: sections-description
+version: "1.0.0"
+type: application
+appVersion: "13.0.0"
+description: A chart for showing how to use sections with description
+home: "https://github.com/norwoodj/helm-docs/tree/master/example-charts/sections-description"
+maintainers:
+  - email: pa.koutsovasilis@gmail.com
+    name: Panos Koutsovasilis
+sources: ["https://github.com/norwoodj/helm-docs/tree/master/example-charts/sections-description"]
+engine: gotpl
