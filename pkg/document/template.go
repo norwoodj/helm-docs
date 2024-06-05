@@ -1,6 +1,7 @@
 package document
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -213,6 +214,10 @@ func getValuesTableTemplates() string {
 	valuesSectionBuilder.WriteString("\n")
 	valuesSectionBuilder.WriteString("\n### {{ .SectionName }}\n")
 	valuesSectionBuilder.WriteString("\n")
+	valuesSectionBuilder.WriteString(`{{- range .SectionDescriptionTemplates }}`)
+	valuesSectionBuilder.WriteString(`{{ sectionDescriptionTemplate . }}`)
+	valuesSectionBuilder.WriteString(`{{- end }}`)
+	valuesSectionBuilder.WriteString("\n")
 	valuesSectionBuilder.WriteString("| Key | Type | Default | Description |\n")
 	valuesSectionBuilder.WriteString("|-----|------|---------|-------------|\n")
 	valuesSectionBuilder.WriteString("  {{- range .SectionItems }}")
@@ -269,6 +274,7 @@ func getValuesTableTemplates() string {
 {{ if .Sections.Sections }}
 {{- range .Sections.Sections }}
 <h3>{{- .SectionName }}</h3>
+<p>{{- sectionDescriptionTemplate .sectionDescriptionTemplate }}</p>
 <table>
 	<thead>
 		<th>Key</th>
@@ -398,14 +404,18 @@ func getDocumentationTemplate(chartDirectory string, chartSearchRoot string, tem
 	return string(allTemplateContents), nil
 }
 
-func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, templateFiles []string, badgeStyle string) ([]string, error) {
+func getUserDocumentationTemplate(chartDirectory string, chartSearchRoot string, templateFiles []string) (string, error) {
 	documentationTemplate, err := getDocumentationTemplate(chartDirectory, chartSearchRoot, templateFiles)
 
 	if err != nil {
 		log.Errorf("Failed to read documentation template for chart %s: %s", chartDirectory, err)
-		return nil, err
+		return "", err
 	}
 
+	return documentationTemplate, nil
+}
+
+func getDocumentationTemplates(badgeStyle string) ([]string, error) {
 	return []string{
 		getNameTemplate(),
 		getHeaderTemplate(),
@@ -421,14 +431,37 @@ func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, te
 		getHomepageTemplate(),
 		getMaintainersTemplate(),
 		getHelmDocsVersionTemplates(),
-		documentationTemplate,
 	}, nil
 }
 
 func newChartDocumentationTemplate(chartDocumentationInfo helm.ChartDocumentationInfo, chartSearchRoot string, templateFiles []string, badgeStyle string) (*template.Template, error) {
 	documentationTemplate := template.New(chartDocumentationInfo.ChartDirectory)
-	documentationTemplate.Funcs(sprig.TxtFuncMap())
-	goTemplateList, err := getDocumentationTemplates(chartDocumentationInfo.ChartDirectory, chartSearchRoot, templateFiles, badgeStyle)
+
+	userDefinedTemplates := make(map[string]string)
+
+	funcsMap := sprig.TxtFuncMap()
+	funcsMap["sectionDescriptionTemplate"] = func(data interface{}) string {
+		name, ok := data.(string)
+		if !ok || name == "" {
+			return ""
+		}
+		if templateName, ok := userDefinedTemplates[name]; !ok {
+			return ""
+		} else {
+			name = templateName
+		}
+
+		buf := bytes.NewBuffer([]byte{})
+		if err := documentationTemplate.ExecuteTemplate(buf, name, data); err != nil {
+			return ""
+		}
+
+		return buf.String()
+	}
+
+	documentationTemplate.Funcs(funcsMap)
+
+	goTemplateList, err := getDocumentationTemplates(badgeStyle)
 
 	if err != nil {
 		return nil, err
@@ -439,6 +472,22 @@ func newChartDocumentationTemplate(chartDocumentationInfo helm.ChartDocumentatio
 
 		if err != nil {
 			return nil, err
+		}
+	}
+
+	userTemplateStr, err := getUserDocumentationTemplate(chartDocumentationInfo.ChartDirectory, chartSearchRoot, templateFiles)
+	if err != nil {
+		return nil, err
+	}
+
+	userTemplate, err := documentationTemplate.Parse(userTemplateStr)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, defTemplates := range userTemplate.Templates() {
+		if after, ok := strings.CutPrefix(defTemplates.Name(), "section.description."); ok && after != "" {
+			userDefinedTemplates[after] = defTemplates.Name()
 		}
 	}
 

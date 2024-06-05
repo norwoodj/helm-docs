@@ -13,18 +13,19 @@ import (
 )
 
 type valueRow struct {
-	Key             string
-	Type            string
-	NotationType    string
-	AutoDefault     string
-	Default         string
-	AutoDescription string
-	Description     string
-	Section         string
-	Column          int
-	LineNumber      int
-	Dependency      string
-	IsGlobal        bool
+	Key                        string
+	Type                       string
+	NotationType               string
+	AutoDefault                string
+	Default                    string
+	AutoDescription            string
+	Description                string
+	Section                    string
+	SectionDescriptionTemplate string
+	Column                     int
+	LineNumber                 int
+	Dependency                 string
+	IsGlobal                   bool
 }
 
 type chartTemplateData struct {
@@ -41,8 +42,9 @@ type sections struct {
 }
 
 type section struct {
-	SectionName  string
-	SectionItems []valueRow
+	SectionName                 string
+	SectionDescriptionTemplates []string
+	SectionItems                []valueRow
 }
 
 func sortValueRowsByOrder(valueRows []valueRow, sortOrder string) {
@@ -130,6 +132,8 @@ func getSectionedValueRows(valueRows []valueRow) sections {
 		SectionItems: []valueRow{},
 	}
 
+	sectionDescriptionTemplatesMap := make(map[string][]string)
+
 	for _, row := range valueRows {
 		if row.Section == "" {
 			valueRowsSectionSorted.DefaultSection.SectionItems = append(valueRowsSectionSorted.DefaultSection.SectionItems, row)
@@ -151,6 +155,19 @@ func getSectionedValueRows(valueRows []valueRow) sections {
 				SectionItems: []valueRow{row},
 			})
 		}
+
+		if row.SectionDescriptionTemplate != "" {
+			sectionDescriptionTemplatesMap[row.Section] = append(sectionDescriptionTemplatesMap[row.Section], row.SectionDescriptionTemplate)
+		}
+	}
+
+	for i, section := range valueRowsSectionSorted.Sections {
+		sectionDescriptionTemplates, exists := sectionDescriptionTemplatesMap[section.SectionName]
+		if !exists {
+			continue
+		}
+
+		valueRowsSectionSorted.Sections[i].SectionDescriptionTemplates = sectionDescriptionTemplates
 	}
 
 	return valueRowsSectionSorted
