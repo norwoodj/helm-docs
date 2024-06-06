@@ -1,6 +1,7 @@
 package document
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -213,11 +214,18 @@ func getValuesTableTemplates() string {
 	valuesSectionBuilder.WriteString("\n")
 	valuesSectionBuilder.WriteString("\n### {{ .SectionName }}\n")
 	valuesSectionBuilder.WriteString("\n")
+	valuesSectionBuilder.WriteString(`{{- range .SectionDescriptionTemplates }}`)
+	valuesSectionBuilder.WriteString(`{{ sectionDescriptionTemplate . "PreTable" }}`)
+	valuesSectionBuilder.WriteString(`{{- end }}`)
+	valuesSectionBuilder.WriteString("\n")
 	valuesSectionBuilder.WriteString("| Key | Type | Default | Description |\n")
 	valuesSectionBuilder.WriteString("|-----|------|---------|-------------|\n")
 	valuesSectionBuilder.WriteString("  {{- range .SectionItems }}")
 	valuesSectionBuilder.WriteString("\n| {{ .Key }} | {{ .Type }} | {{ if .Default }}{{ .Default }}{{ else }}{{ .AutoDefault }}{{ end }} | {{ if .Description }}{{ .Description }}{{ else }}{{ .AutoDescription }}{{ end }} |")
 	valuesSectionBuilder.WriteString("  {{- end }}")
+	valuesSectionBuilder.WriteString(`{{- range .SectionDescriptionTemplates }}`)
+	valuesSectionBuilder.WriteString(`{{ sectionDescriptionTemplate . "PostTable" }}`)
+	valuesSectionBuilder.WriteString(`{{- end }}`)
 	valuesSectionBuilder.WriteString("{{- end }}")
 	valuesSectionBuilder.WriteString("{{ if .Sections.DefaultSection.SectionItems}}")
 	valuesSectionBuilder.WriteString("\n")
@@ -269,6 +277,9 @@ func getValuesTableTemplates() string {
 {{ if .Sections.Sections }}
 {{- range .Sections.Sections }}
 <h3>{{- .SectionName }}</h3>
+{{- range .SectionDescriptionTemplates }}
+<p>{{- sectionDescriptionTemplate . "PreTable" }}</p>
+{{- end }}
 <table>
 	<thead>
 		<th>Key</th>
@@ -287,6 +298,9 @@ func getValuesTableTemplates() string {
 	{{- end }}
 	</tbody>
 </table>
+{{- range .SectionDescriptionTemplates }}
+<p>{{- sectionDescriptionTemplate . "PostTable" }}</p>
+{{- end }}
 {{- end }}
 {{ if .Sections.DefaultSection.SectionItems }}
 <h3>{{- .Sections.DefaultSection.SectionName }}</h3>
@@ -398,14 +412,18 @@ func getDocumentationTemplate(chartDirectory string, chartSearchRoot string, tem
 	return string(allTemplateContents), nil
 }
 
-func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, templateFiles []string, badgeStyle string) ([]string, error) {
+func getUserDocumentationTemplate(chartDirectory string, chartSearchRoot string, templateFiles []string) (string, error) {
 	documentationTemplate, err := getDocumentationTemplate(chartDirectory, chartSearchRoot, templateFiles)
 
 	if err != nil {
 		log.Errorf("Failed to read documentation template for chart %s: %s", chartDirectory, err)
-		return nil, err
+		return "", err
 	}
 
+	return documentationTemplate, nil
+}
+
+func getDocumentationTemplates(badgeStyle string) ([]string, error) {
 	return []string{
 		getNameTemplate(),
 		getHeaderTemplate(),
@@ -421,14 +439,43 @@ func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, te
 		getHomepageTemplate(),
 		getMaintainersTemplate(),
 		getHelmDocsVersionTemplates(),
-		documentationTemplate,
 	}, nil
 }
 
 func newChartDocumentationTemplate(chartDocumentationInfo helm.ChartDocumentationInfo, chartSearchRoot string, templateFiles []string, badgeStyle string) (*template.Template, error) {
 	documentationTemplate := template.New(chartDocumentationInfo.ChartDirectory)
-	documentationTemplate.Funcs(sprig.TxtFuncMap())
-	goTemplateList, err := getDocumentationTemplates(chartDocumentationInfo.ChartDirectory, chartSearchRoot, templateFiles, badgeStyle)
+
+	userDefinedTemplates := make(map[string]string)
+
+	funcsMap := sprig.TxtFuncMap()
+	funcsMap["sectionDescriptionTemplate"] = func(sectionName string, tableOrder string) string {
+		templateToExecute := fmt.Sprintf("%s.%s", sectionName, tableOrder)
+		if templateName, ok := userDefinedTemplates[templateToExecute]; !ok && tableOrder == "PreTable" {
+			// if there is no explicit PreTable template entry, try with just the section name
+			if templateName, ok = userDefinedTemplates[sectionName]; !ok {
+				return ""
+			} else {
+				templateToExecute = templateName
+			}
+		} else {
+			templateToExecute = templateName
+		}
+
+		if templateToExecute == "" {
+			return ""
+		}
+
+		buf := bytes.NewBuffer([]byte{})
+		if err := documentationTemplate.ExecuteTemplate(buf, templateToExecute, nil); err != nil {
+			return ""
+		}
+
+		return buf.String()
+	}
+
+	documentationTemplate.Funcs(funcsMap)
+
+	goTemplateList, err := getDocumentationTemplates(badgeStyle)
 
 	if err != nil {
 		return nil, err
@@ -439,6 +486,22 @@ func newChartDocumentationTemplate(chartDocumentationInfo helm.ChartDocumentatio
 
 		if err != nil {
 			return nil, err
+		}
+	}
+
+	userTemplateStr, err := getUserDocumentationTemplate(chartDocumentationInfo.ChartDirectory, chartSearchRoot, templateFiles)
+	if err != nil {
+		return nil, err
+	}
+
+	userTemplate, err := documentationTemplate.Parse(userTemplateStr)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, defTemplates := range userTemplate.Templates() {
+		if after, ok := strings.CutPrefix(defTemplates.Name(), "section.description."); ok && after != "" {
+			userDefinedTemplates[after] = defTemplates.Name()
 		}
 	}
 

@@ -191,17 +191,23 @@ func createValueRow(
 		section = autoDescription.Section
 	}
 
+	sectionDescriptionTemplate := description.SectionDescriptionTemplate
+	if sectionDescriptionTemplate == "" && autoDescription.SectionDescriptionTemplate != "" {
+		sectionDescriptionTemplate = autoDescription.SectionDescriptionTemplate
+	}
+
 	return valueRow{
-		Key:             key,
-		Type:            defaultType,
-		NotationType:    notationType,
-		AutoDefault:     autoDescription.Default,
-		Default:         defaultValue,
-		AutoDescription: autoDescription.Description,
-		Description:     description.Description,
-		Section:         section,
-		Column:          column,
-		LineNumber:      lineNumber,
+		Key:                        key,
+		Type:                       defaultType,
+		NotationType:               notationType,
+		AutoDefault:                autoDescription.Default,
+		Default:                    defaultValue,
+		AutoDescription:            autoDescription.Description,
+		Description:                description.Description,
+		Section:                    section,
+		SectionDescriptionTemplate: sectionDescriptionTemplate,
+		Column:                     column,
+		LineNumber:                 lineNumber,
 	}, nil
 }
 
