@@ -2,8 +2,12 @@
 
 This creates values, but sectioned into own section tables if a section comment is provided.
 
-{{ define "section.description.SomeSection" }}
-Some Section description
+{{ define "section.description.SomeSection.PreTable" }}
+Some Section description PreTable
+{{ end }}
+
+{{ define "section.description.SomeSection.PostTable" }}
+Some Section description PostTable
 {{ end }}
 
 

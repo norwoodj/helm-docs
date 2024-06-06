@@ -215,7 +215,7 @@ func getValuesTableTemplates() string {
 	valuesSectionBuilder.WriteString("\n### {{ .SectionName }}\n")
 	valuesSectionBuilder.WriteString("\n")
 	valuesSectionBuilder.WriteString(`{{- range .SectionDescriptionTemplates }}`)
-	valuesSectionBuilder.WriteString(`{{ sectionDescriptionTemplate . }}`)
+	valuesSectionBuilder.WriteString(`{{ sectionDescriptionTemplate . "PreTable" }}`)
 	valuesSectionBuilder.WriteString(`{{- end }}`)
 	valuesSectionBuilder.WriteString("\n")
 	valuesSectionBuilder.WriteString("| Key | Type | Default | Description |\n")
@@ -223,6 +223,9 @@ func getValuesTableTemplates() string {
 	valuesSectionBuilder.WriteString("  {{- range .SectionItems }}")
 	valuesSectionBuilder.WriteString("\n| {{ .Key }} | {{ .Type }} | {{ if .Default }}{{ .Default }}{{ else }}{{ .AutoDefault }}{{ end }} | {{ if .Description }}{{ .Description }}{{ else }}{{ .AutoDescription }}{{ end }} |")
 	valuesSectionBuilder.WriteString("  {{- end }}")
+	valuesSectionBuilder.WriteString(`{{- range .SectionDescriptionTemplates }}`)
+	valuesSectionBuilder.WriteString(`{{ sectionDescriptionTemplate . "PostTable" }}`)
+	valuesSectionBuilder.WriteString(`{{- end }}`)
 	valuesSectionBuilder.WriteString("{{- end }}")
 	valuesSectionBuilder.WriteString("{{ if .Sections.DefaultSection.SectionItems}}")
 	valuesSectionBuilder.WriteString("\n")
@@ -275,7 +278,7 @@ func getValuesTableTemplates() string {
 {{- range .Sections.Sections }}
 <h3>{{- .SectionName }}</h3>
 {{- range .SectionDescriptionTemplates }}
-<p>{{- sectionDescriptionTemplate . }}</p>
+<p>{{- sectionDescriptionTemplate . "PreTable" }}</p>
 {{- end }}
 <table>
 	<thead>
@@ -295,6 +298,9 @@ func getValuesTableTemplates() string {
 	{{- end }}
 	</tbody>
 </table>
+{{- range .SectionDescriptionTemplates }}
+<p>{{- sectionDescriptionTemplate . "PostTable" }}</p>
+{{- end }}
 {{- end }}
 {{ if .Sections.DefaultSection.SectionItems }}
 <h3>{{- .Sections.DefaultSection.SectionName }}</h3>
@@ -442,19 +448,25 @@ func newChartDocumentationTemplate(chartDocumentationInfo helm.ChartDocumentatio
 	userDefinedTemplates := make(map[string]string)
 
 	funcsMap := sprig.TxtFuncMap()
-	funcsMap["sectionDescriptionTemplate"] = func(data interface{}) string {
-		name, ok := data.(string)
-		if !ok || name == "" {
-			return ""
-		}
-		if templateName, ok := userDefinedTemplates[name]; !ok {
-			return ""
+	funcsMap["sectionDescriptionTemplate"] = func(sectionName string, tableOrder string) string {
+		templateToExecute := fmt.Sprintf("%s.%s", sectionName, tableOrder)
+		if templateName, ok := userDefinedTemplates[templateToExecute]; !ok && tableOrder == "PreTable" {
+			// if there is no explicit PreTable template entry, try with just the section name
+			if templateName, ok = userDefinedTemplates[sectionName]; !ok {
+				return ""
+			} else {
+				templateToExecute = templateName
+			}
 		} else {
-			name = templateName
+			templateToExecute = templateName
+		}
+
+		if templateToExecute == "" {
+			return ""
 		}
 
 		buf := bytes.NewBuffer([]byte{})
-		if err := documentationTemplate.ExecuteTemplate(buf, name, data); err != nil {
+		if err := documentationTemplate.ExecuteTemplate(buf, templateToExecute, nil); err != nil {
 			return ""
 		}
 
