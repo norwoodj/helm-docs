@@ -274,7 +274,9 @@ func getValuesTableTemplates() string {
 {{ if .Sections.Sections }}
 {{- range .Sections.Sections }}
 <h3>{{- .SectionName }}</h3>
-<p>{{- sectionDescriptionTemplate .sectionDescriptionTemplate }}</p>
+{{- range .SectionDescriptionTemplates }}
+<p>{{- sectionDescriptionTemplate . }}</p>
+{{- end }}
 <table>
 	<thead>
 		<th>Key</th>
