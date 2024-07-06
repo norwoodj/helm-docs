@@ -32,7 +32,9 @@ const defaultDocumentationTemplate = `{{ template "chart.header" . }}
 
 {{ template "chart.valuesSection" . }}
 
+{{- if not .SkipVersionFooter }}
 {{ template "helm-docs.versionFooter" . }}
+{{- end }}
 `
 
 func getNameTemplate() string {

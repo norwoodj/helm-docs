@@ -1,0 +1,4 @@
+apiVersion: v2
+name: skip-version-footer 
+description: unit test for skipping the version footer
+version: "0.1.0"
