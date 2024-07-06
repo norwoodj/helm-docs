@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
-	"k8s.io/helm/pkg/ignore"
+	"helm.sh/helm/v3/pkg/ignore"
 )
 
 var defaultIgnore = map[string]bool{
