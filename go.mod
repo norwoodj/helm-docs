@@ -10,7 +10,7 @@ require (
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.3
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/helm v2.14.3+incompatible
+	k8s.io/helm v2.17.0+incompatible
 )
 
 require (
