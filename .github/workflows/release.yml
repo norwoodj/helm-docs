@@ -30,7 +30,7 @@ jobs:
         gpg_private_key: ${{ secrets.SIGNING_KEY }}
     - name: Release Helm-Docs
       if: ${{ !env.ACT }}
-      uses: goreleaser/goreleaser-action@v4
+      uses: goreleaser/goreleaser-action@v6
       with:
         args: release
       env:
