@@ -1,3 +1,37 @@
+1.14.0
+- 2024-07-06 Release 1.14.0
+- 2024-07-06 Merge pull request #237 from norwoodj/dependabot/github_actions/docker/setup-qemu-action-3
+- 2024-07-06 chore(deps): bump docker/setup-qemu-action from 2 to 3
+- 2024-07-06 Merge pull request #236 from norwoodj/dependabot/github_actions/crazy-max/ghaction-import-gpg-6
+- 2024-07-06 chore(deps): bump crazy-max/ghaction-import-gpg from 5 to 6
+- 2024-07-06 Merge pull request #238 from norwoodj/dependabot/docker/alpine-3.20
+- 2024-07-06 chore(deps): bump alpine from 3.19 to 3.20
+- 2024-07-06 Merge pull request #239 from norwoodj/dependabot/github_actions/docker/setup-buildx-action-3
+- 2024-07-06 chore(deps): bump docker/setup-buildx-action from 2 to 3
+- 2024-07-06 Merge pull request #246 from norwoodj/jnorwood/fix-goreleaser
+- 2024-07-06 fix: Fixes goreleaser action by using new flag
+- 2024-07-06 Merge pull request #240 from norwoodj/dependabot/github_actions/goreleaser/goreleaser-action-6
+- 2024-07-06 chore(deps): bump goreleaser/goreleaser-action from 4 to 6
+- 2024-07-06 Merge pull request #220 from gbprz/skip-helm-version-footer
+- 2024-02-27 add a flag to remove the version footer
+- 2024-07-06 Merge pull request #230 from ebuildy/feat_yaml_functions
+- 2024-05-11 revert go.mod
+- 2024-05-11 add toYaml example
+- 2024-05-11 add example
+- 2024-07-06 Merge pull request #176 from jasondamour/master
+- 2023-03-29 feat: add toYaml and fromYaml to functions map
+- 2024-07-06 Merge pull request #243 from norwoodj/dependabot/go_modules/github.com/spf13/cobra-1.8.1
+- 2024-07-06 chore(deps): bump github.com/spf13/cobra from 1.7.0 to 1.8.1
+- 2024-07-06 Merge pull request #244 from norwoodj/dependabot/go_modules/github.com/stretchr/testify-1.9.0
+- 2024-07-06 chore(deps): bump github.com/stretchr/testify from 1.8.3 to 1.9.0
+- 2024-07-06 Merge pull request #232 from lucacome/helm3
+- 2024-05-30 Use helm v3
+- 2024-07-06 Merge pull request #233 from lucacome/dependabot
+- 2024-05-30 Add dependabot
+- 2024-05-12 Merge pull request #224 from ebuildy/fix_go_mod_version
+- 2024-03-28 chore: set go version to 1.22.0
+- 2024-03-02 chore: renders example chart documentation using v1.13.1
+
 1.13.1
 - 2024-03-02 Release v1.13.1
 - 2024-03-02 chore: updates golang.org/x/crypto to fix vulnerability
