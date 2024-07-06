@@ -1,0 +1,15 @@
+volumeSnapshotClass:
+  azure:
+    parameters: {}
+
+  local:
+    parameters: {}
+
+  mask-data:
+    parameters:
+      resourceGroup: rg-mask-data
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 100m
