@@ -18,4 +18,4 @@ clean:
 
 .PHONY: dist
 dist:
-	goreleaser release --rm-dist --snapshot --skip-sign
+	goreleaser release --rm-dist --snapshot --skip=sign

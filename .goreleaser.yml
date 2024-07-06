@@ -1,3 +1,4 @@
+version: 2
 project_name: helm-docs
 before:
   hooks:
@@ -66,7 +67,7 @@ brews:
   - repository:
       owner: norwoodj
       name: homebrew
-    folder: Formula
+    directory: Formula
     homepage: https://github.com/norwoodj/helm-docs
     description: Automatically generate markdown documentation for helm charts
     install: |
