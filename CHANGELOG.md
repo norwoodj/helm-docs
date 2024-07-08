@@ -1,3 +1,9 @@
+1.14.1
+- 2024-07-08 Release 1.14.1
+- 2024-07-08 Merge pull request #248 from WePlan-Software/master
+- 2024-07-08 Update go.mod via 'go mod tidy'
+- 2024-07-06 chore: generates documentation using new v1.14.0
+
 1.14.0
 - 2024-07-06 Release 1.14.0
 - 2024-07-06 Merge pull request #237 from norwoodj/dependabot/github_actions/docker/setup-qemu-action-3
