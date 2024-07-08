@@ -3,38 +3,55 @@ name: Release
 on:
   push:
     tags:
-    - "v*"
+      - "v*"
 
 jobs:
   release:
+    name: Release
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-    - uses: actions/checkout@v4
-    - uses: actions/setup-go@v5
-      with:
-        go-version-file: go.mod
-    - name: Login to Docker hub
-      if: ${{ !env.ACT }}
-      run: docker login -u ${{ secrets.DOCKER_HUB_USER }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
-    - name: Import GPG key
-      if: ${{ !env.ACT }}
-      id: import_gpg
-      uses: crazy-max/ghaction-import-gpg@v6
-      with:
-        gpg_private_key: ${{ secrets.SIGNING_KEY }}
-    - name: Release Helm-Docs
-      if: ${{ !env.ACT }}
-      uses: goreleaser/goreleaser-action@v6
-      with:
-        args: release
-      env:
-        GITHUB_TOKEN: ${{ secrets.NORWOODJ_ORG_TOKEN }}
-        GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
-    - if: always()
-      run: rm -f ${HOME}/.docker/config.json
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@5927c834f5b4fdf503fca6f4c7eccda82949e1ee # v3.1.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4fd812986e6c8c2a69e18311145f9371337f27d4 # v3.4.0
+
+      - name: Setup Go
+        uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
+        with:
+          go-version-file: go.mod
+
+      - name: Login to DockerHub
+        if: ${{ !env.ACT }}
+        uses: docker/login-action@0d4c9c5ea7693da7b068278f7b52bda2a190a446 # v3.2.0
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: Import GPG key
+        if: ${{ !env.ACT }}
+        id: import_gpg
+        uses: crazy-max/ghaction-import-gpg@01dd5d3ca463c7f10f7f4f7b4f177225ac661ee4 # v6.1.0
+        with:
+          gpg_private_key: ${{ secrets.SIGNING_KEY }}
+
+      - name: Release Helm-Docs
+        if: ${{ !env.ACT }}
+        uses: goreleaser/goreleaser-action@286f3b13b1b49da4ac219696163fb8c1c93e1200 # v6.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.NORWOODJ_ORG_TOKEN }}
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+        with:
+          args: release
+
+      - name: Cleanup
+        if: always()
+        run: rm -f ${HOME}/.docker/config.json

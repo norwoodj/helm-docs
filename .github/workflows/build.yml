@@ -3,29 +3,41 @@ name: Build
 on:
   push:
     branches:
-    - "*"
+      - "*"
     tags-ignore:
-    - "*"
+      - "*"
   pull_request:
     types: [opened, reopened]
 
 jobs:
   build:
+    name: Build
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-    - uses: actions/checkout@v4
-    - uses: actions/setup-go@v5
-      with:
-        go-version-file: go.mod
-    - name: Run GoReleaser
-      uses: goreleaser/goreleaser-action@v6
-      with:
-        args: release --snapshot --skip=sign
-    - if: always()
-      run: rm -f ${HOME}/.docker/config.json
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@5927c834f5b4fdf503fca6f4c7eccda82949e1ee # v3.1.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4fd812986e6c8c2a69e18311145f9371337f27d4 # v3.4.0
+
+      - name: Setup Go
+        uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
+        with:
+          go-version-file: go.mod
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@286f3b13b1b49da4ac219696163fb8c1c93e1200 # v6.0.0
+        with:
+          args: release --snapshot --skip=sign
+
+      - name: Cleanup
+        if: always()
+        run: rm -f ${HOME}/.docker/config.json
