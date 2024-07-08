@@ -1,3 +1,9 @@
+1.14.2
+- 2024-07-08 Release v1.14.2
+- 2024-07-08 fix: Adds check for tag format to release script, also makes release script error on improper tags
+- 2024-07-08 Merge pull request #251 from norwoodj/dependabot/go_modules/helm.sh/helm/v3-3.15.2
+- 2024-07-08 chore(deps): bump helm.sh/helm/v3 from 3.15.1 to 3.15.2
+
 1.14.1
 - 2024-07-08 Release 1.14.1
 - 2024-07-08 Merge pull request #248 from WePlan-Software/master
