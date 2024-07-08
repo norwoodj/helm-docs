@@ -12,7 +12,7 @@ require (
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.9.0
 	gopkg.in/yaml.v3 v3.0.1
-	helm.sh/helm/v3 v3.15.1
+	helm.sh/helm/v3 v3.15.2
 )
 
 require (
