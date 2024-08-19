@@ -264,6 +264,8 @@ can be used as well:
 | chart.valueDefaultColumnRenderHtml   | This is a hook template if you want to redefine how helm-docs render the default values in `chart.valuesTableHtml` mode. This is especially useful when combined with (X)HTML tags, so that you can nicely format multiline default values, like YAML/JSON object tree snippet with codeblock syntax highlighter, which is not possible or difficult when using the markdown table format. It can be redefined in your template file. |
 | chart.valueDefaultColumnRender       | Deprecated. Maps to `chart.valueDefaultColumnRenderHtml` |
 | helm-docs.versionFooter              | A footer that contains the version of helm docs being used. |
+| chart.valueDescriptionColumnRenderHtml | This is a hook template if you want to redefine how helm-docs render the descripition values in `chart.valuesTableHtml` mode. |
+| helm-docs.versionFooter   | A footer that contains the version of helm docs being used. |
 
 The default internal template mentioned above uses many of these and looks like this:
 ```

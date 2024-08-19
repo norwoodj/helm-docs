@@ -288,7 +288,7 @@ func getValuesTableTemplates() string {
 
 	valuesSectionBuilder.WriteString(`
 {{ define "chart.valueDefaultColumnRender" }}
-{{- $defaultValue := (default .Default .AutoDefault)  -}}
+{{- $defaultValue := (default .Default .AutoDefault) -}}
 {{- $notationType := .NotationType }}
 {{- if (and (hasPrefix "` + "`" + `" $defaultValue) (hasSuffix "` + "`" + `" $defaultValue) ) -}}
 {{- $defaultValue = (toPrettyJson (fromJson (trimAll "` + "`" + `" (default .Default .AutoDefault) ) ) ) -}}
@@ -304,10 +304,24 @@ func getValuesTableTemplates() string {
 </pre>
 {{ end }}
 
+{{ define "chart.valueDescriptionColumnRender" -}}
+{{- default .AutoDescription .Description | toHTML -}}
+{{- end }}
+
 {{ define "chart.valuesTableHtml" }}
-{{ if .Sections.Sections }}
-{{- range .Sections.Sections }}
-<h3>{{- .SectionName }}</h3>
+{{- $sections := default list }}
+{{- if .Sections.Sections -}}
+  {{- $sections = concat $sections .Sections.Sections -}}
+  {{- if .Sections.DefaultSection.SectionItems -}}
+    {{- $sections = append $sections .Sections.DefaultSection -}}
+  {{- end }}
+{{- else }}
+  {{- $sections = append $sections (dict "SectionItems" .Values) -}}
+{{- end }}
+{{- range $sections }}
+{{- with .SectionName}}
+<h3>{{- . }}</h3>
+{{- end }}
 <table>
 	<thead>
 		<th>Key</th>
