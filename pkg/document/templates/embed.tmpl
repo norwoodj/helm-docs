@@ -40,7 +40,9 @@
 {{- end }}
 
 {{ define "chart.versionBadge" -}}
-  ![Version: {{ .Version }}](https://img.shields.io/badge/Version-{{ .Version | replace "-" "--" }}-informational?style={{ .BadgeStyle }})
+  {{- with .Version -}}
+    ![Version: {{ . }}](https://img.shields.io/badge/Version-{{ . | replace "-" "--" }}-informational?style={{ .BadgeStyle }})
+  {{- end }}
 {{- end }}
 
 {{ define "chart.type" -}}
@@ -66,7 +68,7 @@
 {{ end }}
 
 {{ define "chart.badgesSection" -}}
-  {{ template "chart.versionBadge" . }} {{ template "chart.typeBadge" . }} {{ template "chart.appVersionBadge" . }}
+{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
 {{- end }}
 
 {{ define "chart.description" }}
