@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"strings"
 	"text/template"
 
@@ -11,11 +12,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func FuncMap() template.FuncMap {
+const recursionMaxNums = 1000
+
+func FuncMap(t *template.Template, includedNames map[string]int) template.FuncMap {
 	f := sprig.TxtFuncMap()
 	f["toYaml"] = toYAML
 	f["fromYaml"] = fromYAML
 	f["toHTML"] = toHTML
+	f["include"] = includeFun(t, includedNames)
 	return f
 }
 
@@ -60,4 +64,22 @@ func toHTML(str string) string {
 	renderer := html.NewRenderer(opts)
 
 	return string(markdown.Render(doc, renderer))
+}
+
+// includeFun returns result of template as string an allows assign output to a variable
+func includeFun(t *template.Template, includedNames map[string]int) func(string, interface{}) (string, error) {
+	return func(name string, data interface{}) (string, error) {
+		var buf strings.Builder
+		if v, ok := includedNames[name]; ok {
+			if v > recursionMaxNums {
+				return "", fmt.Errorf("unable to execute template: rendering template has a nested reference name: %s", name)
+			}
+			includedNames[name]++
+		} else {
+			includedNames[name] = 1
+		}
+		err := t.ExecuteTemplate(&buf, name, data)
+		includedNames[name]--
+		return buf.String(), err
+	}
 }
