@@ -40,8 +40,9 @@
 {{- end }}
 
 {{ define "chart.versionBadge" -}}
+  {{- $badgeStyle := .BadgeStyle }}
   {{- with .Version -}}
-    ![Version: {{ . }}](https://img.shields.io/badge/Version-{{ . | replace "-" "--" }}-informational?style={{ .BadgeStyle }})
+    ![Version: {{ . }}](https://img.shields.io/badge/Version-{{ . | replace "-" "--" }}-informational?style={{ $badgeStyle }})
   {{- end }}
 {{- end }}
 
@@ -81,7 +82,7 @@
   {{ .Home }}
 {{ end }}
 
-{{ define "chart.homepageLine" }}`)
+{{ define "chart.homepageLine" }}
   {{- with .Home -}}
     **Homepage:** <{{ . }}>
   {{- end -}}
@@ -198,7 +199,7 @@
 {{ define "chart.valueDefaultColumnRender" }}
 {{- $defaultValue := (default .Default .AutoDefault) -}}
 {{- $notationType := .NotationType }}
-{{- if (and (hasPrefix "`" $defaultValue) (hasSuffix "`" $defaultValue)) -}}
+{{- if and (hasPrefix "`" $defaultValue) (hasSuffix "`" $defaultValue) -}}
 {{- $defaultValue = (toPrettyJson (fromJson (trimAll "`" (default .Default .AutoDefault)))) -}}
 {{- $notationType = "json" }}
 {{- end -}}
