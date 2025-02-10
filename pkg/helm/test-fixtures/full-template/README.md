@@ -108,9 +108,9 @@ Kubernetes: `<=1.18`
 
 ## `chart.requirementsTable`
 
-| Repository | Name | Version |
-|------------|------|---------|
-| @stable | nginx-ingress | 0.22.1 |
+| Repository | Name | Version | Condition |
+|------------|------|---------|-----------|
+| @stable | nginx-ingress | 0.22.1 | `controller.enabled` |
 
 ## `chart.requirementsSection`
 

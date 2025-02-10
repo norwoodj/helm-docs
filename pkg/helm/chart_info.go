@@ -49,6 +49,7 @@ type ChartRequirementsItem struct {
 	Version    string
 	Repository string
 	Alias      string
+	Condition  string
 }
 
 type ChartRequirements struct {
