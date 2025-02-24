@@ -252,6 +252,43 @@
 {{- end }}
 {{ end }}
 
+{{ define "chart.valuesParagraphHtml" }}
+  {{- $sections := default list }}
+  {{- if .Sections.Sections -}}
+    {{- $sections = concat $sections .Sections.Sections -}}
+    {{- if .Sections.DefaultSection.SectionItems -}}
+      {{- $sections = append $sections .Sections.DefaultSection -}}
+    {{- end }}
+  {{- else }}
+    {{- $sections = append $sections (dict "SectionItems" .Values) -}}
+  {{- end }}
+  {{- range $sections }}
+    {{- with .SectionName}}
+#### {{ . }}
+    {{- end }}
+    {{- range .SectionItems }}
+      {{- $id :=  printf "helm-value-%s" (regexReplaceAll "(\\W|_)" .Key "-" | lower) }}
+      {{- $defaultValue := default .Default .AutoDefault }}
+      {{- $notationType := .NotationType }}
+      {{- if and (hasPrefix "`" $defaultValue) (hasSuffix "`" $defaultValue) -}}
+        {{- $defaultValue = (toYaml (fromJson (trimAll "`" (default .Default .AutoDefault)))) -}}
+        {{- $notationType = "json" }}
+      {{- end }}
+<a id="{{ $id }}" href="#{{ $id }}" aria-hidden="true" tabindex="-1"></a>
+[`{{ .Key }}`](#{{ $id }})`({{ .Type }})`: {{ default .AutoDescription .Description }}
+  ```helm-default
+  {{- if eq $notationType "tpl"  }}
+  {{- $defaultValue | nindent 2 }}
+  {{- else if has .Type (list "object" "list") }}
+  {{- $defaultValue | nindent 2 }}
+  {{- else }}
+  {{ $defaultValue }}
+  {{- end }}
+  ```
+    {{ end }}
+  {{- end }}
+{{ end }}
+
 {{ define "chart.valuesSectionHtml" }}
 {{ if .Sections }}
 {{ template "chart.valuesHeader" . }}
