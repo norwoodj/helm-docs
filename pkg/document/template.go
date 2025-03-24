@@ -387,13 +387,13 @@ func getDocumentationTemplate(chartDirectory string, chartSearchRoot string, tem
 	for _, templateFileForChart := range templateFilesForChart {
 		templateContents, err := ioutil.ReadFile(templateFileForChart)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		allTemplateContents = append(allTemplateContents, string(templateContents))
 	}
 
 	if templateNotFound {
-		allTemplateContents = append(allTemplateContents, []byte(defaultDocumentationTemplate)...)
+		allTemplateContents = append(allTemplateContents, defaultDocumentationTemplate)
 	}
 
 	return allTemplateContents, nil
