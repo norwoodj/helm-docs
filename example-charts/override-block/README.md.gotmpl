@@ -1,0 +1,18 @@
+{{ template "chart.header" . }}
+{{ template "chart.description" . }}
+
+{{ template "chart.versionBadge" .  }}{{ template "chart.typeBadge" .  }}{{ template "chart.appVersionBadge" .  }}
+
+The following content will be overwritten by the `extra.overwritten` block in `override.md.gotmpl`:
+
+{{ block "extra.overwritten" . }}
+
+You'll never see this text ;)
+
+{{- end }}
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "helm-docs.versionFooter" . }}
