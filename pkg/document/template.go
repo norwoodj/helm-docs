@@ -360,6 +360,7 @@ func getDocumentationTemplate(chartDirectory string, chartSearchRoot string, tem
 	templateFilesForChart := make([]string, 0)
 
 	var templateNotFound bool
+	var atLeastOneTemplateFound bool
 
 	for _, templateFile := range templateFiles {
 		var fullTemplatePath string
@@ -379,6 +380,7 @@ func getDocumentationTemplate(chartDirectory string, chartSearchRoot string, tem
 			continue
 		}
 
+		atLeastOneTemplateFound = true
 		templateFilesForChart = append(templateFilesForChart, fullTemplatePath)
 	}
 
@@ -392,7 +394,7 @@ func getDocumentationTemplate(chartDirectory string, chartSearchRoot string, tem
 		allTemplateContents = append(allTemplateContents, string(templateContents))
 	}
 
-	if templateNotFound {
+	if templateNotFound && !atLeastOneTemplateFound {
 		allTemplateContents = append(allTemplateContents, defaultDocumentationTemplate)
 	}
 
