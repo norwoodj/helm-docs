@@ -356,10 +356,11 @@ func getHelmDocsVersionTemplates() string {
 	return versionSectionBuilder.String()
 }
 
-func getDocumentationTemplate(chartDirectory string, chartSearchRoot string, templateFiles []string) (string, error) {
+func getDocumentationTemplate(chartDirectory string, chartSearchRoot string, templateFiles []string) ([]string, error) {
 	templateFilesForChart := make([]string, 0)
 
 	var templateNotFound bool
+	var atLeastOneTemplateFound bool
 
 	for _, templateFile := range templateFiles {
 		var fullTemplatePath string
@@ -379,24 +380,25 @@ func getDocumentationTemplate(chartDirectory string, chartSearchRoot string, tem
 			continue
 		}
 
+		atLeastOneTemplateFound = true
 		templateFilesForChart = append(templateFilesForChart, fullTemplatePath)
 	}
 
 	log.Debugf("Using template files %s for chart %s", templateFiles, chartDirectory)
-	allTemplateContents := make([]byte, 0)
+	allTemplateContents := make([]string, 0)
 	for _, templateFileForChart := range templateFilesForChart {
 		templateContents, err := ioutil.ReadFile(templateFileForChart)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
-		allTemplateContents = append(allTemplateContents, templateContents...)
+		allTemplateContents = append(allTemplateContents, string(templateContents))
 	}
 
-	if templateNotFound {
-		allTemplateContents = append(allTemplateContents, []byte(defaultDocumentationTemplate)...)
+	if templateNotFound && !atLeastOneTemplateFound {
+		allTemplateContents = append(allTemplateContents, defaultDocumentationTemplate)
 	}
 
-	return string(allTemplateContents), nil
+	return allTemplateContents, nil
 }
 
 func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, templateFiles []string, badgeStyle string) ([]string, error) {
@@ -407,23 +409,24 @@ func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, te
 		return nil, err
 	}
 
-	return []string{
-		getNameTemplate(),
-		getHeaderTemplate(),
-		getDeprecatedTemplate(),
-		getAppVersionTemplate(badgeStyle),
-		getBadgesTemplates(),
-		getDescriptionTemplate(),
-		getVersionTemplates(badgeStyle),
-		getTypeTemplate(badgeStyle),
-		getSourceLinkTemplates(),
-		getRequirementsTableTemplates(),
-		getValuesTableTemplates(),
-		getHomepageTemplate(),
-		getMaintainersTemplate(),
-		getHelmDocsVersionTemplates(),
-		documentationTemplate,
-	}, nil
+	return append([]string{
+			getNameTemplate(),
+			getHeaderTemplate(),
+			getDeprecatedTemplate(),
+			getAppVersionTemplate(badgeStyle),
+			getBadgesTemplates(),
+			getDescriptionTemplate(),
+			getVersionTemplates(badgeStyle),
+			getTypeTemplate(badgeStyle),
+			getSourceLinkTemplates(),
+			getRequirementsTableTemplates(),
+			getValuesTableTemplates(),
+			getHomepageTemplate(),
+			getMaintainersTemplate(),
+			getHelmDocsVersionTemplates(),
+		},
+		documentationTemplate...
+	), nil
 }
 
 func newChartDocumentationTemplate(chartDocumentationInfo helm.ChartDocumentationInfo, chartSearchRoot string, templateFiles []string, badgeStyle string) (*template.Template, error) {
