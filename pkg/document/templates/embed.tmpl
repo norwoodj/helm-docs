@@ -196,25 +196,22 @@
 {{- end }}
 {{- end }}
 
-{{ define "chart.valueDefaultColumnRender" }}
-{{- $defaultValue := (default .Default .AutoDefault) -}}
-{{- $notationType := .NotationType }}
-{{- if and (hasPrefix "`" $defaultValue) (hasSuffix "`" $defaultValue) -}}
-{{- $defaultValue = (toPrettyJson (fromJson (trimAll "`" (default .Default .AutoDefault)))) -}}
-{{- $notationType = "json" }}
-{{- end -}}
-<pre lang="{{ $notationType }}">
-{{- if (eq $notationType "tpl" ) }}
-{{ .Key }}: |
-{{- $defaultValue | nindent 2 }}
-{{- else }}
-{{ $defaultValue }}
-{{- end }}
-</pre>
+{{- define "chart.valueKeyColumnRender" -}}
+  {{- $defaultValue := (default .row.Default .row.AutoDefault) -}}
+  {{- $notationType := .row.NotationType -}}
+  {{- if and (hasPrefix "`" $defaultValue) (hasSuffix "`" $defaultValue) -}}
+    {{- $defaultValue = fromJson (trimAll "`" $defaultValue) -}}
+  {{- end -}}
+  {{- $output := dict .row.Key $defaultValue }}
+  {{- if (eq $notationType "tpl") -}}
+    {{- $_ := set $output .row.Key (toYaml $defaultValue) }}
+  {{- end }}
+  {{- highlight (toYaml $output) "yaml" "html-styleless" "" }}
 {{ end }}
 
 {{ define "chart.valueDescriptionColumnRender" -}}
-{{- default .AutoDescription .Description | toHTML -}}
+  <em><code>({{ .row.Type }})</code></em>
+  {{- default .row.AutoDescription .row.Description | toHTML -}}
 {{- end }}
 
 {{ define "chart.valuesTableHtml" }}
@@ -234,17 +231,15 @@
 <table class="helm-vars">
   <thead>
     <th class="helm-vars-key">Key</th>
-    <th class="helm-vars-type">Type</th>
-    <th class="helm-vars-default">Default</th>
     <th class="helm-vars-description">Description</th>
   </thead>
   <tbody>
     {{- range .SectionItems }}
-    <tr>
-      <td>{{ .Key }}</td>
-      <td>{{ .Type }}</td>
-      <td>{{ template "chart.valueDefaultColumnRender" . }}</td>
-      <td>{{ template "chart.valueDescriptionColumnRender" . }}</td>
+    {{- $id := regexReplaceAll "(\\.|_)" .Key "-" | lower -}}
+    {{- $ctx := dict "id" $id "row" . }}
+    <tr id="{{ $id }}">
+      <td><a href="#{{ $id }}">{{ template "chart.valueKeyColumnRender" $ctx }}</a></td>
+      <td>{{ template "chart.valueDescriptionColumnRender" $ctx }}</td>
     </tr>
     {{- end }}
   </tbody>

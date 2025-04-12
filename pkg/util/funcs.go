@@ -1,11 +1,15 @@
 package util
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
+	"github.com/alecthomas/chroma/v2/formatters"
+	highlighthtml "github.com/alecthomas/chroma/v2/formatters/html"
+	"github.com/alecthomas/chroma/v2/quick"
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
@@ -14,13 +18,24 @@ import (
 
 const recursionMaxNums = 1000
 
+var htmlFull = formatters.Register("html-styleless", highlighthtml.New(highlighthtml.Standalone(false), highlighthtml.WithClasses(true)))
+
 func FuncMap(t *template.Template, includedNames map[string]int) template.FuncMap {
 	f := sprig.TxtFuncMap()
 	f["toYaml"] = toYAML
 	f["fromYaml"] = fromYAML
 	f["toHTML"] = toHTML
 	f["include"] = includeFun(t, includedNames)
+	f["highlight"] = highlight
 	return f
+}
+
+func highlight(source, lexer, formatter, style string) (string, error) {
+	buf := new(bytes.Buffer)
+	if err := quick.Highlight(buf, source, lexer, formatter, style); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
 
 // toYAML takes an interface, marshals it to yaml, and returns a string. It will
