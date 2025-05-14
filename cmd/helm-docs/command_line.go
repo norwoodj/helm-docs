@@ -11,6 +11,17 @@ import (
 	"github.com/spf13/viper"
 )
 
+const (
+	versionsOverrideFlagDescription = `
+		Overrides the versions in the README files with the specified value. 
+		Comma separated, no space. 
+		Uses the format <chart-name>:<version>. 
+		If the chart name or version is not specified, the override will be skipped.
+		If the chart name == "*" (example: "*:1.0.0"), the version will be applied to all charts.
+		For example: mychart:1.0.0,mychart2:2.0.0"
+	`
+)
+
 var version string
 
 func possibleLogLevels() []string {
@@ -60,6 +71,7 @@ func newHelmDocsCommand(run func(cmd *cobra.Command, args []string)) (*cobra.Com
 	command.PersistentFlags().StringSliceP("documentation-strict-ignore-absent", "y", []string{"service.type", "image.repository", "image.tag"}, "A comma separate values which are allowed not to be documented in strict mode")
 	command.PersistentFlags().StringSliceP("documentation-strict-ignore-absent-regex", "z", []string{".*service\\.type", ".*image\\.repository", ".*image\\.tag"}, "A comma separate values which are allowed not to be documented in strict mode")
 	command.PersistentFlags().Bool("skip-version-footer", false, "if true the helm-docs version footer will not be shown in the default README template")
+	command.PersistentFlags().StringSliceP("versions-override", "v", []string{}, versionsOverrideFlagDescription)
 
 	viper.AutomaticEnv()
 	viper.SetEnvPrefix("HELM_DOCS")

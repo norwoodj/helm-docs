@@ -185,6 +185,33 @@ func helmDocs(_ *cobra.Command, _ []string) {
 		log.Fatal(err)
 	}
 
+	versionsOverride := viper.GetStringSlice("versions-override")
+	versionOverridesMap := make(map[string]string)
+
+	for _, override := range versionsOverride {
+		parts := strings.Split(override, ":")
+		if len(parts) == 2 {
+			chartName := parts[0]
+			version := parts[1]
+			if chartName == "" || version == "" {
+				log.Warnf("Skipping version override with empty chartName or empty version.")
+				continue
+			}
+			versionOverridesMap[chartName] = version
+		}
+	}
+
+	if len(versionOverridesMap) > 0 {
+		for _, element := range documentationInfoByChartPath {
+			chartName := element.ChartMeta.Name
+			if version, ok := versionOverridesMap[chartName]; ok {
+				element.ChartMeta.Version = version
+			} else if version, ok := versionOverridesMap["*"]; ok {
+				element.ChartMeta.Version = version
+			}
+		}
+	}
+
 	writeDocumentation(chartSearchRoot, documentationInfoByChartPath, dryRun, parallelism)
 }
 
