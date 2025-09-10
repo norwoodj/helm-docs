@@ -162,3 +162,5 @@ Kubernetes: `<=1.18`
 | controller.service.annotations."external-dns.alpha.kubernetes.io/hostname" | string | `"stupidchess.jmn23.com"` | Hostname to be assigned to the ELB for the service |
 | controller.service.type | string | `"LoadBalancer"` |  |
 
+## `chart.extras`
+

@@ -32,6 +32,8 @@ const defaultDocumentationTemplate = `{{ template "chart.header" . }}
 
 {{ template "chart.valuesSectionMd" . }}
 
+{{ template "chart.extras" . }}
+
 {{- if not .SkipVersionFooter }}
 {{ template "helm-docs.versionFooter" . }}
 {{- end }}
@@ -386,6 +388,18 @@ func getValuesTableTemplates() string {
 	return valuesSectionBuilder.String()
 }
 
+func getExtraTemplates() string {
+	extrasBuilder := strings.Builder{}
+	extrasBuilder.WriteString(`{{ define "chart.extras" }}`)
+	extrasBuilder.WriteString("{{ range .Extras }}\n")
+	extrasBuilder.WriteString("### {{ .Title }}\n")
+	extrasBuilder.WriteString("{{ .MarkDown }}\n\n")
+	extrasBuilder.WriteString("{{ end }}")
+	extrasBuilder.WriteString("{{ end }}")
+
+	return extrasBuilder.String()
+}
+
 func getHelmDocsVersionTemplates() string {
 	versionSectionBuilder := strings.Builder{}
 	versionSectionBuilder.WriteString(`{{ define "helm-docs.version" }}{{ if .HelmDocsVersion }}{{ .HelmDocsVersion }}{{ end }}{{ end }}`)
@@ -444,7 +458,6 @@ func getDocumentationTemplate(chartDirectory string, chartSearchRoot string, tem
 
 func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, templateFiles []string, badgeStyle string) ([]string, error) {
 	documentationTemplate, err := getDocumentationTemplate(chartDirectory, chartSearchRoot, templateFiles)
-
 	if err != nil {
 		log.Errorf("Failed to read documentation template for chart %s: %s", chartDirectory, err)
 		return nil, err
@@ -465,6 +478,7 @@ func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, te
 		getHomepageTemplate(),
 		getMaintainersTemplate(),
 		getHelmDocsVersionTemplates(),
+		getExtraTemplates(),
 		documentationTemplate,
 	}, nil
 }
@@ -473,14 +487,12 @@ func newChartDocumentationTemplate(chartDocumentationInfo helm.ChartDocumentatio
 	documentationTemplate := template.New(chartDocumentationInfo.ChartDirectory)
 	documentationTemplate.Funcs(util.FuncMap())
 	goTemplateList, err := getDocumentationTemplates(chartDocumentationInfo.ChartDirectory, chartSearchRoot, templateFiles, badgeStyle)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for _, t := range goTemplateList {
 		_, err := documentationTemplate.Parse(t)
-
 		if err != nil {
 			return nil, err
 		}
