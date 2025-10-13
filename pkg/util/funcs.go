@@ -1,18 +1,54 @@
 package util
 
 import (
+	"bytes"
+	"fmt"
+	"os/exec"
 	"strings"
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
+	"github.com/alecthomas/chroma/v2/formatters"
+	highlighthtml "github.com/alecthomas/chroma/v2/formatters/html"
+	"github.com/alecthomas/chroma/v2/quick"
+	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/html"
+	"github.com/gomarkdown/markdown/parser"
 	"gopkg.in/yaml.v3"
 )
 
-func FuncMap() template.FuncMap {
+const recursionMaxNums = 1000
+
+var htmlFull = formatters.Register("html-styleless", highlighthtml.New(highlighthtml.Standalone(false), highlighthtml.WithClasses(true)))
+
+func FuncMap(t *template.Template, includedNames map[string]int) template.FuncMap {
 	f := sprig.TxtFuncMap()
 	f["toYaml"] = toYAML
 	f["fromYaml"] = fromYAML
+	f["toHTML"] = toHTML
+	f["include"] = includeFun(t, includedNames)
+	f["highlight"] = highlight
+	f["exec"] = execCmd
 	return f
+}
+
+func execCmd(cmdName string, args ...string) (string, error) {
+	cmd := exec.Command(cmdName, args...)
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		return "", err
+	}
+	return out.String(), nil
+}
+
+func highlight(source, lexer, formatter, style string) (string, error) {
+	buf := new(bytes.Buffer)
+	if err := quick.Highlight(buf, source, lexer, formatter, style); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
 
 // toYAML takes an interface, marshals it to yaml, and returns a string. It will
@@ -41,4 +77,37 @@ func fromYAML(str string) map[string]interface{} {
 		m["Error"] = err.Error()
 	}
 	return m
+}
+
+// toHTML converts a markdown content into HTML.
+func toHTML(str string) string {
+	// create markdown parser with extensions
+	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
+	p := parser.NewWithExtensions(extensions)
+	doc := p.Parse([]byte(str))
+
+	// create HTML renderer with extensions
+	htmlFlags := html.CommonFlags | html.HrefTargetBlank
+	opts := html.RendererOptions{Flags: htmlFlags}
+	renderer := html.NewRenderer(opts)
+
+	return string(markdown.Render(doc, renderer))
+}
+
+// includeFun returns result of template as string an allows assign output to a variable
+func includeFun(t *template.Template, includedNames map[string]int) func(string, interface{}) (string, error) {
+	return func(name string, data interface{}) (string, error) {
+		var buf strings.Builder
+		if v, ok := includedNames[name]; ok {
+			if v > recursionMaxNums {
+				return "", fmt.Errorf("unable to execute template: rendering template has a nested reference name: %s", name)
+			}
+			includedNames[name]++
+		} else {
+			includedNames[name] = 1
+		}
+		err := t.ExecuteTemplate(&buf, name, data)
+		includedNames[name]--
+		return buf.String(), err
+	}
 }

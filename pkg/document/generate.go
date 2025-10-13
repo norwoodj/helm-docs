@@ -33,7 +33,6 @@ func PrintDocumentation(chartDocumentationInfo helm.ChartDocumentationInfo, char
 		chartDocumentationInfo,
 		chartSearchRoot,
 		templateFiles,
-		badgeStyle,
 	)
 
 	if err != nil {
@@ -41,7 +40,7 @@ func PrintDocumentation(chartDocumentationInfo helm.ChartDocumentationInfo, char
 		return
 	}
 
-	chartTemplateDataObject, err := getChartTemplateData(chartDocumentationInfo, helmDocsVersion, dependencyValues, skipVersionFooter)
+	chartTemplateDataObject, err := getChartTemplateData(chartDocumentationInfo, helmDocsVersion, dependencyValues, skipVersionFooter, badgeStyle)
 	if err != nil {
 		log.Warnf("Error generating template data for chart %s: %s", chartDocumentationInfo.ChartDirectory, err)
 		return

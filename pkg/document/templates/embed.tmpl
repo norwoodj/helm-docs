@@ -1,0 +1,305 @@
+{{ define "chart.defaultTemplate" }}
+
+  {{ template "chart.header" . }}
+
+  {{ template "chart.deprecationWarning" . }}
+
+  {{ template "chart.badgesSection" . }}
+
+  {{ template "chart.description" . }}
+
+  {{ template "chart.homepageLine" . }}
+
+  {{ template "chart.maintainersSection" . }}
+
+  {{ template "chart.sourcesSection" . }}
+
+  {{ template "chart.requirementsSection" . }}
+
+  {{ template "chart.valuesSection" . }}
+
+  {{- if not .SkipVersionFooter }}
+  {{ template "helm-docs.versionFooter" . }}
+  {{- end }}
+{{- end }}
+
+{{ define "chart.name" }}
+  {{- .Name -}}
+{{ end }}
+
+{{ define "chart.header" -}}
+  # {{ .Name }}
+{{ end }}
+
+{{ define "chart.deprecationWarning" }}
+  {{ if .Deprecated }}> **:exclamation: This Helm Chart is deprecated!**{{ end }}
+{{ end }}
+
+{{ define "chart.version" -}}
+  {{- .Version -}}
+{{- end }}
+
+{{ define "chart.versionBadge" -}}
+  {{- $badgeStyle := .BadgeStyle }}
+  {{- with .Version -}}
+    ![Version: {{ . }}](https://img.shields.io/badge/Version-{{ . | replace "-" "--" }}-informational?style={{ $badgeStyle }})
+  {{- end }}
+{{- end }}
+
+{{ define "chart.type" -}}
+  {{- .Type -}}
+{{- end }}
+
+{{ define "chart.typeBadge" }}
+  {{- $badgeStyle := .BadgeStyle -}}
+  {{- with .Type -}}
+    ![Type: {{ . }}](https://img.shields.io/badge/Type-{{ . }}-informational?style={{ $badgeStyle }})
+  {{- end -}}
+{{- end }}
+
+{{ define "chart.appVersion" -}}
+  {{ .AppVersion }}
+{{- end }}
+
+{{ define "chart.appVersionBadge" }}
+  {{- $badgeStyle := .BadgeStyle -}}
+  {{- with .AppVersion -}}
+    ![AppVersion: {{ . }}](https://img.shields.io/badge/AppVersion-{{ . | replace "-" "--" }}-informational?style={{ $badgeStyle }})
+  {{- end -}}
+{{ end }}
+
+{{ define "chart.badgesSection" -}}
+{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
+{{- end }}
+
+{{ define "chart.description" }}
+  {{- with .Description -}}
+    {{- . }}
+  {{- end }}
+{{- end }}
+
+{{ define "chart.homepage" }}
+  {{ .Home }}
+{{ end }}
+
+{{ define "chart.homepageLine" }}
+  {{- with .Home -}}
+    **Homepage:** <{{ . }}>
+  {{- end -}}
+{{- end }}
+
+{{ define "chart.maintainersHeader" -}}
+  ## Maintainers
+{{- end }}
+
+{{ define "chart.maintainersTable" }}
+| Name | Email  | Url |
+| ---- | ------ | --- |
+{{- range .Maintainers }}
+| {{ .Name }} | {{ with .Email }}<{{ . }}>{{ end }} | {{ with .Url }}<{{ . }}>{{ end }} |
+{{- end }}
+{{ end }}
+
+{{ define "chart.maintainersSection" }}
+{{- if .Maintainers }}
+{{- template "chart.maintainersHeader" . }}
+
+{{ template "chart.maintainersTable" . }}
+{{- end }}
+{{- end }}
+
+{{ define "chart.sourcesHeader" -}}
+  ## Source Code
+{{- end}}
+
+{{ define "chart.sourcesList" }}
+{{- range .Sources }}
+* <{{ . }}>
+{{- end }}
+{{ end }}
+
+{{ define "chart.sourcesSection" }}
+  {{- if .Sources }}
+    {{- template "chart.sourcesHeader" . }}
+    {{- template "chart.sourcesList" . }}
+  {{- end }}
+{{- end }}
+
+{{ define "chart.requirementsHeader" -}}
+  ## Requirements
+{{- end }}
+
+{{ define "chart.kubeVersion" -}}
+  {{ .KubeVersion -}}
+{{ end }}
+
+{{ define "chart.kubeVersionLine" }}
+  {{- with .KubeVersion }}
+    Kubernetes: `{{ . }}`
+  {{- end }}
+{{ end }}
+
+{{ define "chart.requirementsTable" -}}
+| Repository | Name | Version |
+|------------|------|---------|
+{{- range .Dependencies }}
+  {{- $name := ternary .Name (printf "%s(%s)" .Alias .Name) (empty .Alias) }}
+| {{ .Repository }} | {{ $name }} | {{ .Version }} |
+{{- end }}
+{{- end }}
+
+{{ define "chart.requirementsSection" }}
+{{- if or .Dependencies .KubeVersion }}
+{{ template "chart.requirementsHeader" . }}
+{{- if .KubeVersion }}
+{{ template "chart.kubeVersionLine" . }}
+{{- end }}
+{{ if .Dependencies }}
+{{ template "chart.requirementsTable" . }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{ define "chart.valuesHeader" -}}
+  ## Values
+{{- end }}
+
+{{ define "chart.valuesTable" }}
+{{- $sections := default list }}
+{{- if .Sections.Sections -}}
+  {{- $sections = concat $sections .Sections.Sections -}}
+  {{- if .Sections.DefaultSection.SectionItems -}}
+    {{- $sections = append $sections .Sections.DefaultSection -}}
+  {{- end }}
+{{- else }}
+  {{- $sections = append $sections (dict "SectionItems" .Values) -}}
+{{- end }}
+{{- range $sections }}
+{{- with .SectionName}}
+### {{ . }}
+{{- end }}
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+{{- range .SectionItems }}
+{{- $default := ternary .AutoDefault .Default (empty .Default) }}
+{{- $description := ternary .AutoDescription .Description (empty .Description) }}
+| {{ .Key }} | {{ .Type }} | {{ $default }} | {{ $description }} |
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{ define "chart.valuesSection" }}
+{{ if .Values -}}
+{{ template "chart.valuesHeader" . }}
+
+{{ template "chart.valuesTable" . }}
+{{- end }}
+{{- end }}
+
+{{- define "chart.valueKeyColumnRender" -}}
+  {{- $defaultValue := (default .row.Default .row.AutoDefault) -}}
+  {{- $notationType := .row.NotationType -}}
+  {{- if and (hasPrefix "`" $defaultValue) (hasSuffix "`" $defaultValue) -}}
+    {{- $defaultValue = fromJson (trimAll "`" $defaultValue) -}}
+  {{- end -}}
+  {{- $output := dict .row.Key $defaultValue }}
+  {{- if (eq $notationType "tpl") -}}
+    {{- $_ := set $output .row.Key (toYaml $defaultValue) }}
+  {{- end }}
+  {{- highlight (toYaml $output) "yaml" "html-styleless" "" }}
+{{ end }}
+
+{{ define "chart.valueDescriptionColumnRender" -}}
+  <em><code>({{ .row.Type }})</code></em>
+  {{- default .row.AutoDescription .row.Description | toHTML -}}
+{{- end }}
+
+{{ define "chart.valuesTableHtml" }}
+{{- $sections := default list }}
+{{- if .Sections.Sections -}}
+  {{- $sections = concat $sections .Sections.Sections -}}
+  {{- if .Sections.DefaultSection.SectionItems -}}
+    {{- $sections = append $sections .Sections.DefaultSection -}}
+  {{- end }}
+{{- else }}
+  {{- $sections = append $sections (dict "SectionItems" .Values) -}}
+{{- end }}
+{{- range $sections }}
+{{- with .SectionName}}
+<h3>{{- . }}</h3>
+{{- end }}
+<table class="helm-vars">
+  <thead>
+    <th class="helm-vars-key">Key</th>
+    <th class="helm-vars-description">Description</th>
+  </thead>
+  <tbody>
+    {{- range .SectionItems }}
+    {{- $id := regexReplaceAll "(\\.|_)" .Key "-" | lower -}}
+    {{- $ctx := dict "id" $id "row" . }}
+    <tr id="{{ $id }}">
+      <td><a href="#{{ $id }}">{{ template "chart.valueKeyColumnRender" $ctx }}</a></td>
+      <td>{{ template "chart.valueDescriptionColumnRender" $ctx }}</td>
+    </tr>
+    {{- end }}
+  </tbody>
+</table>
+{{- end }}
+{{ end }}
+
+{{ define "chart.valuesParagraphHtml" }}
+  {{- $sections := default list }}
+  {{- if .Sections.Sections -}}
+    {{- $sections = concat $sections .Sections.Sections -}}
+    {{- if .Sections.DefaultSection.SectionItems -}}
+      {{- $sections = append $sections .Sections.DefaultSection -}}
+    {{- end }}
+  {{- else }}
+    {{- $sections = append $sections (dict "SectionItems" .Values) -}}
+  {{- end }}
+  {{- range $sections }}
+    {{- with .SectionName}}
+#### {{ . }}
+    {{- end }}
+    {{- range .SectionItems }}
+      {{- $id :=  printf "helm-value-%s" (regexReplaceAll "(\\W|_)" .Key "-" | lower) }}
+      {{- $defaultValue := default .Default .AutoDefault }}
+      {{- $notationType := .NotationType }}
+      {{- if and (hasPrefix "`" $defaultValue) (hasSuffix "`" $defaultValue) -}}
+        {{- $defaultValue = (toYaml (fromJson (trimAll "`" (default .Default .AutoDefault)))) -}}
+        {{- $notationType = "json" }}
+      {{- end }}
+<a id="{{ $id }}" href="#{{ $id }}" aria-hidden="true" tabindex="-1"></a>
+[`{{ .Key }}`](#{{ $id }})`({{ .Type }})`: {{ default .AutoDescription .Description }}
+  ```helm-default
+  {{- if eq $notationType "tpl"  }}
+  {{- $defaultValue | nindent 2 }}
+  {{- else if has .Type (list "object" "list") }}
+  {{- $defaultValue | nindent 2 }}
+  {{- else }}
+  {{ $defaultValue }}
+  {{- end }}
+  ```
+    {{ end }}
+  {{- end }}
+{{ end }}
+
+{{ define "chart.valuesSectionHtml" }}
+{{ if .Sections }}
+{{ template "chart.valuesHeader" . }}
+{{ template "chart.valuesTableHtml" . }}
+{{ end }}
+{{ end }}
+
+{{ define "helm-docs.version" -}}
+  {{ with .HelmDocsVersion -}}
+    {{ . -}}
+  {{- end }}
+{{- end }}
+
+{{ define "helm-docs.versionFooter" }}
+  {{- if .HelmDocsVersion }}
+----------------------------------------------
+Autogenerated from chart metadata using [helm-docs v{{ . }}](https://github.com/norwoodj/helm-docs/releases/v{{ . }}
+  {{- end }}
+{{ end }}
