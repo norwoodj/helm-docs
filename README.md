@@ -265,7 +265,6 @@ can be used as well:
 | chart.valueDefaultColumnRender       | Deprecated. Maps to `chart.valueDefaultColumnRenderHtml` |
 | helm-docs.versionFooter              | A footer that contains the version of helm docs being used. |
 | chart.valueDescriptionColumnRenderHtml | This is a hook template if you want to redefine how helm-docs render the descripition values in `chart.valuesTableHtml` mode. |
-| helm-docs.versionFooter   | A footer that contains the version of helm docs being used. |
 
 The default internal template mentioned above uses many of these and looks like this:
 ```
