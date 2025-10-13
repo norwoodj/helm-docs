@@ -3,6 +3,7 @@ package util
 import (
 	"bytes"
 	"fmt"
+	"os/exec"
 	"strings"
 	"text/template"
 
@@ -27,7 +28,19 @@ func FuncMap(t *template.Template, includedNames map[string]int) template.FuncMa
 	f["toHTML"] = toHTML
 	f["include"] = includeFun(t, includedNames)
 	f["highlight"] = highlight
+	f["exec"] = execCmd
 	return f
+}
+
+func execCmd(cmdName string, args ...string) (string, error) {
+	cmd := exec.Command(cmdName, args...)
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		return "", err
+	}
+	return out.String(), nil
 }
 
 func highlight(source, lexer, formatter, style string) (string, error) {
