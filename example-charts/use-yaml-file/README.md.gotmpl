@@ -36,4 +36,6 @@ $ helm install my-release foo-bar/{{ template "chart.name" . }}
 
 {{ template "chart.valuesSection" . }}
 
+{{ template "chart.extras" . }}
+
 {{ template "helm-docs.versionFooter" . }}

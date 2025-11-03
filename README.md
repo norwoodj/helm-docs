@@ -237,6 +237,7 @@ can be used as well:
 | chart.typeBadge           | A badge stating the current type of the chart |
 | chart.appVersion          | The _appVersion_ field from the chart's `Chart.yaml` file |
 | chart.appVersionBadge     | A badge stating the current appVersion of the chart |
+| chart.extras              | All extra sections (ordered by title) |
 | chart.homepage            | The _home_ link from the chart's `Chart.yaml` file, or "" if that field is not set |
 | chart.homepageLine        | A text line stating the current homepage of the chart |
 | chart.maintainersHeader   | The heading for the chart maintainers section |
@@ -276,6 +277,8 @@ The default internal template mentioned above uses many of these and looks like 
 {{ template "chart.requirementsSection" . }}
 
 {{ template "chart.valuesSection" . }}
+
+{{ template "chart.extras" . }}
 
 {{ template "helm-docs.versionFooter" . }}
 
@@ -424,6 +427,13 @@ configMap:
   # configMap."not real config param" -- A completely fake config parameter for a useful example
   not real config param: value
 ```
+
+### Extra sections
+You can define extra documentation (following the values) that can contain any markdown. This can be done
+using the `@extra -- <title>` tag. All comment after this will be rendered (with the give title) in the
+markdown file. Markdown supports anchors for each title (lowercase with hyphens), so you can link to the
+extra documentation from the values. This is often useful to provide more details and/or examples for a
+given value.
 
 ### Advanced table rendering
 Some helm chart `values.yaml` uses complicated structure for the key/value
