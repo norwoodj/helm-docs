@@ -183,11 +183,35 @@ for every chart that it finds.
 
 You can mount a directory with charts under `/helm-docs` within the container.
 
+
 Then run:
 
 ```bash
 docker run --rm --volume "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:latest
 ```
+
+### Input parameters
+
+The tool supports the following input parameters:
+
+| Parameter | Short Flag | Default | Description |
+|-----------|-----------|---------|-------------|
+| `--chart-search-root` | `c` | `.` | Directory to search recursively within for charts |
+| `--dry-run` | `d` | `false` | Don't actually render any markdown files just print to stdout passed |
+| `--ignore-non-descriptions` | N/A | `false` | Ignore values without a comment, this values will not be included in the README |
+| `--ignore-file` | `i` | `.helmdocsignore` | The filename to use as an ignore file to exclude chart directories |
+| `--log-level` | `l` | `info` | Log level usage |
+| `--output-file` | `o` | `README.md` | Markdown file path relative to each chart directory to which rendered documentation will be written |
+| `--sort-values-order` | `s` | `AlphaNumSortOrder` | Order in which to sort the values table (`AlphaNumSortOrder` or `FileSortOrder`) |
+| `--template-files` | `t` | `README.md.gotmpl` | Gotemplate file paths relative to each chart directory from which documentation will be generated |
+| `--badge-style` | `b` | `flat-square` | Badge style to use for charts |
+| `--values-file` | `f` | `values.yaml` | Path to values file |
+| `--document-dependency-values` | `u` | `false` | For charts with dependencies, include the dependency values in the chart values documentation |
+| `--chart-to-generate` | `g` | `[]` | List of charts that will have documentation generated. Comma separated, no space. Empty list - generate for all charts in chart-search-root |
+| `--documentation-strict-mode` | `x` | `false` | Fail the generation of docs if there are undocumented values |
+| `--documentation-strict-ignore-absent` | `y` | `["service.type", "image.repository", "image.tag"]` | A comma separate values which are allowed not to be documented in strict mode |
+| `--documentation-strict-ignore-absent-regex` | `z` | `[".*service\\.type", ".*image\\.repository", ".*image\\.tag"]` | A comma separate values which are allowed not to be documented in strict mode |
+| `--skip-version-footer` | N/A | `false` | if true the helm-docs version footer will not be shown in the default README template |
 
 ## Ignoring Chart Directories
 helm-docs supports a `.helmdocsignore` file, exactly like a `.gitignore` file in which one can specify directories to ignore
