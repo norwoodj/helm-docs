@@ -1,6 +1,7 @@
 package util
 
 import (
+	"html"
 	"strings"
 	"text/template"
 
@@ -12,6 +13,7 @@ func FuncMap() template.FuncMap {
 	f := sprig.TxtFuncMap()
 	f["toYaml"] = toYAML
 	f["fromYaml"] = fromYAML
+	f["htmlEscape"] = htmlEscape
 	return f
 }
 
@@ -41,4 +43,23 @@ func fromYAML(str string) map[string]interface{} {
 		m["Error"] = err.Error()
 	}
 	return m
+}
+
+// htmlEscape escapes special HTML characters in a string to their HTML entity equivalents.
+// It also converts Unicode escape sequences (\u003c, \u003e, \u0026) produced by Go's json.Marshal
+// to their HTML entity equivalents (&lt;, &gt;, &amp;).
+//
+// This is necessary because Sprig's toPrettyJson function uses json.MarshalIndent without
+// SetEscapeHTML(false), which means it escapes <, >, and & to Unicode sequences.
+// We want proper HTML entities instead for better readability in markdown/HTML output.
+//
+// This is designed to be called from a template.
+func htmlEscape(s string) string {
+	// First, replace Unicode escape sequences with actual characters
+	s = strings.ReplaceAll(s, `\u003c`, "<")
+	s = strings.ReplaceAll(s, `\u003e`, ">")
+	s = strings.ReplaceAll(s, `\u0026`, "&")
+
+	// Then apply HTML escaping to convert them to HTML entities
+	return html.EscapeString(s)
 }
