@@ -13,24 +13,5 @@ if git diff --quiet; then
   exit 0
 fi
 
-echo "git diff to example charts detected. Comparing with latest chart-diffs file..."
-
-# Get latest file alphabetically
-latest_diff_file=$(ls -1 "${CHART_DIFFS_DIR}" | sort | tail -n 1)
-
-if [[ -z "${latest_diff_file}" ]]; then
-  echo "No files found in chart-diffs"
-  exit 1
-fi
-
-# Capture current diff
-current_diff=$(git diff)
-
-# Compare with latest stored diff
-if diff -u "${CHART_DIFFS_DIR}/${latest_diff_file}" <(echo "${current_diff}") > /dev/null; then
-  echo "diff matches chart-diffs/${latest_diff_file}"
-  exit 0
-else
-  echo "diff does NOT match chart-diffs/${latest_diff_file}"
-  exit 1
-fi
+echo "Any changes to helm-docs that cause example-chart content to change must include those example-charts changes in the commit"
+exit 1
