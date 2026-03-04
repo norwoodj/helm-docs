@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 
@@ -251,15 +252,23 @@ func parseChartValuesFileComments(chartDirectory string, values *yaml.Node, lint
 	foundValuesComment := false
 	commentLines := make([]string, 0)
 	currentLineIdx := -1
+	currentValueKeySegments := make([]string, 0)
 
 	for scanner.Scan() {
 		currentLineIdx++
 		currentLine := scanner.Text()
 
-		// If we've not yet found a values comment with a key name, try and find one on each line
+		if currentLine == "" {
+			continue
+		}
+
+		// For value comments without keys we need to track previous keys to exactly know where we are at.
+		currentValueKeySegments = updateCurrentValueKeySegments(currentLine, currentValueKeySegments)
+
+		// If we've not yet found a values comment, try and find one on each line
 		if !foundValuesComment {
 			match := valuesDescriptionRegex.FindStringSubmatch(currentLine)
-			if len(match) < 3 || match[1] == "" {
+			if len(match) < 3 {
 				continue
 			}
 			foundValuesComment = true
@@ -286,9 +295,10 @@ func parseChartValuesFileComments(chartDirectory string, values *yaml.Node, lint
 		// If we haven't continued by this point, we didn't match any of the comment formats we want, so we need to add
 		// the in progress value to the map, and reset to looking for a new key
 		key, description := ParseComment(commentLines)
-		if key != "" {
-			keyToDescriptions[key] = description
+		if key == "" {
+			key = strings.Join(currentValueKeySegments, ".")
 		}
+		keyToDescriptions[key] = description
 
 		commentLines = make([]string, 0)
 		foundValuesComment = false
@@ -300,6 +310,45 @@ func parseChartValuesFileComments(chartDirectory string, values *yaml.Node, lint
 		}
 	}
 	return keyToDescriptions, nil
+}
+
+func updateCurrentValueKeySegments(currentLine string, currentValueKeySegments []string) []string {
+	valueKeyRegex := regexp.MustCompile("^(\\s*)(-?)\\s*(.+):\\s*.*$")
+	valueKeyMatch := valueKeyRegex.FindStringSubmatch(currentLine)
+
+	if len(valueKeyMatch) == 4 {
+		// line is value key or group.
+		indentation := len(valueKeyMatch[1])
+		valueKey := valueKeyMatch[3]
+		isArrayElement := valueKeyMatch[2] != ""
+
+		// if current indentation is less than elements in list, we need to remove some elements.
+		if indentation/2 < len(currentValueKeySegments) {
+			currentValueKeySegments = slices.Delete(currentValueKeySegments, indentation/2, len(currentValueKeySegments))
+		}
+
+		// For yaml arrays we need the current index in the key
+		if isArrayElement {
+			previousValueKeySegment := currentValueKeySegments[len(currentValueKeySegments)-1]
+			currentValueKeySegments = slices.Delete(currentValueKeySegments, len(currentValueKeySegments)-1, len(currentValueKeySegments))
+			keyRegex := regexp.MustCompile("^(\\w+)\\[?(\\d+)?\\]?$")
+			keyMatches := keyRegex.FindStringSubmatch(previousValueKeySegment)
+			index := "0"
+			if keyMatches[2] != "" {
+				index = keyMatches[2]
+			}
+			valueKey = keyMatches[1] + "[" + index + "]"
+		}
+
+		// We need to quote the key if value key contains special characters
+		if strings.ContainsAny(valueKey, "-./") {
+			valueKey = "\"" + valueKey + "\""
+		}
+
+		currentValueKeySegments = append(currentValueKeySegments, valueKey)
+	}
+
+	return currentValueKeySegments
 }
 
 func ParseChartInformation(chartDirectory string, documentationParsingConfig ChartValuesDocumentationParsingConfig) (ChartDocumentationInfo, error) {
