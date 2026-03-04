@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/norwoodj/helm-docs/pkg/helm"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
 )
@@ -1662,4 +1663,124 @@ animals:
 	assert.Equal(t, "This describes a lion", valuesRows[3].AutoDescription)
 	assert.Equal(t, "Rawr", valuesRows[3].AutoDefault)
 	assert.Equal(t, "Feline Section", valuesRows[3].Section)
+}
+
+func TestSectionsSortedAlphabetically(t *testing.T) {
+	viper.Set("sort-values-order", AlphaNumSortOrder)
+	viper.Set("sort-sections-order", AlphaNumSortOrder)
+	defer viper.Reset()
+
+	helmValues := parseYamlValues(`
+animals:
+  # -- This describes a lion
+  # @section -- Feline Section
+  lion:
+
+  # -- This describes an ox
+  ox:
+
+  # -- This describes a leopard
+  # @section -- Feline Section
+  leopard:
+
+  # -- This describes a zebra
+  # @section -- Equine Section
+  zebra:
+
+  # -- This describes a cougar
+  # @section -- Feline Section
+  cougar:
+
+  # -- This describes a horse
+  # @section -- Equine Section
+  horse:
+
+  # -- This describes a cow
+  cow:
+`)
+
+	document := &yaml.Node{Kind: yaml.DocumentNode, Content: []*yaml.Node{helmValues}}
+	valueRows, err := getUnsortedValueRows(document, make(map[string]helm.ChartValueDescription))
+	assert.Nil(t, err)
+
+	sectionedValueRows := getSectionedValueRows(valueRows)
+	sortSectionedValueRows(sectionedValueRows)
+
+	assert.Len(t, sectionedValueRows.Sections, 2)
+
+	assert.Equal(t, "Equine Section", sectionedValueRows.Sections[0].SectionName)
+	assert.Equal(t, "Feline Section", sectionedValueRows.Sections[1].SectionName)
+
+	assert.Len(t, sectionedValueRows.Sections[0].SectionItems, 2)
+	assert.Equal(t, "animals.horse", sectionedValueRows.Sections[0].SectionItems[0].Key)
+	assert.Equal(t, "animals.zebra", sectionedValueRows.Sections[0].SectionItems[1].Key)
+
+	assert.Len(t, sectionedValueRows.Sections[1].SectionItems, 3)
+	assert.Equal(t, "animals.cougar", sectionedValueRows.Sections[1].SectionItems[0].Key)
+	assert.Equal(t, "animals.leopard", sectionedValueRows.Sections[1].SectionItems[1].Key)
+	assert.Equal(t, "animals.lion", sectionedValueRows.Sections[1].SectionItems[2].Key)
+
+	assert.Len(t, sectionedValueRows.DefaultSection.SectionItems, 2)
+	assert.Equal(t, "animals.cow", sectionedValueRows.DefaultSection.SectionItems[0].Key)
+	assert.Equal(t, "animals.ox", sectionedValueRows.DefaultSection.SectionItems[1].Key)
+}
+
+func TestSectionsSortedByFileOrder(t *testing.T) {
+	viper.Set("sort-values-order", FileSortOrder)
+	viper.Set("sort-sections-order", FileSortOrder)
+	defer viper.Reset()
+
+	helmValues := parseYamlValues(`
+animals:
+  # -- This describes a lion
+  # @section -- Feline Section
+  lion:
+
+  # -- This describes an ox
+  ox:
+
+  # -- This describes a leopard
+  # @section -- Feline Section
+  leopard:
+
+  # -- This describes a zebra
+  # @section -- Equine Section
+  zebra:
+
+  # -- This describes a cougar
+  # @section -- Feline Section
+  cougar:
+
+  # -- This describes a horse
+  # @section -- Equine Section
+  horse:
+
+  # -- This describes a cow
+  cow:
+`)
+
+	document := &yaml.Node{Kind: yaml.DocumentNode, Content: []*yaml.Node{helmValues}}
+	valueRows, err := getUnsortedValueRows(document, make(map[string]helm.ChartValueDescription))
+	assert.Nil(t, err)
+
+	sectionedValueRows := getSectionedValueRows(valueRows)
+	sortSectionedValueRows(sectionedValueRows)
+
+	assert.Len(t, sectionedValueRows.Sections, 2)
+
+	assert.Equal(t, "Feline Section", sectionedValueRows.Sections[0].SectionName)
+	assert.Equal(t, "Equine Section", sectionedValueRows.Sections[1].SectionName)
+
+	assert.Len(t, sectionedValueRows.Sections[0].SectionItems, 3)
+	assert.Equal(t, "animals.lion", sectionedValueRows.Sections[0].SectionItems[0].Key)
+	assert.Equal(t, "animals.leopard", sectionedValueRows.Sections[0].SectionItems[1].Key)
+	assert.Equal(t, "animals.cougar", sectionedValueRows.Sections[0].SectionItems[2].Key)
+
+	assert.Len(t, sectionedValueRows.Sections[1].SectionItems, 2)
+	assert.Equal(t, "animals.zebra", sectionedValueRows.Sections[1].SectionItems[0].Key)
+	assert.Equal(t, "animals.horse", sectionedValueRows.Sections[1].SectionItems[1].Key)
+
+	assert.Len(t, sectionedValueRows.DefaultSection.SectionItems, 2)
+	assert.Equal(t, "animals.ox", sectionedValueRows.DefaultSection.SectionItems[0].Key)
+	assert.Equal(t, "animals.cow", sectionedValueRows.DefaultSection.SectionItems[1].Key)
 }

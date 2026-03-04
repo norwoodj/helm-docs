@@ -31,6 +31,7 @@ func BenchmarkHelmDocs(b *testing.B) {
 		"ignore-file":                ".helmdocsignore",
 		"output-file":                "README.md",
 		"sort-values-order":          document.AlphaNumSortOrder,
+		"sort-sections-order":        document.AlphaNumSortOrder,
 		"document-dependency-values": true,
 	}); err != nil {
 		b.Fatal(err)
@@ -160,6 +161,7 @@ func TestSkipsVersionFooter(t *testing.T) {
 		"ignore-file":                ".helmdocsignore",
 		"log-level":                  "warn",
 		"sort-values-order":          document.AlphaNumSortOrder,
+		"sort-sections-order":        document.AlphaNumSortOrder,
 		"document-dependency-values": true,
 		"skip-version-footer":        true,
 	}); err != nil {
@@ -199,6 +201,7 @@ func TestIncludesVersionFooter(t *testing.T) {
 		"ignore-file":                ".helmdocsignore",
 		"log-level":                  "warn",
 		"sort-values-order":          document.AlphaNumSortOrder,
+		"sort-sections-order":        document.AlphaNumSortOrder,
 		"document-dependency-values": true,
 		"skip-version-footer":        false,
 	}); err != nil {

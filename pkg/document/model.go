@@ -94,10 +94,22 @@ func sortValueRows(valueRows []valueRow) {
 
 func sortSectionedValueRows(sectionedValueRows sections) {
 	sortOrder := viper.GetString("sort-values-order")
+	sortSectionsOrder := viper.GetString("sort-sections-order")
 
 	if sortOrder != FileSortOrder && sortOrder != AlphaNumSortOrder {
 		log.Warnf("Invalid sort order provided %s, defaulting to %s", sortOrder, AlphaNumSortOrder)
 		sortOrder = AlphaNumSortOrder
+	}
+
+	if sortSectionsOrder != FileSortOrder && sortSectionsOrder != AlphaNumSortOrder {
+		log.Warnf("Invalid sections sort order provided %s, defaulting to %s", sortSectionsOrder, AlphaNumSortOrder)
+		sortSectionsOrder = AlphaNumSortOrder
+	}
+
+	if sortSectionsOrder == AlphaNumSortOrder {
+		sort.Slice(sectionedValueRows.Sections, func(i, j int) bool {
+			return sectionedValueRows.Sections[i].SectionName < sectionedValueRows.Sections[j].SectionName
+		})
 	}
 
 	sortValueRowsByOrder(sectionedValueRows.DefaultSection.SectionItems, sortOrder)
