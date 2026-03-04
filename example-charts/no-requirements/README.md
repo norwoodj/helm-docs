@@ -8,7 +8,7 @@ A simple chart that installs, let's say PrometheusRules, that needs no sub-chart
 
 ## Maintainers
 
-| Name | Email | Url |
+| Name | Email | URL |
 | ---- | ------ | --- |
 | John Norwood | <norwood.john.m@gmail.com> |  |
 

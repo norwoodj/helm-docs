@@ -8,7 +8,7 @@ A very simple chart with a funky version
 
 ## Maintainers
 
-| Name | Email | Url |
+| Name | Email | URL |
 | ---- | ------ | --- |
 | John Norwood | <norwood.john.m@gmail.com> |  |
 

@@ -8,7 +8,7 @@ Generic chart for basic Django-based web app
 
 ## Maintainers
 
-| Name | Email | Url |
+| Name | Email | URL |
 | ---- | ------ | --- |
 | Rizky Maulana Nugraha | <lana.pcfre@gmail.com> |  |
 

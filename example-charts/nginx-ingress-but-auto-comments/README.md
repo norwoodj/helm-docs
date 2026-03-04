@@ -8,7 +8,7 @@ A simple wrapper around the stable/nginx-ingress chart that adds a few of our co
 
 ## Maintainers
 
-| Name | Email | Url |
+| Name | Email | URL |
 | ---- | ------ | --- |
 | John Norwood | <norwood.john.m@gmail.com> |  |
 

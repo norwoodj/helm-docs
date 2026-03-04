@@ -8,7 +8,7 @@ One of the best values parsing example charts here, exhibits several more compli
 
 ## Maintainers
 
-| Name | Email | Url |
+| Name | Email | URL |
 | ---- | ------ | --- |
 | John Norwood | <norwood.john.m@gmail.com> |  |
 

@@ -8,7 +8,7 @@ A chart demonstrating handling of special characters in values files
 
 ## Maintainers
 
-| Name | Email | Url |
+| Name | Email | URL |
 | ---- | ------ | --- |
 | John Norwood | <norwood.john.m@gmail.com> |  |
 

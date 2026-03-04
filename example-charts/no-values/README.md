@@ -8,7 +8,7 @@ A very simple chart that doesn't even need any values for customization
 
 ## Maintainers
 
-| Name | Email | Url |
+| Name | Email | URL |
 | ---- | ------ | --- |
 | John Norwood | <norwood.john.m@gmail.com> |  |
 

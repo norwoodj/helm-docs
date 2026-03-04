@@ -8,7 +8,7 @@ Based on best-values-example
 
 ## Maintainers
 
-| Name | Email | Url |
+| Name | Email | URL |
 | ---- | ------ | --- |
 | Jakub Buczak | <jakub.buczak@gmail.com> |  |
 

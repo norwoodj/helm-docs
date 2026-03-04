@@ -68,7 +68,7 @@ https://github.com/norwoodj/helm-docs/tree/master/example-charts/full-template
 
 ## `chart.maintainersTable`
 
-| Name | Email | Url |
+| Name | Email | URL |
 | ---- | ------ | --- |
 | John Norwood | <norwood.john.m@gmail.com> |  |
 
@@ -76,7 +76,7 @@ https://github.com/norwoodj/helm-docs/tree/master/example-charts/full-template
 
 ## Maintainers
 
-| Name | Email | Url |
+| Name | Email | URL |
 | ---- | ------ | --- |
 | John Norwood | <norwood.john.m@gmail.com> |  |
 
