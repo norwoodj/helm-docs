@@ -127,7 +127,7 @@ func getMaintainersTemplate() string {
 	maintainerBuilder.WriteString(`{{ define "chart.maintainersHeader" }}## Maintainers{{ end }}`)
 
 	maintainerBuilder.WriteString(`{{ define "chart.maintainersTable" }}`)
-	maintainerBuilder.WriteString("| Name | Email | Url |\n")
+	maintainerBuilder.WriteString("| Name | Email | URL |\n")
 	maintainerBuilder.WriteString("| ---- | ------ | --- |\n")
 	maintainerBuilder.WriteString("  {{- range .Maintainers }}")
 	maintainerBuilder.WriteString("\n| {{ .Name }} | {{ if .Email }}<{{ .Email }}>{{ end }} | {{ if .Url }}<{{ .Url }}>{{ end }} |")
