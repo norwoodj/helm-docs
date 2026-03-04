@@ -1,3 +1,50 @@
+
+1.15.0
+- 2026-03-04 Release v1.15.0
+- 2026-03-04 fix: fixes syntax error introduced by PR I merged
+- 2026-03-04 Merge pull request #279 from cardoe/patch-1
+- 2024-11-16 fix: display correct output file on error
+- 2026-03-04 chore: updates example chart generated content
+- 2026-03-04 Merge pull request #296 from neilime/patch-1
+- 2025-07-15 fix: use URL to respect natural language lint
+- 2026-03-04 Merge pull request #309 from adutra/sort-order-sections
+- 2026-02-26 Add command flag to sort sections alphabetically
+- 2026-03-04 Revert "feat: make strict mode work with new style comments on values"
+- 2026-03-04 Merge pull request #308 from jnt0r/feat-strict-mode-new-style-comment
+- 2026-02-11 feat: make strict mode work with new style comments on values
+- 2026-03-04 Merge pull request #302 from jylenhof/master
+- 2025-12-23 docs(README): add mise alternate installation documentation
+- 2026-03-04 Merge pull request #304 from ebuildy/chore-gosec
+- 2026-01-04 chore: add gosec
+- 2026-01-04 chore: add gosec
+- 2026-03-04 Merge pull request #278 from norwoodj/dependabot/github_actions/goreleaser/goreleaser-action-6.1.0
+- 2024-11-11 chore(deps): bump goreleaser/goreleaser-action from 6.0.0 to 6.1.0
+- 2026-03-04 Merge pull request #274 from norwoodj/dependabot/github_actions/actions/setup-go-5.1.0
+- 2024-10-28 chore(deps): bump actions/setup-go from 5.0.2 to 5.1.0
+- 2026-03-04 Merge pull request #273 from norwoodj/dependabot/github_actions/crazy-max/ghaction-import-gpg-6.2.0
+- 2024-10-28 chore(deps): bump crazy-max/ghaction-import-gpg from 6.1.0 to 6.2.0
+- 2026-03-04 Merge pull request #270 from norwoodj/dependabot/github_actions/docker/setup-buildx-action-3.7.1
+- 2024-10-07 chore(deps): bump docker/setup-buildx-action from 3.6.1 to 3.7.1
+- 2026-03-04 Merge pull request #265 from norwoodj/dependabot/go_modules/github.com/Masterminds/sprig/v3-3.3.0
+- 2024-09-02 chore(deps): bump github.com/Masterminds/sprig/v3 from 3.2.3 to 3.3.0
+- 2026-03-04 Merge pull request #260 from aslafy-z/patch-1
+- 2024-07-25 feat: Add column renderer templates for all columns
+- 2026-03-04 chore: updates example-charts with removal of the version footer, so the new test passes
+- 2026-03-04 chore: adds script to check example charts diff and a github action to run it
+- 2024-08-05 Merge pull request #255 from norwoodj/dependabot/go_modules/helm.sh/helm/v3-3.15.3
+- 2024-07-15 chore(deps): bump helm.sh/helm/v3 from 3.15.2 to 3.15.3
+- 2024-08-05 Merge pull request #256 from norwoodj/dependabot/github_actions/actions/setup-go-5.0.2
+- 2024-07-15 chore(deps): bump actions/setup-go from 5.0.1 to 5.0.2
+- 2024-08-05 Merge pull request #257 from norwoodj/dependabot/github_actions/docker/setup-qemu-action-3.2.0
+- 2024-07-22 chore(deps): bump docker/setup-qemu-action from 3.1.0 to 3.2.0
+- 2024-08-05 Merge pull request #259 from norwoodj/dependabot/github_actions/docker/login-action-3.3.0
+- 2024-07-22 chore(deps): bump docker/login-action from 3.2.0 to 3.3.0
+- 2024-08-05 Merge pull request #261 from norwoodj/dependabot/github_actions/docker/setup-buildx-action-3.6.1
+- 2024-08-05 chore(deps): bump docker/setup-buildx-action from 3.4.0 to 3.6.1
+- 2024-07-08 Merge pull request #253 from stevehipwell/gh-actions-digests
+- 2024-07-08 chore: Changed to use digests for GH actions
+- 2024-07-08 chore: Updates pre-commit-config.yaml file
+
 1.14.2
 - 2024-07-08 Release v1.14.2
 - 2024-07-08 fix: Adds check for tag format to release script, also makes release script error on improper tags
