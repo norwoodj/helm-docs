@@ -68,6 +68,12 @@ or [scoop](https://scoop.sh):
 scoop install helm-docs
 ```
 
+or [mise](https://mise.jdx.dev):
+
+```bash
+mise use -g helm-docs@latest
+```
+
 This will download and install the [latest release](https://github.com/norwoodj/helm-docs/releases/latest)
 of the tool.
 
