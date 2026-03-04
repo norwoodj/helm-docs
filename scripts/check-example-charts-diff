@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+: "${CHART_DIFFS_DIR:="$(git rev-parse --show-toplevel)/chart-diffs"}"
+
+set -euo pipefail
+
+# Run chart generation
+make generate-example-charts
+
+# Check for git diff
+if git diff --quiet; then
+  echo "No difference in example charts detected. Test passes"
+  exit 0
+fi
+
+echo "git diff to example charts detected. Comparing with latest chart-diffs file..."
+
+# Get latest file alphabetically
+latest_diff_file=$(ls -1 "${CHART_DIFFS_DIR}" | sort | tail -n 1)
+
+if [[ -z "${latest_diff_file}" ]]; then
+  echo "No files found in chart-diffs"
+  exit 1
+fi
+
+# Capture current diff
+current_diff=$(git diff)
+
+# Compare with latest stored diff
+if diff -u "${CHART_DIFFS_DIR}/${latest_diff_file}" <(echo "${current_diff}") > /dev/null; then
+  echo "diff matches chart-diffs/${latest_diff_file}"
+  exit 0
+else
+  echo "diff does NOT match chart-diffs/${latest_diff_file}"
+  exit 1
+fi
