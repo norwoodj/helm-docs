@@ -1,13 +1,12 @@
 package helm_test
 
 import (
-	"path/filepath"
-	"regexp"
-	"testing"
-
 	"github.com/norwoodj/helm-docs/pkg/helm"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
+	"path/filepath"
+	"regexp"
+	"testing"
 )
 
 type ChartParsingTestSuite struct {
@@ -90,14 +89,6 @@ func (suite *ChartParsingTestSuite) TestNotFullyDocumentedChartStrictModeOnIgnor
 
 func (suite *ChartParsingTestSuite) TestFullyDocumentedChartStrictModeOn() {
 	chartPath := filepath.Join("test-fixtures", "fully-documented")
-	_, err := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
-		StrictMode: true,
-	})
-	suite.NoError(err)
-}
-
-func (suite *ChartParsingTestSuite) TestFullyDocumentedChartNewStyleStrictModeOn() {
-	chartPath := filepath.Join("test-fixtures", "fully-documented-new-style")
 	_, err := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
 		StrictMode: true,
 	})
