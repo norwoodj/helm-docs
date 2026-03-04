@@ -425,6 +425,24 @@ configMap:
   not real config param: value
 ```
 
+### Ignored YAML comments 
+
+In cases you would like to not include certain YAML comments, such as explicit example, context information, you me use a double `#` to tell helm-docs to ignore e.g.
+
+```yaml
+  # -- Using existing secret
+  ## Secret format:
+  ##  stringData:
+  ##    comm_config.yaml: |
+  ##      communications:
+  ##        # Here specify settings for each app, like Slack, Mattermost etc.
+  ##        # NOTE: Use setting format visible below.
+  ##
+  ## FIXME some keys needs stuff to happen. See #1234
+  # @default -- an empty string, meaning no existing secret
+  existingSecretName: ""
+```
+
 ### Advanced table rendering
 Some helm chart `values.yaml` uses complicated structure for the key/value
 pairs. For example, it may uses a multiline string of Go template text instead

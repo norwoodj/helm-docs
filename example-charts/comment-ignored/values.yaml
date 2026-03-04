@@ -1,0 +1,15 @@
+rules:
+  latency:
+    percentiles:
+      "99":
+        # rules.latency.percentiles.99.threshold -- Threshold in seconds for our 99th percentile latency above which the alert will fire
+        ## Note that this is a secret comment that should be added to the doc
+        threshold: 1.5
+        # rules.latency.percentiles.99.duration -- Duration for which the 99th percentile must be above the threshold to alert
+        ## Secret format:
+        ##  stringData:
+        ##    comm_config.yaml: |
+        ##      communications:
+        ##        # Here specify settings for each app, like Slack, Mattermost etc.
+        ##        # NOTE: Use setting format visible below.
+        duration: 5m

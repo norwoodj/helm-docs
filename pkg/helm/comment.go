@@ -74,6 +74,11 @@ func ParseComment(commentLines []string) (string, ChartValueDescription) {
 
 		commentContinuationMatch := commentContinuationRegex.FindStringSubmatch(line)
 
+		// If the comment uses a double hash, this means it should be ignored for the documentation
+		if len(line) > 2 && line[1] == '#' {
+			continue
+		}
+
 		if isRaw {
 
 			if len(commentContinuationMatch) > 1 {

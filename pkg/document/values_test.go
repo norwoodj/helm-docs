@@ -1304,6 +1304,55 @@ animals:
 	assert.Equal(t, "The best kind of animal probably, allow me to list their many varied benefits. Cats are very funny, and quite friendly, in almost all cases", valuesRows[0].AutoDescription)
 }
 
+func TestIgnoredCommentDescription(t *testing.T) {
+	helmValues := parseYamlValues(`
+animals:
+  # -- The best kind of animal probably, allow me to list their many varied benefits.
+  # Cats are very funny, and quite friendly, in almost all cases
+  ## They can be dangerous sometimes
+  ## especially when untamed!
+  # @default -- The list of cats that _I_ own
+  cats:
+      - echo
+      - foxtrot
+      ## This one, you probable don't want to
+      ## meet them face to face
+      - cobra
+  ## They are always cute
+  # Little doggo
+  dogs:
+  - alpha
+  ## Maybe this one not that much
+  - beta
+`)
+
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 3)
+
+	assert.Equal(t, "animals.cats", valuesRows[0].Key)
+	assert.Equal(t, listType, valuesRows[0].Type)
+	assert.Equal(t, "The list of cats that _I_ own", valuesRows[0].AutoDefault)
+	assert.Equal(t, "", valuesRows[0].Default)
+	assert.Equal(t, "", valuesRows[0].Description)
+	assert.Equal(t, "The best kind of animal probably, allow me to list their many varied benefits. Cats are very funny, and quite friendly, in almost all cases", valuesRows[0].AutoDescription)
+
+	assert.Equal(t, "animals.dogs[0]", valuesRows[1].Key)
+	assert.Equal(t, stringType, valuesRows[1].Type)
+	assert.Equal(t, "", valuesRows[1].AutoDefault)
+	assert.Equal(t, "`\"alpha\"`", valuesRows[1].Default)
+	assert.Equal(t, "", valuesRows[1].Description)
+	assert.Equal(t, "", valuesRows[1].AutoDescription)
+
+	assert.Equal(t, "animals.dogs[1]", valuesRows[2].Key)
+	assert.Equal(t, stringType, valuesRows[2].Type)
+	assert.Equal(t, "", valuesRows[2].AutoDefault)
+	assert.Equal(t, "`\"beta\"`", valuesRows[2].Default)
+	assert.Equal(t, "", valuesRows[2].Description)
+	assert.Equal(t, "", valuesRows[2].AutoDescription)
+}
+
 func TestAutoMultilineDescriptionWithoutValue(t *testing.T) {
 	helmValues := parseYamlValues(`
 animals:
