@@ -12,7 +12,13 @@ function main {
         echo "Release version must be of the form 'v1.2.3'"
         exit 1
     fi
-    go install github.com/mikefarah/yq/v4@latest # Install yq via go
+    
+    # Check if yq is installed
+    if ! command -v yq &> /dev/null; then
+        echo "Error: 'yq' is not installed."
+        echo "Please install it from https://github.com/mikefarah/yq"
+        exit 1
+    fi
     
     # Update the docker image version for helm-docs-container pre-commit hook to release_version
     yq "(.[] | select(.id == \"helm-docs-container\")).entry = \"jnorwood/helm-docs:${release_version}\"" -i .pre-commit-hooks.yaml
