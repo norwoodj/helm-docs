@@ -12,6 +12,19 @@ function main {
         echo "Release version must be of the form 'v1.2.3'"
         exit 1
     fi
+    
+    # Check if yq is installed
+    if ! command -v yq &> /dev/null; then
+        echo "Error: 'yq' is not installed."
+        echo "Please install it from https://github.com/mikefarah/yq"
+        exit 1
+    fi
+    
+    # Update the docker image version for helm-docs-container pre-commit hook to release_version
+    yq "(.[] | select(.id == \"helm-docs-container\")).entry = \"jnorwood/helm-docs:${release_version}\"" -i .pre-commit-hooks.yaml
+    
+    # Update the repo's pre-commit hook for helm-docs to release_version
+    yq "(.repos[] | select(.repo == \"https://github.com/norwoodj/helm-docs\")).rev = \"${release_version}\"" -i .pre-commit-config.yaml
 
     git commit -am "Release ${release_version}" --allow-empty
     git cliff --tag "${release_version}" -o
