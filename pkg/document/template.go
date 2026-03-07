@@ -317,7 +317,7 @@ func getValuesTableTemplates() string {
 	valuesSectionBuilder.WriteString(`{{ define "chart.valueExampleColumnRenderHtml" }}`)
 	valuesSectionBuilder.WriteString("{{- if .Example }}")
 	valuesSectionBuilder.WriteString("<pre lang=\"text\">")
-	valuesSectionBuilder.WriteString("{{ .Example }}")
+	valuesSectionBuilder.WriteString("{{ .Example | htmlEscape }}")
 	valuesSectionBuilder.WriteString("</pre>")
 	valuesSectionBuilder.WriteString("{{- end }}")
 	valuesSectionBuilder.WriteString("{{ end }}")

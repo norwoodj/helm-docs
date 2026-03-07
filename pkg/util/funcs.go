@@ -1,6 +1,7 @@
 package util
 
 import (
+	"html"
 	"strings"
 	"text/template"
 
@@ -12,7 +13,13 @@ func FuncMap() template.FuncMap {
 	f := sprig.TxtFuncMap()
 	f["toYaml"] = toYAML
 	f["fromYaml"] = fromYAML
+	f["htmlEscape"] = htmlEscape
 	return f
+}
+
+// htmlEscape escapes a string for safe inclusion in HTML (e.g. so < and > in XML display as text).
+func htmlEscape(s string) string {
+	return html.EscapeString(s)
 }
 
 // toYAML takes an interface, marshals it to yaml, and returns a string. It will
