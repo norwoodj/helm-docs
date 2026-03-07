@@ -98,6 +98,11 @@ func parseNilValueType(key string, description helm.ChartValueDescription, autoD
 		section = autoDescription.Section
 	}
 
+	example := description.Example
+	if example == "" {
+		example = autoDescription.Example
+	}
+
 	return valueRow{
 		Key:             key,
 		Type:            t,
@@ -106,7 +111,7 @@ func parseNilValueType(key string, description helm.ChartValueDescription, autoD
 		Default:         description.Default,
 		AutoDescription: autoDescription.Description,
 		Description:     description.Description,
-		Example:         description.Example,
+		Example:         example,
 		Section:         section,
 		Column:          column,
 		LineNumber:      lineNumber,
@@ -192,6 +197,11 @@ func createValueRow(
 		section = autoDescription.Section
 	}
 
+	example := description.Example
+	if example == "" {
+		example = autoDescription.Example
+	}
+
 	return valueRow{
 		Key:             key,
 		Type:            defaultType,
@@ -200,7 +210,7 @@ func createValueRow(
 		Default:         defaultValue,
 		AutoDescription: autoDescription.Description,
 		Description:     description.Description,
-		Example:         description.Example,
+		Example:         example,
 		Section:         section,
 		Column:          column,
 		LineNumber:      lineNumber,

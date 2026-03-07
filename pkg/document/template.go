@@ -315,7 +315,11 @@ func getValuesTableTemplates() string {
 	valuesSectionBuilder.WriteString("{{ end }}")
 
 	valuesSectionBuilder.WriteString(`{{ define "chart.valueExampleColumnRenderHtml" }}`)
-	valuesSectionBuilder.WriteString(`{{ template "chart.valueExampleColumnRenderMd" . }}`)
+	valuesSectionBuilder.WriteString("{{- if .Example }}")
+	valuesSectionBuilder.WriteString("<pre lang=\"text\">")
+	valuesSectionBuilder.WriteString("{{ .Example }}")
+	valuesSectionBuilder.WriteString("</pre>")
+	valuesSectionBuilder.WriteString("{{- end }}")
 	valuesSectionBuilder.WriteString("{{ end }}")
 
 	valuesSectionBuilder.WriteString(`
@@ -342,6 +346,7 @@ func getValuesTableTemplates() string {
 <h3>{{- .SectionName }}</h3>
 <table>
 	<thead>
+		<tr>
 		<th>Key</th>
 		<th>Type</th>
 		<th>Default</th>
@@ -349,6 +354,7 @@ func getValuesTableTemplates() string {
 		{{- if $.HasExampleColumn }}
 		<th>Example</th>
 		{{- end }}
+		</tr>
 	</thead>
 	<tbody>
 	{{- range .SectionItems }}
@@ -369,6 +375,7 @@ func getValuesTableTemplates() string {
 <h3>{{- .Sections.DefaultSection.SectionName }}</h3>
 <table>
 	<thead>
+		<tr>
 		<th>Key</th>
 		<th>Type</th>
 		<th>Default</th>
@@ -376,6 +383,7 @@ func getValuesTableTemplates() string {
 		{{- if .HasExampleColumn }}
 		<th>Example</th>
 		{{- end }}
+		</tr>
 	</thead>
 	<tbody>
 	{{- range .Sections.DefaultSection.SectionItems }}
@@ -395,6 +403,7 @@ func getValuesTableTemplates() string {
 {{ else }}
 <table>
 	<thead>
+		<tr>
 		<th>Key</th>
 		<th>Type</th>
 		<th>Default</th>
@@ -402,6 +411,7 @@ func getValuesTableTemplates() string {
 		{{- if .HasExampleColumn }}
 		<th>Example</th>
 		{{- end }}
+		</tr>
 	</thead>
 	<tbody>
 	{{- range .Values }}
