@@ -19,6 +19,7 @@ var valuesDescriptionRegex = regexp.MustCompile("^\\s*#\\s*(.*)\\s+--\\s*(.*)$")
 var rawDescriptionRegex = regexp.MustCompile("^\\s*#\\s+@raw")
 var commentContinuationRegex = regexp.MustCompile("^\\s*#(\\s?)(.*)$")
 var defaultValueRegex = regexp.MustCompile("^\\s*# @default -- (.*)$")
+var exampleValueRegex = regexp.MustCompile("^\\s*# @example -- (.*)$")
 var valueTypeRegex = regexp.MustCompile("^\\((.*?)\\)\\s*(.*)$")
 var valueNotationTypeRegex = regexp.MustCompile("^\\s*#\\s+@notationType\\s+--\\s+(.*)$")
 var sectionRegex = regexp.MustCompile("^\\s*# @section -- (.*)$")
@@ -58,6 +59,7 @@ type ChartRequirements struct {
 type ChartValueDescription struct {
 	Description  string
 	Default      string
+	Example      string
 	Section      string
 	ValueType    string
 	NotationType string
@@ -275,10 +277,11 @@ func parseChartValuesFileComments(chartDirectory string, values *yaml.Node, lint
 		// NOTE: This isn't readily enforced yet, because we can match the section comment and custom default value more than once and in another order, although this is just overwriting it.
 		// Values comment, possible continuation, default value once or none then section comment once or none should be the preferred order.
 		defaultCommentMatch := defaultValueRegex.FindStringSubmatch(currentLine)
+		exampleCommentMatch := exampleValueRegex.FindStringSubmatch(currentLine)
 		sectionCommentMatch := sectionRegex.FindStringSubmatch(currentLine)
 		commentContinuationMatch := commentContinuationRegex.FindStringSubmatch(currentLine)
 
-		if len(defaultCommentMatch) > 1 || len(sectionCommentMatch) > 1 || len(commentContinuationMatch) > 1 {
+		if len(defaultCommentMatch) > 1 || len(exampleCommentMatch) > 1 || len(sectionCommentMatch) > 1 || len(commentContinuationMatch) > 1 {
 			commentLines = append(commentLines, currentLine)
 			continue
 		}

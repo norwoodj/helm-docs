@@ -224,34 +224,62 @@ func getValuesTableTemplates() string {
 	valuesSectionBuilder.WriteString("{{ if .Description }}{{ .Description }}{{ else }}{{ .AutoDescription }}{{ end }}")
 	valuesSectionBuilder.WriteString("{{ end }}")
 
+	valuesSectionBuilder.WriteString(`{{ define "chart.valueExampleColumnRenderMd" }}`)
+	valuesSectionBuilder.WriteString("{{ .Example }}")
+	valuesSectionBuilder.WriteString("{{ end }}")
+
 	valuesSectionBuilder.WriteString(`{{ define "chart.valuesTable" }}`)
 	valuesSectionBuilder.WriteString("{{ if .Sections.Sections }}")
 	valuesSectionBuilder.WriteString("{{ range .Sections.Sections }}")
 	valuesSectionBuilder.WriteString("\n")
 	valuesSectionBuilder.WriteString("\n### {{ .SectionName }}\n")
 	valuesSectionBuilder.WriteString("\n")
+	valuesSectionBuilder.WriteString("{{ if $.HasExampleColumn }}")
+	valuesSectionBuilder.WriteString("| Key | Type | Default | Description | Example |\n")
+	valuesSectionBuilder.WriteString("|-----|------|---------|-------------|---------|\n")
+	valuesSectionBuilder.WriteString("  {{- range .SectionItems }}")
+	valuesSectionBuilder.WriteString("\n" + `| {{ template "chart.valueKeyColumnRenderMd" . }} | {{ template "chart.valueTypeColumnRenderMd" . }} | {{ template "chart.valueDefaultColumnRenderMd" . }} | {{ template "chart.valueDescriptionColumnRenderMd" . }} | {{ template "chart.valueExampleColumnRenderMd" . }} |`)
+	valuesSectionBuilder.WriteString("  {{- end }}")
+	valuesSectionBuilder.WriteString("{{ else }}")
 	valuesSectionBuilder.WriteString("| Key | Type | Default | Description |\n")
 	valuesSectionBuilder.WriteString("|-----|------|---------|-------------|\n")
 	valuesSectionBuilder.WriteString("  {{- range .SectionItems }}")
 	valuesSectionBuilder.WriteString("\n" + `| {{ template "chart.valueKeyColumnRenderMd" . }} | {{ template "chart.valueTypeColumnRenderMd" . }} | {{ template "chart.valueDefaultColumnRenderMd" . }} | {{ template "chart.valueDescriptionColumnRenderMd" . }} |`)
 	valuesSectionBuilder.WriteString("  {{- end }}")
+	valuesSectionBuilder.WriteString("{{ end }}")
 	valuesSectionBuilder.WriteString("{{- end }}")
 	valuesSectionBuilder.WriteString("{{ if .Sections.DefaultSection.SectionItems}}")
 	valuesSectionBuilder.WriteString("\n")
 	valuesSectionBuilder.WriteString("\n### {{ .Sections.DefaultSection.SectionName }}\n")
 	valuesSectionBuilder.WriteString("\n")
+	valuesSectionBuilder.WriteString("{{ if .HasExampleColumn }}")
+	valuesSectionBuilder.WriteString("| Key | Type | Default | Description | Example |\n")
+	valuesSectionBuilder.WriteString("|-----|------|---------|-------------|---------|\n")
+	valuesSectionBuilder.WriteString("  {{- range .Sections.DefaultSection.SectionItems }}")
+	valuesSectionBuilder.WriteString("\n" + `| {{ template "chart.valueKeyColumnRenderMd" . }} | {{ template "chart.valueTypeColumnRenderMd" . }} | {{ template "chart.valueDefaultColumnRenderMd" . }} | {{ template "chart.valueDescriptionColumnRenderMd" . }} | {{ template "chart.valueExampleColumnRenderMd" . }} |`)
+	valuesSectionBuilder.WriteString("  {{- end }}")
+	valuesSectionBuilder.WriteString("{{ else }}")
 	valuesSectionBuilder.WriteString("| Key | Type | Default | Description |\n")
 	valuesSectionBuilder.WriteString("|-----|------|---------|-------------|\n")
 	valuesSectionBuilder.WriteString("  {{- range .Sections.DefaultSection.SectionItems }}")
 	valuesSectionBuilder.WriteString("\n" + `| {{ template "chart.valueKeyColumnRenderMd" . }} | {{ template "chart.valueTypeColumnRenderMd" . }} | {{ template "chart.valueDefaultColumnRenderMd" . }} | {{ template "chart.valueDescriptionColumnRenderMd" . }} |`)
 	valuesSectionBuilder.WriteString("  {{- end }}")
 	valuesSectionBuilder.WriteString("{{ end }}")
+	valuesSectionBuilder.WriteString("{{ end }}")
+	valuesSectionBuilder.WriteString("{{ else }}")
+	valuesSectionBuilder.WriteString("{{ if .HasExampleColumn }}")
+	valuesSectionBuilder.WriteString("| Key | Type | Default | Description | Example |\n")
+	valuesSectionBuilder.WriteString("|-----|------|---------|-------------|---------|\n")
+	valuesSectionBuilder.WriteString("  {{- range .Values }}")
+	valuesSectionBuilder.WriteString("\n" + `| {{ template "chart.valueKeyColumnRenderMd" . }} | {{ template "chart.valueTypeColumnRenderMd" . }} | {{ template "chart.valueDefaultColumnRenderMd" . }} | {{ template "chart.valueDescriptionColumnRenderMd" . }} | {{ template "chart.valueExampleColumnRenderMd" . }} |`)
+	valuesSectionBuilder.WriteString("  {{- end }}")
 	valuesSectionBuilder.WriteString("{{ else }}")
 	valuesSectionBuilder.WriteString("| Key | Type | Default | Description |\n")
 	valuesSectionBuilder.WriteString("|-----|------|---------|-------------|\n")
 	valuesSectionBuilder.WriteString("  {{- range .Values }}")
 	valuesSectionBuilder.WriteString("\n" + `| {{ template "chart.valueKeyColumnRenderMd" . }} | {{ template "chart.valueTypeColumnRenderMd" . }} | {{ template "chart.valueDefaultColumnRenderMd" . }} | {{ template "chart.valueDescriptionColumnRenderMd" . }} |`)
 	valuesSectionBuilder.WriteString("  {{- end }}")
+	valuesSectionBuilder.WriteString("{{ end }}")
 	valuesSectionBuilder.WriteString("{{ end }}")
 	valuesSectionBuilder.WriteString("{{ end }}")
 
@@ -286,6 +314,10 @@ func getValuesTableTemplates() string {
 	valuesSectionBuilder.WriteString(`{{ template "chart.valueDescriptionColumnRenderMd" . }}`)
 	valuesSectionBuilder.WriteString("{{ end }}")
 
+	valuesSectionBuilder.WriteString(`{{ define "chart.valueExampleColumnRenderHtml" }}`)
+	valuesSectionBuilder.WriteString(`{{ template "chart.valueExampleColumnRenderMd" . }}`)
+	valuesSectionBuilder.WriteString("{{ end }}")
+
 	valuesSectionBuilder.WriteString(`
 {{ define "chart.valueDefaultColumnRender" }}
 {{- $defaultValue := (default .Default .AutoDefault)  -}}
@@ -314,6 +346,9 @@ func getValuesTableTemplates() string {
 		<th>Type</th>
 		<th>Default</th>
 		<th>Description</th>
+		{{- if $.HasExampleColumn }}
+		<th>Example</th>
+		{{- end }}
 	</thead>
 	<tbody>
 	{{- range .SectionItems }}
@@ -322,6 +357,9 @@ func getValuesTableTemplates() string {
 			<td>{{ template "chart.valueTypeColumnRenderHtml" . }}</td>
 			<td>{{ template "chart.valueDefaultColumnRenderHtml" . }}</td>
 			<td>{{ template "chart.valueDescriptionColumnRenderHtml" . }}</td>
+			{{- if $.HasExampleColumn }}
+			<td>{{ template "chart.valueExampleColumnRenderHtml" . }}</td>
+			{{- end }}
 		</tr>
 	{{- end }}
 	</tbody>
@@ -335,6 +373,9 @@ func getValuesTableTemplates() string {
 		<th>Type</th>
 		<th>Default</th>
 		<th>Description</th>
+		{{- if .HasExampleColumn }}
+		<th>Example</th>
+		{{- end }}
 	</thead>
 	<tbody>
 	{{- range .Sections.DefaultSection.SectionItems }}
@@ -343,6 +384,9 @@ func getValuesTableTemplates() string {
 		<td>{{ template "chart.valueTypeColumnRenderHtml" . }}</td>
 		<td>{{ template "chart.valueDefaultColumnRenderHtml" . }}</td>
 		<td>{{ template "chart.valueDescriptionColumnRenderHtml" . }}</td>
+		{{- if $.HasExampleColumn }}
+		<td>{{ template "chart.valueExampleColumnRenderHtml" . }}</td>
+		{{- end }}
 	</tr>
 	{{- end }}
 	</tbody>
@@ -355,6 +399,9 @@ func getValuesTableTemplates() string {
 		<th>Type</th>
 		<th>Default</th>
 		<th>Description</th>
+		{{- if .HasExampleColumn }}
+		<th>Example</th>
+		{{- end }}
 	</thead>
 	<tbody>
 	{{- range .Values }}
@@ -363,6 +410,9 @@ func getValuesTableTemplates() string {
 			<td>{{ template "chart.valueTypeColumnRenderHtml" . }}</td>
 			<td>{{ template "chart.valueDefaultColumnRenderHtml" . }}</td>
 			<td>{{ template "chart.valueDescriptionColumnRenderHtml" . }}</td>
+			{{- if $.HasExampleColumn }}
+			<td>{{ template "chart.valueExampleColumnRenderHtml" . }}</td>
+			{{- end }}
 		</tr>
 	{{- end }}
 	</tbody>

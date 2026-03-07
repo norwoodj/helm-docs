@@ -49,6 +49,7 @@ func ParseComment(commentLines []string) (string, ChartValueDescription) {
 	for _, line := range commentLines[docStartIdx+1:] {
 		rawFlagMatch := rawDescriptionRegex.FindStringSubmatch(line)
 		defaultCommentMatch := defaultValueRegex.FindStringSubmatch(line)
+		exampleCommentMatch := exampleValueRegex.FindStringSubmatch(line)
 		notationTypeCommentMatch := valueNotationTypeRegex.FindStringSubmatch(line)
 		sectionCommentMatch := sectionRegex.FindStringSubmatch(line)
 
@@ -59,6 +60,11 @@ func ParseComment(commentLines []string) (string, ChartValueDescription) {
 
 		if len(defaultCommentMatch) > 1 {
 			c.Default = defaultCommentMatch[1]
+			continue
+		}
+
+		if len(exampleCommentMatch) > 1 {
+			c.Example = exampleCommentMatch[1]
 			continue
 		}
 
