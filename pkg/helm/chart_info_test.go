@@ -1,12 +1,13 @@
 package helm_test
 
 import (
-	"github.com/norwoodj/helm-docs/pkg/helm"
-	"github.com/spf13/viper"
-	"github.com/stretchr/testify/suite"
 	"path/filepath"
 	"regexp"
 	"testing"
+
+	"github.com/norwoodj/helm-docs/pkg/helm"
+	"github.com/spf13/viper"
+	"github.com/stretchr/testify/suite"
 )
 
 type ChartParsingTestSuite struct {
@@ -27,6 +28,21 @@ func (suite *ChartParsingTestSuite) TestNotFullyDocumentedChartStrictModeOff() {
 		StrictMode: false,
 	})
 	suite.NoError(err)
+}
+
+func (suite *ChartParsingTestSuite) TestReadDependencyCondition() {
+	chartPath := filepath.Join("test-fixtures", "full-template")
+	info, err := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
+		StrictMode: false,
+	})
+	suite.NoError(err)
+	want := helm.ChartRequirementsItem{
+		Name:       "nginx-ingress",
+		Version:    "0.22.1",
+		Repository: "@stable",
+		Condition:  "controller.enabled",
+	}
+	suite.Contains(info.Dependencies, want)
 }
 
 func (suite *ChartParsingTestSuite) TestNotFullyDocumentedChartStrictModeOn() {
