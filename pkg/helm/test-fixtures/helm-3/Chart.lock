@@ -1,0 +1,12 @@
+dependencies:
+- name: nginx-ingress
+  repository: https://charts.helm.sh/stable
+  version: 0.22.1
+- name: airflow
+  repository: https://airflow.apache.org
+  version: 1.17.0
+- name: nginx-ingress
+  repository: https://charts.helm.sh/stable
+  version: 0.22.1
+digest: sha256:35e322357d777b94a6fa2efda5f1afbb0a9dd860d167053eb407ea9e2a6a33b4
+generated: "2026-03-08T17:51:16.702502-04:00"
