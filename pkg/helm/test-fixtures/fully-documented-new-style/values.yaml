@@ -8,3 +8,9 @@ controller:
     repository: nginx-ingress-controller
     # -- The tag of the image of the controller
     tag: "18.0831"
+    # -- tags for the image to use
+    tags:
+    # -- the first tag to use
+    - number one
+    # -- the second tag to use
+    - number two

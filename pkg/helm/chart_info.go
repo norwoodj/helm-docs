@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"slices"
 	"sort"
+	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -313,17 +314,20 @@ func parseChartValuesFileComments(chartDirectory string, values *yaml.Node, lint
 }
 
 func updateCurrentValueKeySegments(currentLine string, currentValueKeySegments []string) []string {
-	valueKeyRegex := regexp.MustCompile("^(\\s*)(-?)\\s*(.+):\\s*.*$")
+	valueKeyRegex := regexp.MustCompile("^(\\s*)(-?)\\s*([^:]+):?\\s*.*$")
 	valueKeyMatch := valueKeyRegex.FindStringSubmatch(currentLine)
 
 	if len(valueKeyMatch) == 4 {
 		// line is value key or group.
 		indentation := len(valueKeyMatch[1])
 		valueKey := valueKeyMatch[3]
+		if strings.HasPrefix(valueKey, "#") {
+			return currentValueKeySegments
+		}
 		isArrayElement := valueKeyMatch[2] != ""
 
 		// if current indentation is less than elements in list, we need to remove some elements.
-		if indentation/2 < len(currentValueKeySegments) {
+		if !isArrayElement && indentation/2 < len(currentValueKeySegments) {
 			currentValueKeySegments = slices.Delete(currentValueKeySegments, indentation/2, len(currentValueKeySegments))
 		}
 
@@ -333,11 +337,12 @@ func updateCurrentValueKeySegments(currentLine string, currentValueKeySegments [
 			currentValueKeySegments = slices.Delete(currentValueKeySegments, len(currentValueKeySegments)-1, len(currentValueKeySegments))
 			keyRegex := regexp.MustCompile("^(\\w+)\\[?(\\d+)?\\]?$")
 			keyMatches := keyRegex.FindStringSubmatch(previousValueKeySegment)
-			index := "0"
+			index := 0
 			if keyMatches[2] != "" {
-				index = keyMatches[2]
+				valueInt, _ := strconv.Atoi(keyMatches[2])
+				index = valueInt + 1
 			}
-			valueKey = keyMatches[1] + "[" + index + "]"
+			valueKey = keyMatches[1] + "[" + strconv.Itoa(index) + "]"
 		}
 
 		// We need to quote the key if value key contains special characters
