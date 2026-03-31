@@ -43,13 +43,13 @@ Resulting in a resulting README section like so:
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| config.databasesToCreate[0] | string | `"postgresql"` | default database for storage of database metadata |
-| config.databasesToCreate[1] | string | `"hashbash"` | database for the [hashbash](https://github.com/norwoodj/hashbash-backend-go) project |
-| config.usersToCreate[0] | object | `{"admin":true,"name":"root"}` | admin user |
-| config.usersToCreate[1] | object | `{"name":"hashbash","readwriteDatabases":["hashbash"]}` | user with access to the database with the same name |
-| statefulset.extraVolumes | list | `[{"emptyDir":{},"name":"data"}]` | Additional volumes to be mounted into the database container |
-| statefulset.image.repository | string | `"jnorwood/postgresql:11"` | Image to use for deploying, must support an entrypoint which creates users/databases from appropriate config files |
-| statefulset.image.tag | string | `"18.0831"` |  |
+| config.databasesToCreate[0] | string | <pre lang="json">&#34;postgres&#34;</pre> | default database for storage of database metadata |
+| config.databasesToCreate[1] | string | <pre lang="json">&#34;hashbash&#34;</pre> | database for the [hashbash](https://github.com/norwoodj/hashbash-backend-go) project |
+| config.usersToCreate[0] | object | <pre lang="json">{<br/>  &#34;admin&#34;: true,<br/>  &#34;name&#34;: &#34;root&#34;<br/>}</pre> | admin user |
+| config.usersToCreate[1] | object | <pre lang="json">{<br/>  &#34;name&#34;: &#34;hashbash&#34;,<br/>  &#34;readwriteDatabases&#34;: [<br/>    &#34;hashbash&#34;<br/>  ]<br/>}</pre> | user with access to the database with the same name |
+| statefulset.extraVolumes | list | <pre lang="json">[<br/>  {<br/>    &#34;emptyDir&#34;: {},<br/>    &#34;name&#34;: &#34;data&#34;<br/>  }<br/>]</pre> | Additional volumes to be mounted into the database container |
+| statefulset.image.repository | string | <pre lang="json">&#34;jnorwood/postgresql&#34;</pre> | Image to use for deploying, must support an entrypoint which creates users/databases from appropriate config files |
+| statefulset.image.tag | string | <pre lang="json">&#34;11&#34;</pre> |  |
 
 You'll notice that some complex fields (lists and objects) are documented while others aren't, and that some simple fields
 like `statefulset.image.tag` are documented even without a description comment. The rules for what is and isn't documented in

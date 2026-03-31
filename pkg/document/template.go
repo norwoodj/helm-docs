@@ -216,9 +216,22 @@ func getValuesTableTemplates() string {
 	valuesSectionBuilder.WriteString("{{ .Type }}")
 	valuesSectionBuilder.WriteString("{{ end }}")
 
-	valuesSectionBuilder.WriteString(`{{ define "chart.valueDefaultColumnRenderMd" }}`)
-	valuesSectionBuilder.WriteString("{{ if .Default }}{{ .Default }}{{ else }}{{ .AutoDefault }}{{ end }}")
-	valuesSectionBuilder.WriteString("{{ end }}")
+	valuesSectionBuilder.WriteString(`
+{{ define "chart.valueDefaultColumnRenderMd" }}
+{{- $defaultValue := (default .Default .AutoDefault)  -}}
+{{- $notationType := .NotationType }}
+{{- if (and (hasPrefix "` + "`" + `" $defaultValue) (hasSuffix "` + "`" + `" $defaultValue) ) -}}
+{{- $defaultValue = htmlEscape (toPrettyJson (fromJson (trimAll "` + "`" + `" $defaultValue ) ) ) -}}
+{{- $notationType = "json" }}
+{{- end -}}
+<pre{{ if $notationType }} lang="{{ $notationType }}"{{ end }}>
+{{- if (eq $notationType "tpl" ) }}
+{{- .Key }}: |<br/>  {{ $defaultValue | replace "\n" "<br/>  " }}
+{{- else }}
+{{- $defaultValue | replace "\n" "<br/>" }}
+{{- end -}}
+</pre>
+{{- end }}`)
 
 	valuesSectionBuilder.WriteString(`{{ define "chart.valueDescriptionColumnRenderMd" }}`)
 	valuesSectionBuilder.WriteString("{{ if .Description }}{{ .Description }}{{ else }}{{ .AutoDescription }}{{ end }}")
