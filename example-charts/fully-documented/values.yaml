@@ -2,6 +2,8 @@
 controller:
   # controller.name -- The name of the controller
   name: controller
+  # controller.enabled -- Toggles the controller on and off
+  enabled: false
   # controller.image -- The image of the controller
   image:
     # controller.image.repository -- The repository of the controller

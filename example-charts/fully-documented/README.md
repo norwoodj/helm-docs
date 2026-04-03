@@ -18,9 +18,9 @@ A simple wrapper around the stable/nginx-ingress chart that adds a few of our co
 
 ## Requirements
 
-| Repository | Name | Version |
-|------------|------|---------|
-| @stable | nginx-ingress | 0.22.1 |
+| Repository | Name | Version | Condition |
+|------------|------|---------|-----------|
+| @stable | nginx-ingress | 0.22.1 | `controller.enabled` |
 
 ## Values
 
