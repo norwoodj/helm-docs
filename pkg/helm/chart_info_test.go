@@ -1,12 +1,13 @@
 package helm_test
 
 import (
-	"github.com/norwoodj/helm-docs/pkg/helm"
-	"github.com/spf13/viper"
-	"github.com/stretchr/testify/suite"
 	"path/filepath"
 	"regexp"
 	"testing"
+
+	"github.com/norwoodj/helm-docs/pkg/helm"
+	"github.com/spf13/viper"
+	"github.com/stretchr/testify/suite"
 )
 
 type ChartParsingTestSuite struct {
@@ -92,5 +93,37 @@ func (suite *ChartParsingTestSuite) TestFullyDocumentedChartStrictModeOn() {
 	_, err := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
 		StrictMode: true,
 	})
+	suite.NoError(err)
+}
+
+func (suite *ChartParsingTestSuite) TestLockFileForChartWithMultipleDeps() {
+	chartPath := filepath.Join("test-fixtures", "helm-3")
+	want := []helm.ChartRequirementsItem{
+		{
+			Name:       "airflow",
+			Version:    "1.17.0",
+			Repository: "https://airflow.apache.org",
+			Alias:      "nginx-but-actually-airflow",
+			Constraint: "~1.17.0",
+		},
+		{
+			Name:       "nginx-ingress",
+			Version:    "0.22.1",
+			Repository: "https://charts.helm.sh/stable",
+			Alias:      "",
+			Constraint: "",
+		},
+		{
+			Name:       "nginx-ingress",
+			Version:    "0.22.1",
+			Repository: "https://charts.helm.sh/stable",
+			Alias:      "nginx-2",
+			Constraint: "~0.22.1",
+		},
+	}
+	got, err := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
+		StrictMode: false,
+	})
+	suite.Equal(want, got.ChartRequirements.Dependencies)
 	suite.NoError(err)
 }

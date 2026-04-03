@@ -2,6 +2,7 @@ package helm
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/Masterminds/semver/v3"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
@@ -49,6 +51,7 @@ type ChartRequirementsItem struct {
 	Version    string
 	Repository string
 	Alias      string
+	Constraint string
 }
 
 type ChartRequirements struct {
@@ -147,11 +150,88 @@ func parseChartRequirementsFile(chartDirectory string, apiVersion string) (Chart
 		return chartRequirements, err
 	}
 
-	sort.Slice(chartRequirements.Dependencies[:], func(i, j int) bool {
-		return requirementKey(chartRequirements.Dependencies[i]) < requirementKey(chartRequirements.Dependencies[j])
-	})
-
 	return chartRequirements, nil
+}
+
+func lockFileMatchesChartInfo(chartRequirements, lockedRequirements ChartRequirements) bool {
+	if len(chartRequirements.Dependencies) != len(lockedRequirements.Dependencies) {
+		return false
+	}
+	for i, req := range chartRequirements.Dependencies {
+		lockedReq := lockedRequirements.Dependencies[i]
+
+		if req.Name != lockedReq.Name {
+			return false
+		}
+
+		// check version for given index in lock file matches chart info constraint
+		constraint, err := semver.NewConstraint(req.Version)
+		if err != nil {
+			return false
+		}
+		v, err := semver.NewVersion(lockedReq.Version)
+		if err != nil {
+			return false
+		}
+		if !constraint.Check(v) {
+			return false
+		}
+	}
+	return true
+}
+
+func parseChartLockFile(chartDirectory string, apiVersion string, reqs ChartRequirements) (ChartRequirements, error) {
+	requirementsPath := ""
+	switch apiVersion {
+	case "v1":
+		requirementsPath = filepath.Join(chartDirectory, "requirements.lock")
+	case "v2":
+		requirementsPath = filepath.Join(chartDirectory, "Chart.lock")
+	}
+
+	if _, err := os.Stat(requirementsPath); os.IsNotExist(err) {
+		// chart does not have a generated lock file, so no info will be found
+		return reqs, nil
+	} else if err != nil {
+		return ChartRequirements{}, err
+	}
+
+	lockedRequirements := ChartRequirements{}
+
+	yamlFileContents, err := getYamlFileContents(requirementsPath)
+	if err != nil {
+		return lockedRequirements, err
+	}
+
+	err = yaml.Unmarshal(yamlFileContents, &lockedRequirements)
+	if err != nil {
+		return lockedRequirements, err
+	}
+	lockMatchesChartInfo := lockFileMatchesChartInfo(reqs, lockedRequirements)
+
+	if !lockMatchesChartInfo {
+		return reqs, errors.New("Chart's lockfile does not match the dependencies list in chart info")
+	}
+
+	// copy reqs dependencies to a new slice to avoid manipulating underlying array
+	updated := reqs
+	updated.Dependencies = make([]ChartRequirementsItem, len(reqs.Dependencies))
+	copy(updated.Dependencies, reqs.Dependencies)
+
+	for i, lockedReq := range lockedRequirements.Dependencies {
+		if updated.Dependencies[i].Version != lockedReq.Version {
+			reqWithConstraint := updated.Dependencies[i]
+			reqWithConstraint.Constraint = updated.Dependencies[i].Version
+			reqWithConstraint.Version = lockedReq.Version
+
+			updated.Dependencies[i] = reqWithConstraint
+		}
+		if updated.Dependencies[i].Repository != lockedReq.Repository {
+			updated.Dependencies[i].Repository = lockedReq.Repository
+		}
+	}
+
+	return updated, nil
 }
 
 func removeIgnored(rootNode *yaml.Node, parentKind yaml.Kind) {
@@ -316,6 +396,15 @@ func ParseChartInformation(chartDirectory string, documentationParsingConfig Cha
 	if err != nil {
 		return chartDocInfo, err
 	}
+
+	chartDocInfo.ChartRequirements, err = parseChartLockFile(chartDirectory, chartDocInfo.ApiVersion, chartDocInfo.ChartRequirements)
+	if err != nil {
+		return chartDocInfo, err
+	}
+
+	sort.Slice(chartDocInfo.Dependencies[:], func(i, j int) bool {
+		return requirementKey(chartDocInfo.Dependencies[i]) < requirementKey(chartDocInfo.Dependencies[j])
+	})
 
 	chartValues, err := parseChartValuesFile(chartDirectory)
 	if err != nil {
