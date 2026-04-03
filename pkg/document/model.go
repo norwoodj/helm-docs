@@ -20,6 +20,7 @@ type valueRow struct {
 	Default         string
 	AutoDescription string
 	Description     string
+	Example         string
 	Section         string
 	Column          int
 	LineNumber      int
@@ -34,6 +35,7 @@ type chartTemplateData struct {
 	Sections          sections
 	Files             files
 	SkipVersionFooter bool
+	HasExampleColumn  bool
 }
 
 type sections struct {
@@ -220,6 +222,14 @@ func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion stri
 		return chartTemplateData{}, err
 	}
 
+	hasExampleColumn := false
+	for _, row := range valuesTableRows {
+		if row.Example != "" {
+			hasExampleColumn = true
+			break
+		}
+	}
+
 	return chartTemplateData{
 		ChartDocumentationInfo: info,
 		HelmDocsVersion:        helmDocsVersion,
@@ -227,6 +237,7 @@ func getChartTemplateData(info helm.ChartDocumentationInfo, helmDocsVersion stri
 		Sections:               valueRowsSectionSorted,
 		Files:                  files,
 		SkipVersionFooter:      skipVersionFooter,
+		HasExampleColumn:       hasExampleColumn,
 	}, nil
 }
 

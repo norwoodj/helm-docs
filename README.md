@@ -413,6 +413,21 @@ service:
 The order is important. The first comment line(s) must be the one specifying the key or using the auto-detection feature and
 the description for the field. The `@default` comment must follow.
 
+You can optionally add an **Example** column to the values table by using the `@example` tag. When at least one value has
+`# @example -- <text>`, an extra "Example" column is rendered; rows without an example show an empty cell. If no value
+uses `@example`, the column is omitted entirely. This is useful for documenting expected shapes (e.g. for objects or
+lists without a default) or accepted values (e.g. enum-like strings):
+
+```yaml
+foo:
+  # -- This is bar
+  # @example -- `{"some": "thing", "very": "complex"}`
+  bar: {}
+  # -- This is baz
+  # @example -- Accepted values: `john`, `doe`
+  baz: ""
+```
+
 See [here](./example-charts/custom-template/values.yaml) for an example.
 ### Ignoring values
 In cases you would like to ignore certain values, you can mark it with @ignored tag:
@@ -492,6 +507,7 @@ Some fields here are directly referenced from `values.yaml`:
 - `Type`: the type of the value of the key in `values.yaml`. Can be automatically inferred from YAML structure, or annotated using `# -- (mytype)` where `mytype` can be any string that you refer as the type of the value.
 - `NotationType`: the notation of the type used to render the default value. If `Type` refers to the data type of the value, then `NotationType` refers to **how** this value should be written/rendered by helm-docs. Generally helm-docs only remembers the notation type, but it was the writer's responsibility to make a template tag to render a specific notation type. Annotate the key with `# @notationType -- (mynotation)` where `mynotation` is an identifier to tell the renderer how to write the value.
 - `Default`: this is the default value of the key, found from `values.yaml`. It is either inferred from the YAML structure or defined using `# @default -- my default value` annotation, in case you need to show other example values.
+- `Example`: optional example or accepted values text, defined using `# @example -- <text>`. The "Example" column is only rendered when at least one value has this annotation.
 - `Description`: this is the description of the key/value, taken from the comments found in the `values.yaml` for the referred key.
 - `LineNumber`: this is the line number associated with where the key is declared. You can use this to construct an anchor to the actual `values.yaml` file.
 

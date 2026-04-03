@@ -1,6 +1,7 @@
 package document
 
 import (
+	"os"
 	"strings"
 	"testing"
 
@@ -181,6 +182,65 @@ oscar: 3.14159
 	assert.Equal(t, "", valuesRows[3].AutoDefault)
 	assert.Equal(t, "oscar", valuesRows[3].Description)
 	assert.Equal(t, "", valuesRows[3].AutoDescription)
+}
+
+func TestSimpleValuesWithDescriptionsAndDefaultsAndExamples(t *testing.T) {
+	helmValues := parseYamlValues(`
+echo: 0
+foxtrot: true
+hello: "world"
+oscar: 3.14159
+	`)
+
+	descriptions := map[string]helm.ChartValueDescription{
+		"echo":    {Description: "echo", Default: "some", Example: "e.g. `0`"},
+		"foxtrot": {Description: "foxtrot", Default: "explicit"},
+		"hello":   {Description: "hello", Default: "default", Example: "Accepted: `world`, `mars`"},
+		"oscar":   {Description: "oscar", Default: "values"},
+	}
+
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 4)
+	assert.Equal(t, "e.g. `0`", valuesRows[0].Example)
+	assert.Equal(t, "", valuesRows[1].Example)
+	assert.Equal(t, "Accepted: `world`, `mars`", valuesRows[2].Example)
+	assert.Equal(t, "", valuesRows[3].Example)
+}
+
+func TestGetChartTemplateData_HasExampleColumn(t *testing.T) {
+	viper.Set("values-file", "values.yaml")
+	dir, err := os.MkdirTemp("", "helm-docs-test")
+	assert.Nil(t, err)
+	defer os.RemoveAll(dir)
+
+	helmValues := parseYamlValues(`bar: 1`)
+	document := &yaml.Node{Kind: yaml.DocumentNode, Content: []*yaml.Node{helmValues}}
+
+	// When at least one description has Example, HasExampleColumn should be true.
+	infoWithExample := helm.ChartDocumentationInfo{
+		ChartDirectory: dir,
+		ChartValues:    document,
+		ChartValuesDescriptions: map[string]helm.ChartValueDescription{
+			"bar": {Description: "bar", Example: "e.g. 1"},
+		},
+	}
+	dataWith, err := getChartTemplateData(infoWithExample, "", nil, false)
+	assert.Nil(t, err)
+	assert.True(t, dataWith.HasExampleColumn)
+
+	// When no description has Example, HasExampleColumn should be false.
+	infoWithoutExample := helm.ChartDocumentationInfo{
+		ChartDirectory: dir,
+		ChartValues:    document,
+		ChartValuesDescriptions: map[string]helm.ChartValueDescription{
+			"bar": {Description: "bar"},
+		},
+	}
+	dataWithout, err := getChartTemplateData(infoWithoutExample, "", nil, false)
+	assert.Nil(t, err)
+	assert.False(t, dataWithout.HasExampleColumn)
 }
 
 func TestRecursiveValues(t *testing.T) {
