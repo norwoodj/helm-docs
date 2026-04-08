@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime/debug"
 	"strings"
 
 	"github.com/norwoodj/helm-docs/pkg/document"
@@ -12,6 +13,17 @@ import (
 )
 
 var version string
+
+func init() {
+	// If version was not set via ldflags (e.g. goreleaser), try to get it from
+	// the Go module build info. This covers the case where the binary is built
+	// with "go install" (e.g. pre-commit's language: golang hook type).
+	if version == "" {
+		if info, ok := debug.ReadBuildInfo(); ok && info.Main.Version != "" {
+			version = info.Main.Version
+		}
+	}
+}
 
 func possibleLogLevels() []string {
 	levels := make([]string, 0)
