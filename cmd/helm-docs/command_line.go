@@ -18,10 +18,13 @@ func init() {
 	// If version was not set via ldflags (e.g. goreleaser), try to get it from
 	// the Go module build info. This covers the case where the binary is built
 	// with "go install" (e.g. pre-commit's language: golang hook type).
-	if version == "" {
-		if info, ok := debug.ReadBuildInfo(); ok && info.Main.Version != "" {
-			version = info.Main.Version
-		}
+	if version != "" {
+		return
+	}
+	if info, ok := debug.ReadBuildInfo(); ok && info.Main.Version != "" {
+		// The template prepends "v" to the version, and Go module
+		// versions already include the "v" prefix, so strip it.
+		version = strings.TrimPrefix(info.Main.Version, "v")
 	}
 }
 
