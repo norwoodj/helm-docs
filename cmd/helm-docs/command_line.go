@@ -21,7 +21,7 @@ func init() {
 	if version != "" {
 		return
 	}
-	if info, ok := debug.ReadBuildInfo(); ok && info.Main.Version != "" {
+	if info, ok := debug.ReadBuildInfo(); ok && info.Main.Version != "" && info.Main.Version != "(devel)" {
 		// The template prepends "v" to the version, and Go module
 		// versions already include the "v" prefix, so strip it.
 		version = strings.TrimPrefix(info.Main.Version, "v")
