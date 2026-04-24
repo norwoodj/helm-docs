@@ -154,6 +154,21 @@ repos:
 
 ```
 
+#### `helm-docs-container-github` Uses the container image of `helm-docs` from GHCR
+
+```yaml
+---
+repos:
+  - repo: https://github.com/norwoodj/helm-docs
+    rev:  ""
+    hooks:
+      - id: helm-docs-container-github
+        args:
+          # Make the tool search for charts only under the `charts` directory
+          - --chart-search-root=charts
+
+```
+
 #### To pin the `helm-docs` container to a specific tag, follow the example below:
 
 
@@ -188,11 +203,18 @@ for every chart that it finds.
 ### Using docker
 
 You can mount a directory with charts under `/helm-docs` within the container.
+The `helm-docs` container image is published to Docker Hub and GHCR.
 
 Then run:
 
 ```bash
 docker run --rm --volume "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:latest
+```
+
+or:
+
+```bash
+docker run --rm --volume "$(pwd):/helm-docs" -u $(id -u) ghcr.io/naviteq/helm-docs:latest
 ```
 
 ## Ignoring Chart Directories
