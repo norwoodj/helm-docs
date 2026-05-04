@@ -4,6 +4,7 @@ go 1.25.0
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
+	github.com/alecthomas/chroma/v2 v2.24.1
 	github.com/gobwas/glob v0.2.3
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/cobra v1.10.2
@@ -18,6 +19,7 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.4.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
+	github.com/dlclark/regexp2 v1.12.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
