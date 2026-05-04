@@ -471,7 +471,8 @@ func getDocumentationTemplates(chartDirectory string, chartSearchRoot string, te
 
 func newChartDocumentationTemplate(chartDocumentationInfo helm.ChartDocumentationInfo, chartSearchRoot string, templateFiles []string, badgeStyle string) (*template.Template, error) {
 	documentationTemplate := template.New(chartDocumentationInfo.ChartDirectory)
-	documentationTemplate.Funcs(util.FuncMap())
+	includedNames := make(map[string]int)
+	documentationTemplate.Funcs(util.FuncMap(documentationTemplate, includedNames))
 	goTemplateList, err := getDocumentationTemplates(chartDocumentationInfo.ChartDirectory, chartSearchRoot, templateFiles, badgeStyle)
 
 	if err != nil {
