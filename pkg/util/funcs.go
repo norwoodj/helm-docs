@@ -12,7 +12,14 @@ func FuncMap() template.FuncMap {
 	f := sprig.TxtFuncMap()
 	f["toYaml"] = toYAML
 	f["fromYaml"] = fromYAML
+	f["escapeMarkdownTableCell"] = escapeMarkdownTableCell
 	return f
+}
+
+// escapeMarkdownTableCell escapes characters that would otherwise break a
+// Markdown table row, namely the pipe character used as a column separator.
+func escapeMarkdownTableCell(s string) string {
+	return strings.ReplaceAll(s, "|", "\\|")
 }
 
 // toYAML takes an interface, marshals it to yaml, and returns a string. It will
