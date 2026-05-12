@@ -217,11 +217,11 @@ func getValuesTableTemplates() string {
 	valuesSectionBuilder.WriteString("{{ end }}")
 
 	valuesSectionBuilder.WriteString(`{{ define "chart.valueDefaultColumnRenderMd" }}`)
-	valuesSectionBuilder.WriteString("{{ if .Default }}{{ .Default }}{{ else }}{{ .AutoDefault }}{{ end }}")
+	valuesSectionBuilder.WriteString("{{ if .Default }}{{ .Default | escapeMarkdownTableCell }}{{ else }}{{ .AutoDefault | escapeMarkdownTableCell }}{{ end }}")
 	valuesSectionBuilder.WriteString("{{ end }}")
 
 	valuesSectionBuilder.WriteString(`{{ define "chart.valueDescriptionColumnRenderMd" }}`)
-	valuesSectionBuilder.WriteString("{{ if .Description }}{{ .Description }}{{ else }}{{ .AutoDescription }}{{ end }}")
+	valuesSectionBuilder.WriteString("{{ if .Description }}{{ .Description | escapeMarkdownTableCell }}{{ else }}{{ .AutoDescription | escapeMarkdownTableCell }}{{ end }}")
 	valuesSectionBuilder.WriteString("{{ end }}")
 
 	valuesSectionBuilder.WriteString(`{{ define "chart.valuesTable" }}`)
