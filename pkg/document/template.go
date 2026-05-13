@@ -224,12 +224,20 @@ func getValuesTableTemplates() string {
 	valuesSectionBuilder.WriteString("{{ if .Description }}{{ .Description }}{{ else }}{{ .AutoDescription }}{{ end }}")
 	valuesSectionBuilder.WriteString("{{ end }}")
 
+	valuesSectionBuilder.WriteString(`{{ define "chart.sectionDescriptionTemplate" }}`)
+	valuesSectionBuilder.WriteString("{{- range .SectionDescriptions }}")
+	valuesSectionBuilder.WriteString("\n{{ . }}\n")
+	valuesSectionBuilder.WriteString("{{- end }}")
+	valuesSectionBuilder.WriteString("{{ end }}")
+
 	valuesSectionBuilder.WriteString(`{{ define "chart.valuesTable" }}`)
 	valuesSectionBuilder.WriteString("{{ if .Sections.Sections }}")
 	valuesSectionBuilder.WriteString("{{ range .Sections.Sections }}")
 	valuesSectionBuilder.WriteString("\n")
 	valuesSectionBuilder.WriteString("\n### {{ .SectionName }}\n")
 	valuesSectionBuilder.WriteString("\n")
+	valuesSectionBuilder.WriteString(`{{ template "chart.sectionDescriptionTemplate" . }}`)
+	valuesSectionBuilder.WriteString("\n\n")
 	valuesSectionBuilder.WriteString("| Key | Type | Default | Description |\n")
 	valuesSectionBuilder.WriteString("|-----|------|---------|-------------|\n")
 	valuesSectionBuilder.WriteString("  {{- range .SectionItems }}")
@@ -308,6 +316,7 @@ func getValuesTableTemplates() string {
 {{ if .Sections.Sections }}
 {{- range .Sections.Sections }}
 <h3>{{- .SectionName }}</h3>
+<p>{{ template "chart.sectionDescriptionTemplate" . }}</p>
 <table>
 	<thead>
 		<th>Key</th>

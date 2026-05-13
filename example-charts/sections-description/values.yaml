@@ -1,0 +1,59 @@
+controller:
+  name: controller
+  image:
+    repository: nginx-ingress-controller
+    tag: "18.0831"
+
+  # controller.persistentVolumeClaims -- List of persistent volume claims to create.
+  # @default -- the chart will construct this list internally unless specified
+  # @section -- Some Section
+  # @sectionDescription
+  # SomeSection has a description
+  # It will have multiple lines, and it will be rendered in the documentation with newlines preserved.
+  # 
+  # It can have multiple paragraphs - and can be closed with a closing tag, so you can continue with regular description
+  # @sectionDescription
+  # The Regular description continues here
+  persistentVolumeClaims: []
+
+  extraVolumes:
+    - name: config-volume
+      configMap:
+        # controller.extraVolumes[0].configMap.name -- Uses the name of the configmap created by this chart
+        # @section -- Some Section
+        name: nginx-ingress-config
+
+  # -- You can also specify value comments like this
+  # @section -- Special Attention
+  # @sectionDescription
+  # This section has a list:
+  # * Item 1
+  # * Item 2
+  # * Item 3
+  ingressClass: nginx
+
+
+  # controller.podLabels -- The labels to be applied to instances of the controller pod
+  # @section -- Some Section
+  # @sectionDescription
+  # This is another paragraph for the same section - this one is closed by a different tag
+  # It's better to use just one description tag per section, as the order depends on the sort, but you can have descriptions separated and related to different values if you want
+  # @default -- empty map
+  podLabels: {}
+
+  # controller.publishService -- This is a publishService
+  # @section -- Special Attention
+  publishService:
+    enabled: false
+
+  # -- (int) Number of nginx-ingress pods to load balance between
+  # @raw
+  # @section -- Special Attention
+  replicas:
+
+  service:
+    annotations:
+      # controller.service.annotations."external-dns.alpha.kubernetes.io/hostname" -- Hostname to be assigned to the ELB for the service
+      external-dns.alpha.kubernetes.io/hostname: stupidchess.jmn23.com
+
+    type: LoadBalancer

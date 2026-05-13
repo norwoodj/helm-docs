@@ -13,18 +13,19 @@ import (
 )
 
 type valueRow struct {
-	Key             string
-	Type            string
-	NotationType    string
-	AutoDefault     string
-	Default         string
-	AutoDescription string
-	Description     string
-	Section         string
-	Column          int
-	LineNumber      int
-	Dependency      string
-	IsGlobal        bool
+	Key                string
+	Type               string
+	NotationType       string
+	AutoDefault        string
+	Default            string
+	AutoDescription    string
+	Description        string
+	Section            string
+	SectionDescription string
+	Column             int
+	LineNumber         int
+	Dependency         string
+	IsGlobal           bool
 }
 
 type chartTemplateData struct {
@@ -42,8 +43,9 @@ type sections struct {
 }
 
 type section struct {
-	SectionName  string
-	SectionItems []valueRow
+	SectionName         string
+	SectionDescriptions []string
+	SectionItems        []valueRow
 }
 
 func sortValueRowsByOrder(valueRows []valueRow, sortOrder string) {
@@ -143,6 +145,8 @@ func getSectionedValueRows(valueRows []valueRow) sections {
 		SectionItems: []valueRow{},
 	}
 
+	sectionDescriptionMap := make(map[string][]string)
+
 	for _, row := range valueRows {
 		if row.Section == "" {
 			valueRowsSectionSorted.DefaultSection.SectionItems = append(valueRowsSectionSorted.DefaultSection.SectionItems, row)
@@ -164,6 +168,19 @@ func getSectionedValueRows(valueRows []valueRow) sections {
 				SectionItems: []valueRow{row},
 			})
 		}
+
+		if row.SectionDescription != "" {
+			sectionDescriptionMap[row.Section] = append(sectionDescriptionMap[row.Section], row.SectionDescription)
+		}
+	}
+
+	for i, section := range valueRowsSectionSorted.Sections {
+		sectionDescriptions, exists := sectionDescriptionMap[section.SectionName]
+		if !exists {
+			continue
+		}
+
+		valueRowsSectionSorted.Sections[i].SectionDescriptions = sectionDescriptions
 	}
 
 	return valueRowsSectionSorted
