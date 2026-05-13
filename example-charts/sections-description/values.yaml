@@ -7,37 +7,36 @@ controller:
   # controller.persistentVolumeClaims -- List of persistent volume claims to create.
   # @default -- the chart will construct this list internally unless specified
   # @section -- Some Section
-  # @sectionDescription
-  # SomeSection has a description
-  # It will have multiple lines, and it will be rendered in the documentation with newlines preserved.
-  # 
-  # It can have multiple paragraphs - and can be closed with a closing tag, so you can continue with regular description
-  # @sectionDescription
+  # @sectionDescription -- SomeSection has a description
+  # @sectionDescription -- It will have multiple lines, and it will be rendered in the documentation with newlines preserved.
+  # @sectionDescription -- 
+  # @sectionDescription -- It can have multiple paragraphs
+  # @sectionDescription -- > It supports any markdown syntax
   # The Regular description continues here
   persistentVolumeClaims: []
 
+  # --
+  # @section -- Some Section
   extraVolumes:
     - name: config-volume
       configMap:
-        # controller.extraVolumes[0].configMap.name -- Uses the name of the configmap created by this chart
-        # @section -- Some Section
+        # controller.extraVolumes[0].configMap.name -- section gets propagated to this value, 
+        # to propagate, the ancestor needs to have `# --` comment even if it's not supposed to be added to the documentation 
         name: nginx-ingress-config
 
   # -- You can also specify value comments like this
   # @section -- Special Attention
-  # @sectionDescription
-  # This section has a list:
-  # * Item 1
-  # * Item 2
-  # * Item 3
+  # @sectionDescription -- This section has a list:
+  # @sectionDescription -- * Item 1
+  # @sectionDescription -- * Item 2
+  # @sectionDescription -- * Item 3
   ingressClass: nginx
 
 
   # controller.podLabels -- The labels to be applied to instances of the controller pod
   # @section -- Some Section
-  # @sectionDescription
-  # This is another paragraph for the same section - this one is closed by a different tag
-  # It's better to use just one description tag per section, as the order depends on the sort, but you can have descriptions separated and related to different values if you want
+  # @sectionDescription -- This is another paragraph for the same section
+  # @sectionDescription -- It's better to use just one description tag per section, as the order depends on the sort, but you can have descriptions separated and related to different values if you want
   # @default -- empty map
   podLabels: {}
 
@@ -51,9 +50,13 @@ controller:
   # @section -- Special Attention
   replicas:
 
+  # --
+  # @section -- Some Section
   service:
     annotations:
       # controller.service.annotations."external-dns.alpha.kubernetes.io/hostname" -- Hostname to be assigned to the ELB for the service
       external-dns.alpha.kubernetes.io/hostname: stupidchess.jmn23.com
-
+    
+    # -- Nested section can be different if specified
+    # @section -- Different nested Section
     type: LoadBalancer

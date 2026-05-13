@@ -2,6 +2,7 @@ package document
 
 import (
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 
@@ -13,19 +14,19 @@ import (
 )
 
 type valueRow struct {
-	Key                string
-	Type               string
-	NotationType       string
-	AutoDefault        string
-	Default            string
-	AutoDescription    string
-	Description        string
-	Section            string
-	SectionDescription string
-	Column             int
-	LineNumber         int
-	Dependency         string
-	IsGlobal           bool
+	Key                 string
+	Type                string
+	NotationType        string
+	AutoDefault         string
+	Default             string
+	AutoDescription     string
+	Description         string
+	Section             string
+	SectionDescriptions []*string
+	Column              int
+	LineNumber          int
+	Dependency          string
+	IsGlobal            bool
 }
 
 type chartTemplateData struct {
@@ -44,7 +45,7 @@ type sections struct {
 
 type section struct {
 	SectionName         string
-	SectionDescriptions []string
+	SectionDescriptions []*string
 	SectionItems        []valueRow
 }
 
@@ -145,7 +146,7 @@ func getSectionedValueRows(valueRows []valueRow) sections {
 		SectionItems: []valueRow{},
 	}
 
-	sectionDescriptionMap := make(map[string][]string)
+	sectionDescriptionMap := make(map[string][]*string)
 
 	for _, row := range valueRows {
 		if row.Section == "" {
@@ -169,8 +170,15 @@ func getSectionedValueRows(valueRows []valueRow) sections {
 			})
 		}
 
-		if row.SectionDescription != "" {
-			sectionDescriptionMap[row.Section] = append(sectionDescriptionMap[row.Section], row.SectionDescription)
+		if len(row.SectionDescriptions) > 0 {
+			if sectionDescriptionMap[row.Section] == nil {
+				sectionDescriptionMap[row.Section] = []*string{}
+			}
+			for _, desc := range row.SectionDescriptions {
+				if !slices.Contains(sectionDescriptionMap[row.Section], desc) {
+					sectionDescriptionMap[row.Section] = append(sectionDescriptionMap[row.Section], desc)
+				}
+			}
 		}
 	}
 

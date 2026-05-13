@@ -22,7 +22,7 @@ var defaultValueRegex = regexp.MustCompile("^\\s*# @default -- (.*)$")
 var valueTypeRegex = regexp.MustCompile("^\\((.*?)\\)\\s*(.*)$")
 var valueNotationTypeRegex = regexp.MustCompile("^\\s*#\\s+@notationType\\s+--\\s+(.*)$")
 var sectionRegex = regexp.MustCompile("^\\s*# @section -- (.*)$")
-var sectionDescriptionRegex = regexp.MustCompile("^\\s*# @sectionDescription")
+var sectionDescriptionRegex = regexp.MustCompile("^\\s*# @sectionDescription -- (.*)$")
 
 type ChartMetaMaintainer struct {
 	Email string
@@ -57,12 +57,12 @@ type ChartRequirements struct {
 }
 
 type ChartValueDescription struct {
-	Description        string
-	Default            string
-	Section            string
-	SectionDescription string
-	ValueType          string
-	NotationType       string
+	Description         string
+	Default             string
+	Section             string
+	SectionDescriptions []*string
+	ValueType           string
+	NotationType        string
 }
 
 type ChartDocumentationInfo struct {
