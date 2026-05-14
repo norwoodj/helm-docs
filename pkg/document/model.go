@@ -2,6 +2,7 @@ package document
 
 import (
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 
@@ -13,18 +14,19 @@ import (
 )
 
 type valueRow struct {
-	Key             string
-	Type            string
-	NotationType    string
-	AutoDefault     string
-	Default         string
-	AutoDescription string
-	Description     string
-	Section         string
-	Column          int
-	LineNumber      int
-	Dependency      string
-	IsGlobal        bool
+	Key                 string
+	Type                string
+	NotationType        string
+	AutoDefault         string
+	Default             string
+	AutoDescription     string
+	Description         string
+	Section             string
+	SectionDescriptions []*string
+	Column              int
+	LineNumber          int
+	Dependency          string
+	IsGlobal            bool
 }
 
 type chartTemplateData struct {
@@ -42,8 +44,9 @@ type sections struct {
 }
 
 type section struct {
-	SectionName  string
-	SectionItems []valueRow
+	SectionName         string
+	SectionDescriptions []*string
+	SectionItems        []valueRow
 }
 
 func sortValueRowsByOrder(valueRows []valueRow, sortOrder string) {
@@ -143,6 +146,8 @@ func getSectionedValueRows(valueRows []valueRow) sections {
 		SectionItems: []valueRow{},
 	}
 
+	sectionDescriptionMap := make(map[string][]*string)
+
 	for _, row := range valueRows {
 		if row.Section == "" {
 			valueRowsSectionSorted.DefaultSection.SectionItems = append(valueRowsSectionSorted.DefaultSection.SectionItems, row)
@@ -164,6 +169,26 @@ func getSectionedValueRows(valueRows []valueRow) sections {
 				SectionItems: []valueRow{row},
 			})
 		}
+
+		if len(row.SectionDescriptions) > 0 {
+			if sectionDescriptionMap[row.Section] == nil {
+				sectionDescriptionMap[row.Section] = []*string{}
+			}
+			for _, desc := range row.SectionDescriptions {
+				if !slices.Contains(sectionDescriptionMap[row.Section], desc) {
+					sectionDescriptionMap[row.Section] = append(sectionDescriptionMap[row.Section], desc)
+				}
+			}
+		}
+	}
+
+	for i, section := range valueRowsSectionSorted.Sections {
+		sectionDescriptions, exists := sectionDescriptionMap[section.SectionName]
+		if !exists {
+			continue
+		}
+
+		valueRowsSectionSorted.Sections[i].SectionDescriptions = sectionDescriptions
 	}
 
 	return valueRowsSectionSorted

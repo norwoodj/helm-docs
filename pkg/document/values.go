@@ -191,17 +191,23 @@ func createValueRow(
 		section = autoDescription.Section
 	}
 
+	sectionDescriptions := description.SectionDescriptions
+	if len(sectionDescriptions) == 0 && len(autoDescription.SectionDescriptions) > 0 {
+		sectionDescriptions = autoDescription.SectionDescriptions
+	}
+
 	return valueRow{
-		Key:             key,
-		Type:            defaultType,
-		NotationType:    notationType,
-		AutoDefault:     autoDescription.Default,
-		Default:         defaultValue,
-		AutoDescription: autoDescription.Description,
-		Description:     description.Description,
-		Section:         section,
-		Column:          column,
-		LineNumber:      lineNumber,
+		Key:                 key,
+		Type:                defaultType,
+		NotationType:        notationType,
+		AutoDefault:         autoDescription.Default,
+		Default:             defaultValue,
+		AutoDescription:     autoDescription.Description,
+		Description:         description.Description,
+		Section:             section,
+		SectionDescriptions: sectionDescriptions,
+		Column:              column,
+		LineNumber:          lineNumber,
 	}, nil
 }
 
@@ -290,6 +296,28 @@ func createValueRowsFromList(
 		valueRows = append(valueRows, valueRowsForListField...)
 	}
 
+	section := description.Section
+	if section == "" && autoDescription.Section != "" {
+		section = autoDescription.Section
+	}
+
+	sectionDescriptions := description.SectionDescriptions
+	if len(sectionDescriptions) == 0 && len(autoDescription.SectionDescriptions) > 0 {
+		sectionDescriptions = autoDescription.SectionDescriptions
+	}
+	prependSectionsDescription := len(sectionDescriptions) > 0
+
+	if section != "" {
+		for i := range valueRows {
+			if valueRows[i].Section == "" {
+				valueRows[i].Section = section
+				if prependSectionsDescription {
+					valueRows[i].SectionDescriptions = append(sectionDescriptions, valueRows[i].SectionDescriptions...)
+					prependSectionsDescription = false // only add once per section
+				}
+			}
+		}
+	}
 	return valueRows, nil
 }
 
@@ -382,6 +410,28 @@ func createValueRowsFromObject(
 		valueRows = append(valueRows, valueRowsForObjectField...)
 	}
 
+	section := description.Section
+	if section == "" && autoDescription.Section != "" {
+		section = autoDescription.Section
+	}
+
+	sectionDescriptions := description.SectionDescriptions
+	if len(sectionDescriptions) == 0 && len(autoDescription.SectionDescriptions) > 0 {
+		sectionDescriptions = autoDescription.SectionDescriptions
+	}
+	prependSectionsDescription := len(sectionDescriptions) > 0
+
+	if section != "" {
+		for i := range valueRows {
+			if valueRows[i].Section == "" {
+				valueRows[i].Section = section
+				if prependSectionsDescription {
+					valueRows[i].SectionDescriptions = append(sectionDescriptions, valueRows[i].SectionDescriptions...)
+					prependSectionsDescription = false // only add once per section
+				}
+			}
+		}
+	}
 	return valueRows, nil
 }
 

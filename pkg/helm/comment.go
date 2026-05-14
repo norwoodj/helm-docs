@@ -44,13 +44,26 @@ func ParseComment(commentLines []string) (string, ChartValueDescription) {
 		c.Description = valueTypeMatch[2]
 	}
 
-	var isRaw = false
+	isRaw, isSectionDescription, sectionDescriptionIndex := false, false, -1
 
 	for _, line := range commentLines[docStartIdx+1:] {
 		rawFlagMatch := rawDescriptionRegex.FindStringSubmatch(line)
 		defaultCommentMatch := defaultValueRegex.FindStringSubmatch(line)
 		notationTypeCommentMatch := valueNotationTypeRegex.FindStringSubmatch(line)
 		sectionCommentMatch := sectionRegex.FindStringSubmatch(line)
+		sectionDescriptionMatch := sectionDescriptionRegex.FindStringSubmatch(line)
+
+		if len(sectionDescriptionMatch) > 1 {
+			if !isSectionDescription {
+				c.SectionDescriptions = append(c.SectionDescriptions, new(string))
+				sectionDescriptionIndex++
+				isSectionDescription = true
+			}
+			*c.SectionDescriptions[sectionDescriptionIndex] += "   \n" + sectionDescriptionMatch[1]
+			continue
+		} else {
+			isSectionDescription = false
+		}
 
 		if !isRaw && len(rawFlagMatch) == 1 {
 			isRaw = true
