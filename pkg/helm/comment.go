@@ -51,6 +51,11 @@ func ParseComment(commentLines []string) (string, ChartValueDescription) {
 		defaultCommentMatch := defaultValueRegex.FindStringSubmatch(line)
 		notationTypeCommentMatch := valueNotationTypeRegex.FindStringSubmatch(line)
 		sectionCommentMatch := sectionRegex.FindStringSubmatch(line)
+		parseFootMatch := parseFootRegex.FindStringSubmatch(line)
+
+		if len(parseFootMatch) > 0 {
+			continue // Just skip the line
+		}
 
 		if !isRaw && len(rawFlagMatch) == 1 {
 			isRaw = true
