@@ -1,0 +1,11 @@
+apiVersion: v2
+name: empty-lists-maps
+description: Example of documenting empty lists and maps.
+version: "0.2.0"
+home: "https://github.com/norwoodj/helm-docs/tree/master/example-charts/best-values-example"
+sources: ["https://github.com/norwoodj/helm-docs/tree/master/example-charts/best-values-example"]
+engine: gotpl
+type: application
+maintainers:
+  - email: norwood.john.m@gmail.com
+    name: John Norwood

@@ -438,6 +438,29 @@ configMap:
   not real config param: value
 ```
 
+### Documenting empty lists or maps
+
+When trying to document an empty list or a map, you can use a foot comment, meaning you can fully write the item and then comment it out. To parse the foot comment, you need to add `@parseFoot` annotation. For more details see [example values](./example-charts/empty-lists-maps/values.yaml) and [README](./example-charts/empty-lists-maps/README.md).
+
+```yaml
+# envs -- (list) Environment variables
+# @parseFoot
+envs: []
+# - 
+#   # -- Environment variable name
+#   name: ""
+#   # -- Environment variable value
+#   value: ""
+#   # -- Environment variable supplied from secret or configmap
+#   valueFrom:
+#     # -- Environment variable supplied from secret
+#     secretKeyRef:
+#       # -- (string) Kubernetes Secret Name
+#       name: ""
+#       # -- (string) Key to mount to environment variable
+#       key: ""
+```
+
 ### Advanced table rendering
 Some helm chart `values.yaml` uses complicated structure for the key/value
 pairs. For example, it may uses a multiline string of Go template text instead

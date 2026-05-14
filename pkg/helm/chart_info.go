@@ -22,6 +22,7 @@ var defaultValueRegex = regexp.MustCompile("^\\s*# @default -- (.*)$")
 var valueTypeRegex = regexp.MustCompile("^\\((.*?)\\)\\s*(.*)$")
 var valueNotationTypeRegex = regexp.MustCompile("^\\s*#\\s+@notationType\\s+--\\s+(.*)$")
 var sectionRegex = regexp.MustCompile("^\\s*# @section -- (.*)$")
+var parseFootRegex = regexp.MustCompile("^\\s*# @parseFoot")
 
 type ChartMetaMaintainer struct {
 	Email string
@@ -169,6 +170,23 @@ func removeIgnored(rootNode *yaml.Node, parentKind yaml.Kind) {
 	rootNode.Content = newContent
 }
 
+func AddFootComments(rootNode *yaml.Node, lines []string, startLine int) {
+	for i := range rootNode.Content {
+		if strings.Contains(rootNode.Content[i].HeadComment, "@parseFoot") {
+			footComment := ""
+			for j := rootNode.Content[i].Line; j < len(lines) && (commentContinuationRegex.MatchString((lines)[j])); j++ {
+				footComment += strings.TrimPrefix(strings.TrimLeft((lines)[j], " "), "#") + "\n" // Editing so it can be parsed directly
+			}
+			footComment = strings.TrimSuffix(footComment, "\n")
+			rootNode.Content[i].FootComment = footComment
+		}
+		// For nested footComment parsing, we need to update the line numbers of the nodes so they are correct relative to the original file, to not break sorting.
+		// This is here to save one extra iteration
+		rootNode.Content[i].Line += startLine
+		AddFootComments(rootNode.Content[i], lines, startLine)
+	}
+}
+
 func parseChartValuesFile(chartDirectory string) (yaml.Node, error) {
 	valuesPath := filepath.Join(chartDirectory, viper.GetString("values-file"))
 	yamlFileContents, err := getYamlFileContents(valuesPath)
@@ -180,6 +198,9 @@ func parseChartValuesFile(chartDirectory string) (yaml.Node, error) {
 
 	err = yaml.Unmarshal(yamlFileContents, &values)
 	removeIgnored(&values, values.Kind)
+	if strings.Contains(string(yamlFileContents), "@parseFoot") {
+		AddFootComments(&values, strings.Split(string(yamlFileContents), "\n"), 0)
+	}
 	return values, err
 }
 

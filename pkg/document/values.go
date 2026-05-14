@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/norwoodj/helm-docs/pkg/helm"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
 
@@ -71,6 +72,33 @@ func getTypeName(value interface{}) string {
 	}
 
 	return ""
+}
+
+func parseComplexType(prefix string, key *yaml.Node, keysToDescriptions map[string]helm.ChartValueDescription) ([]valueRow, error) {
+	if key.FootComment != "" {
+		var complexValues yaml.Node
+		err := yaml.Unmarshal([]byte(key.FootComment), &complexValues)
+		if err != nil {
+			log.Errorf("Failed to parse complex type for key %s: %s", prefix, err)
+			return nil, err
+		}
+		complexValues = *complexValues.Content[0] // The first node is always the document node, so we take its first content node as the root for complex values
+		// Nested footComment parsing + line updating for correct sorting
+		helm.AddFootComments(&complexValues, strings.Split(key.FootComment, "\n"), key.Line)
+
+		parsedRows, err := createValueRowsFromField(prefix, key, &complexValues, keysToDescriptions, true)
+		if err != nil {
+			log.Errorf("Failed to parse complex type for key %s: %s", prefix, err)
+		} else {
+			if complexValues.Kind == yaml.SequenceNode {
+				for i := range parsedRows {
+					parsedRows[i].Key = strings.Replace(parsedRows[i].Key, fmt.Sprintf("%s[0]", prefix), fmt.Sprintf("%s[]", prefix), 1)
+				}
+			}
+		}
+		return parsedRows, nil
+	}
+	return nil, nil
 }
 
 func parseNilValueType(key string, description helm.ChartValueDescription, autoDescription helm.ChartValueDescription, column int, lineNumber int) valueRow {
@@ -218,8 +246,14 @@ func createValueRowsFromList(
 	// If we encounter an empty list, it should be documented if no parent object or list had a description or if this
 	// list has a description
 	if len(values.Content) == 0 {
+		// Processing complex values
+		complexRows, err := parseComplexType(prefix, key, keysToDescriptions)
+		if err != nil {
+			return nil, err
+		}
+
 		if !(documentLeafNodes || hasDescription || autoDescription.Description != "") {
-			return []valueRow{}, nil
+			return complexRows, nil
 		}
 
 		emptyListRow, err := createValueRow(prefix, make([]interface{}, 0), description, autoDescription, key.Column, key.Line)
@@ -227,7 +261,14 @@ func createValueRowsFromList(
 			return nil, err
 		}
 
-		return []valueRow{emptyListRow}, nil
+		if len(complexRows) == 0 {
+			return []valueRow{emptyListRow}, nil
+		}
+		if complexRows[0].Key == prefix {
+			// By default the complex type parsing will create a valuerow with all properties as default, needs to be replaced with the commented version
+			complexRows[0] = emptyListRow
+		}
+		return complexRows, nil
 	}
 
 	valueRows := make([]valueRow, 0)
@@ -304,19 +345,38 @@ func createValueRowsFromObject(
 	autoDescription := getDescriptionFromNode(key)
 
 	if len(values.Content) == 0 {
+		// Processing complex values
+		complexRows, err := parseComplexType(nextPrefix, key, keysToDescriptions)
+		if err != nil {
+			return nil, err
+		}
+
 		// if the first level of recursion has no values, then there are no values at all, and so we return zero rows of documentation
 		if nextPrefix == "" {
-			return []valueRow{}, nil
+			return complexRows, nil
 		}
 
 		// Otherwise, we have a leaf empty object node that should be documented if no object up the recursion chain had
 		// a description or if this object has a description
 		if !(documentLeafNodes || hasDescription || autoDescription.Description != "") {
-			return []valueRow{}, nil
+			return complexRows, nil
 		}
 
 		documentedRow, err := createValueRow(nextPrefix, make(map[string]interface{}), description, autoDescription, key.Column, key.Line)
-		return []valueRow{documentedRow}, err
+		if err != nil {
+			return nil, err
+		}
+		// If there are no complex rows and we are at a leaf node, we should still document it as an empty object if it has description or any parent in the recursion chain has description
+		if len(complexRows) == 0 {
+			return []valueRow{documentedRow}, err
+		}
+
+		if complexRows[0].Key == nextPrefix {
+			// By default the complex type parsing will create a valuerow with all properties as default, needs to be replaced with the commented version
+			complexRows[0] = documentedRow
+		}
+
+		return complexRows, nil
 	}
 
 	valueRows := make([]valueRow, 0)

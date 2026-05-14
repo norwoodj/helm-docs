@@ -1,0 +1,82 @@
+# envs -- (list) Environment variables
+# @section -- List
+# @parseFoot
+envs: []
+# - 
+#   # -- Environment variable name
+#   # @section -- List
+#   name: ""
+#   # -- Environment variable value
+#   # @section -- List
+#   value: ""
+#   # -- Environment variable supplied from secret or configmap
+#   # @section -- List
+#   # @default -- `nil`
+#   valueFrom:
+#     # -- Environment variable supplied from secret
+#     # @section -- List
+#     # @default -- `nil`
+#     secretKeyRef:
+#       # -- (string) Kubernetes Secret Name
+#       # @section -- List
+#       name: ""
+#       # -- (string) Key to mount to environment variable
+#       # @section -- List
+#       key: ""
+# # -- Avoid this
+# # @section -- List
+# - 
+#  # -- A bad item, should be all in one item
+#  # @section -- List
+#  name: "weird item"
+
+# Showcasing usage with helm-schema
+# @schema 
+# type: object
+# additionalProperties:
+#   type: object
+#   properties:
+#     nestedKey:
+#       type: string
+#     nestedMap:
+#       type: object
+#       additionalProperties:
+#         type: string
+#     incorrectNestedMap:
+#       type: object
+#       additionalProperties:
+#         type: integer
+# @schema
+# -- Map with dynamic keys, with object children
+# @section -- Map
+# @parseFoot
+map: {}
+  # # -- A map item
+  # # @section -- Map
+  # "*":
+  #   # -- A nested map item
+  #   # @section -- Map
+  #   nestedKey: "value"
+  #   # -- A nested dynamic map, showing multiple levels of foot comment parsing. This is a map of string
+  #   # @section -- Map
+  #   # @parseFoot
+  #   nestedMap: {}
+  #     # # -- A dynamic map item
+  #     # # @section -- Map
+  #     # "`*`": "value"
+  #
+  #   # -- A nested dynamic map, it can have any keys. This is a map of int
+  #   # @section -- Map
+  #   # @parseFoot
+  #   incorrectNestedMap: {}
+  #     # # -- (int) A dynamic map item - this will cause italic in rendering because neither asterisk is in code tags
+  #     # # @section -- Map
+  #     # "*": 
+  # 
+  # # -- A specific example key, it can be rendered differently in documentation if specified like this
+  # # @section -- Map
+  # "[specific-example]":
+  #   # -- A specific example key item
+  #   # @section -- Map
+  #   differentExlusiveKey: "value"
+
