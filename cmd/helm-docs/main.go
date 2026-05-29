@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -142,7 +143,7 @@ func getChartToGenerate(documentationInfoByChartPath map[string]helm.ChartDocume
 	return documentationInfoToGenerate
 }
 
-func writeDocumentation(chartSearchRoot string, documentationInfoByChartPath map[string]helm.ChartDocumentationInfo, dryRun bool, parallelism int) {
+func writeDocumentation(chartSearchRoot string, documentationInfoByChartPath map[string]helm.ChartDocumentationInfo, dryRun bool, parallelism int) error {
 	templateFiles := viper.GetStringSlice("template-files")
 	badgeStyle := viper.GetString("badge-style")
 	skipVersionFooter := viper.GetBool("skip-version-footer")
@@ -151,6 +152,8 @@ func writeDocumentation(chartSearchRoot string, documentationInfoByChartPath map
 
 	documentDependencyValues := viper.GetBool("document-dependency-values")
 	documentationInfoToGenerate := getChartToGenerate(documentationInfoByChartPath)
+	errs := make([]error, 0)
+	errsMu := &sync.Mutex{}
 
 	parallelProcessIterable(documentationInfoToGenerate, parallelism, func(elem interface{}) {
 		info := documentationInfoByChartPath[elem.(string)]
@@ -159,12 +162,20 @@ func writeDocumentation(chartSearchRoot string, documentationInfoByChartPath map
 		if documentDependencyValues {
 			dependencyValues, err = document.GetDependencyValues(info, documentationInfoByChartPath)
 			if err != nil {
-				log.Warnf("Error evaluating dependency values for chart %s, skipping: %v", info.ChartDirectory, err)
+				errsMu.Lock()
+				errs = append(errs, fmt.Errorf("error evaluating dependency values for chart %s: %w", info.ChartDirectory, err))
+				errsMu.Unlock()
 				return
 			}
 		}
-		document.PrintDocumentation(info, chartSearchRoot, templateFiles, dryRun, version, badgeStyle, dependencyValues, skipVersionFooter)
+		if err = document.PrintDocumentation(info, chartSearchRoot, templateFiles, dryRun, version, badgeStyle, dependencyValues, skipVersionFooter); err != nil {
+			errsMu.Lock()
+			errs = append(errs, err)
+			errsMu.Unlock()
+		}
 	})
+
+	return errors.Join(errs...)
 }
 
 func helmDocs(_ *cobra.Command, _ []string) {
@@ -185,7 +196,9 @@ func helmDocs(_ *cobra.Command, _ []string) {
 		log.Fatal(err)
 	}
 
-	writeDocumentation(chartSearchRoot, documentationInfoByChartPath, dryRun, parallelism)
+	if err := writeDocumentation(chartSearchRoot, documentationInfoByChartPath, dryRun, parallelism); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func main() {
