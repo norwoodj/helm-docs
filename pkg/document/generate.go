@@ -2,6 +2,7 @@ package document
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -26,7 +27,7 @@ func getOutputFile(chartDirectory string, dryRun bool) (*os.File, error) {
 	return f, err
 }
 
-func PrintDocumentation(chartDocumentationInfo helm.ChartDocumentationInfo, chartSearchRoot string, templateFiles []string, dryRun bool, helmDocsVersion string, badgeStyle string, dependencyValues []DependencyValues, skipVersionFooter bool) {
+func PrintDocumentation(chartDocumentationInfo helm.ChartDocumentationInfo, chartSearchRoot string, templateFiles []string, dryRun bool, helmDocsVersion string, badgeStyle string, dependencyValues []DependencyValues, skipVersionFooter bool) (err error) {
 	log.Infof("Generating README Documentation for chart %s", chartDocumentationInfo.ChartDirectory)
 
 	chartDocumentationTemplate, err := newChartDocumentationTemplate(
@@ -37,37 +38,39 @@ func PrintDocumentation(chartDocumentationInfo helm.ChartDocumentationInfo, char
 	)
 
 	if err != nil {
-		log.Warnf("Error generating gotemplates for chart %s: %s", chartDocumentationInfo.ChartDirectory, err)
-		return
+		return fmt.Errorf("error generating gotemplates for chart %s: %w", chartDocumentationInfo.ChartDirectory, err)
 	}
 
 	chartTemplateDataObject, err := getChartTemplateData(chartDocumentationInfo, helmDocsVersion, dependencyValues, skipVersionFooter)
 	if err != nil {
-		log.Warnf("Error generating template data for chart %s: %s", chartDocumentationInfo.ChartDirectory, err)
-		return
+		return fmt.Errorf("error generating template data for chart %s: %w", chartDocumentationInfo.ChartDirectory, err)
 	}
 
 	outputFile, err := getOutputFile(chartDocumentationInfo.ChartDirectory, dryRun)
 	if err != nil {
-		log.Warnf("Could not open chart README file %s, skipping chart", filepath.Join(chartDocumentationInfo.ChartDirectory, viper.GetString("output-file")))
-		return
+		return fmt.Errorf("could not open chart README file %s: %w", filepath.Join(chartDocumentationInfo.ChartDirectory, viper.GetString("output-file")), err)
 	}
-
 	if !dryRun {
-		defer outputFile.Close()
+		defer func() {
+			if closeErr := outputFile.Close(); closeErr != nil && err == nil {
+				err = fmt.Errorf("error closing documentation file for chart %s: %w", chartDocumentationInfo.ChartDirectory, closeErr)
+			}
+		}()
 	}
 
 	var output bytes.Buffer
 	err = chartDocumentationTemplate.Execute(&output, chartTemplateDataObject)
 	if err != nil {
-		log.Warnf("Error generating documentation for chart %s: %s", chartDocumentationInfo.ChartDirectory, err)
+		return fmt.Errorf("error generating documentation for chart %s: %w", chartDocumentationInfo.ChartDirectory, err)
 	}
 
 	output = applyMarkDownFormat(output)
 	_, err = output.WriteTo(outputFile)
 	if err != nil {
-		log.Warnf("Error generating documentation file for chart %s: %s", chartDocumentationInfo.ChartDirectory, err)
+		return fmt.Errorf("error generating documentation file for chart %s: %w", chartDocumentationInfo.ChartDirectory, err)
 	}
+
+	return nil
 }
 
 func applyMarkDownFormat(output bytes.Buffer) bytes.Buffer {
