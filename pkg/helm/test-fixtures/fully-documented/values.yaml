@@ -8,3 +8,10 @@ controller:
     repository: nginx-ingress-controller
     # controller.image.tag -- The tag of the image of the controller
     tag: "18.0831"
+    # controller.image.tags -- (tpl/array) tags for the image to use
+    # @notationType -- tpl
+    tags:
+    # controller.image.tags[0]-- the first tag to use
+    - number one
+    # controller.image.tags[1] -- the second tag to use
+    - number two

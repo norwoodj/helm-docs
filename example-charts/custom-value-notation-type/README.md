@@ -138,7 +138,15 @@ extraConfigMap: |
 tpl/array
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">- name: DJANGO_SETTINGS_MODULE
+  value: "django.settings"
+- name: DEBUG
+  value: {{ .Values.global.debug | quote }}
+- name: ROOT_URLCONF
+  value: {{ .Values.global.rootURLConf | quote }}
+- name: MAIN_APP_NAME
+  value: {{ .Values.global.mainAppName | quote }}
+
 <pre lang="tpl">
 extraPodEnv: |
   - name: DJANGO_SETTINGS_MODULE
@@ -221,7 +229,7 @@ extraVolumeMounts: |
 object
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`{"adminEmail":"admin@localhost","adminPassword":{"value":null,"valueFrom":{"secretKeyRef":{"key":"admin-password","name":null}}},"adminUser":"admin","databaseHost":"postgis","databaseName":"django","databasePassword":{"value":null,"valueFrom":{"secretKeyRef":{"key":"database-password","name":null}}},"databasePort":5432,"databaseUsername":"django_db_user","debug":"False","djangoArgs":"[\"uwsgi\",\"--chdir=${REPO_ROOT}\",\"--module=${MAIN_APP_NAME}.wsgi\",\"--socket=:8000\",\"--http=0.0.0.0:8080\",\"--processes=5\",\"--buffer-size=8192\"]\n","djangoCommand":"[\"/opt/django/scripts/docker-entrypoint.sh\"]\n","djangoSecretKey":{"value":null,"valueFrom":{"secretKeyRef":{"key":"django-secret","name":null}}},"djangoSettingsModule":"django.settings","existingSecret":"","mainAppName":"django","mediaRoot":"/opt/django/media","nameOverride":"django","rootURLConf":"django.urls","sharedSecretName":"django-shared-secret","siteName":"django","staticRoot":"/opt/django/static"}`
 <pre lang="json">
 {
   "adminEmail": "admin@localhost",
@@ -282,7 +290,7 @@ object
 This value type is for a valid email address format. Such as owner@somedomain.org.">string/email</a>
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">admin@localhost
 <a href="mailto:admin@localhost" style="color: green;">"admin@localhost"</a>
 </div>
 			</td>
@@ -294,7 +302,7 @@ This value type is for a valid email address format. Such as owner@somedomain.or
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`nil`
 <pre lang="json">
 null
 </pre>
@@ -308,7 +316,7 @@ null
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"admin"`
 <pre lang="json">
 "admin"
 </pre>
@@ -322,7 +330,7 @@ string
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"postgis"`
 <pre lang="json">
 "postgis"
 </pre>
@@ -336,7 +344,7 @@ string
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"django"`
 <pre lang="json">
 "django"
 </pre>
@@ -350,7 +358,7 @@ string
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`nil`
 <pre lang="json">
 null
 </pre>
@@ -364,7 +372,7 @@ null
 int
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`5432`
 <pre lang="json">
 5432
 </pre>
@@ -378,7 +386,7 @@ int
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"django_db_user"`
 <pre lang="json">
 "django_db_user"
 </pre>
@@ -392,7 +400,7 @@ string
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"False"`
 <pre lang="json">
 "False"
 </pre>
@@ -406,7 +414,8 @@ string
 tpl/array
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">["uwsgi","--chdir=${REPO_ROOT}","--module=${MAIN_APP_NAME}.wsgi","--socket=:8000","--http=0.0.0.0:8080","--processes=5","--buffer-size=8192"]
+
 <pre lang="tpl">
 global.djangoArgs: |
   ["uwsgi","--chdir=${REPO_ROOT}","--module=${MAIN_APP_NAME}.wsgi","--socket=:8000","--http=0.0.0.0:8080","--processes=5","--buffer-size=8192"]
@@ -422,7 +431,8 @@ global.djangoArgs: |
 tpl/array
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">["/opt/django/scripts/docker-entrypoint.sh"]
+
 <pre lang="tpl">
 global.djangoCommand: |
   ["/opt/django/scripts/docker-entrypoint.sh"]
@@ -438,7 +448,7 @@ global.djangoCommand: |
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`nil`
 <pre lang="json">
 null
 </pre>
@@ -452,7 +462,7 @@ null
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"django.settings"`
 <pre lang="json">
 "django.settings"
 </pre>
@@ -481,7 +491,7 @@ global.existingSecret: |
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"django"`
 <pre lang="json">
 "django"
 </pre>
@@ -495,7 +505,7 @@ string
 path
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"/opt/django/media"`
 <pre lang="json">
 "/opt/django/media"
 </pre>
@@ -509,7 +519,7 @@ path
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"django.urls"`
 <pre lang="json">
 "django.urls"
 </pre>
@@ -523,7 +533,7 @@ string
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"django-shared-secret"`
 <pre lang="json">
 "django-shared-secret"
 </pre>
@@ -537,7 +547,7 @@ string
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"django"`
 <pre lang="json">
 "django"
 </pre>
@@ -551,7 +561,7 @@ string
 path
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"/opt/django/static"`
 <pre lang="json">
 "/opt/django/static"
 </pre>
@@ -565,7 +575,7 @@ path
 object
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`{"pullPolicy":"IfNotPresent","registry":"docker.io","repository":"lucernae/django-sample","tag":"3.1"}`
 <pre lang="json">
 {
   "pullPolicy": "IfNotPresent",
@@ -584,7 +594,7 @@ object
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"IfNotPresent"`
 <pre lang="json">
 "IfNotPresent"
 </pre>
@@ -598,7 +608,7 @@ string
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"docker.io"`
 <pre lang="json">
 "docker.io"
 </pre>
@@ -612,7 +622,7 @@ string
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"lucernae/django-sample"`
 <pre lang="json">
 "lucernae/django-sample"
 </pre>
@@ -626,7 +636,7 @@ string
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"3.1"`
 <pre lang="json">
 "3.1"
 </pre>
@@ -640,7 +650,7 @@ string
 dict
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`{}`
 <pre lang="json">
 {}
 </pre>
@@ -654,7 +664,7 @@ dict
 bool
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`false`
 <pre lang="json">
 false
 </pre>
@@ -683,7 +693,7 @@ ingress.host: |
 dict
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`{}`
 <pre lang="json">
 {}
 </pre>
@@ -697,7 +707,7 @@ dict
 bool
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`false`
 <pre lang="json">
 false
 </pre>
@@ -711,7 +721,7 @@ false
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"django-tls"`
 <pre lang="json">
 "django-tls"
 </pre>
@@ -725,12 +735,9 @@ string
 map
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">map[client-name:my-boss project-name:awesome-project user/workload:true]
 <pre lang="yaml">
-user/workload: "true"
-client-name: "my-boss"
-project-name: "awesome-project"
-
+map[client-name:my-boss project-name:awesome-project user/workload:true]
 </pre>
 </div>
 			</td>
@@ -742,7 +749,7 @@ project-name: "awesome-project"
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"ReadWriteOnce"`
 <pre lang="json">
 "ReadWriteOnce"
 </pre>
@@ -756,7 +763,7 @@ string
 object
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`{}`
 <pre lang="json">
 {}
 </pre>
@@ -770,7 +777,7 @@ object
 bool
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`true`
 <pre lang="json">
 true
 </pre>
@@ -784,7 +791,7 @@ true
 bool
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`false`
 <pre lang="json">
 false
 </pre>
@@ -798,7 +805,7 @@ false
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"/opt/django/media"`
 <pre lang="json">
 "/opt/django/media"
 </pre>
@@ -812,7 +819,7 @@ string
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"8Gi"`
 <pre lang="json">
 "8Gi"
 </pre>
@@ -826,7 +833,7 @@ string
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"media"`
 <pre lang="json">
 "media"
 </pre>
@@ -842,10 +849,9 @@ string
    >k8s/storage/persistent-volume/access-modes</a>
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">[ReadWriteOnce]
 <pre lang="yaml">
-- ReadWriteOnce
-
+[ReadWriteOnce]
 </pre>
 </div>
 			</td>
@@ -857,7 +863,7 @@ string
 object
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`{}`
 <pre lang="json">
 {}
 </pre>
@@ -871,7 +877,7 @@ object
 bool
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`true`
 <pre lang="json">
 true
 </pre>
@@ -885,7 +891,7 @@ true
 bool
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`false`
 <pre lang="json">
 false
 </pre>
@@ -899,7 +905,7 @@ false
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"/opt/django/static"`
 <pre lang="json">
 "/opt/django/static"
 </pre>
@@ -913,7 +919,7 @@ string
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"8Gi"`
 <pre lang="json">
 "8Gi"
 </pre>
@@ -927,7 +933,7 @@ string
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"static"`
 <pre lang="json">
 "static"
 </pre>
@@ -941,7 +947,7 @@ string
 bool
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`true`
 <pre lang="json">
 true
 </pre>
@@ -955,7 +961,8 @@ true
 tpl/string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">{{ include "common.sharedSecretName" . | quote -}}
+
 <pre lang="tpl">
 postgis.existingSecret: |
   {{ include "common.sharedSecretName" . | quote -}}
@@ -986,7 +993,7 @@ probe: |
 dict
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`{}`
 <pre lang="json">
 {}
 </pre>
@@ -1022,7 +1029,7 @@ execute some command
 dict
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`{}`
 <pre lang="json">
 {}
 </pre>
@@ -1036,7 +1043,7 @@ dict
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`""`
 <pre lang="json">
 ""
 </pre>
@@ -1065,7 +1072,7 @@ service.externalIPs: |
 int
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`nil`
 <pre lang="json">
 null
 </pre>
@@ -1079,7 +1086,7 @@ null
 int
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`80`
 <pre lang="json">
 80
 </pre>
@@ -1093,7 +1100,7 @@ int
 string
 </td>
 			<td>
-				<div style="max-width: 300px;">
+				<div style="max-width: 300px;">`"ClusterIP"`
 <pre lang="json">
 "ClusterIP"
 </pre>

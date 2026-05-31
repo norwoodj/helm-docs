@@ -104,6 +104,7 @@ uses HTML `<summary>` tag to collapse some part of the comments.
 {{ define "chart.valueDefaultColumnRender" }}
 {{- $defaultValue := (default .Default .AutoDefault)  -}}
 {{- $notationType := .NotationType }}
+{{- $defaultValue }}
 {{- if (and (hasPrefix "`" $defaultValue) (hasSuffix "`" $defaultValue) ) -}}
 {{- $defaultValue = (toPrettyJson (fromJson (trimAll "`" (default .Default .AutoDefault) ) ) ) -}}
 {{- $notationType = "json" }}
