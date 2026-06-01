@@ -23,7 +23,7 @@ func possibleLogLevels() []string {
 	return levels
 }
 
-func initializeCli() {
+func initializeCli(cmd *cobra.Command) {
 	logLevelName := viper.GetString("log-level")
 	logLevel, err := log.ParseLevel(logLevelName)
 	if err != nil {
@@ -33,14 +33,20 @@ func initializeCli() {
 
 	log.SetFormatter(&log.TextFormatter{FullTimestamp: true})
 	log.SetLevel(logLevel)
+
+	if cmd != nil {
+		// silence usage when command starts execution
+		cmd.SilenceUsage = true
+	}
 }
 
-func newHelmDocsCommand(run func(cmd *cobra.Command, args []string)) (*cobra.Command, error) {
+func newHelmDocsCommand(run func(cmd *cobra.Command, args []string) error) (*cobra.Command, error) {
 	command := &cobra.Command{
-		Use:     "helm-docs",
-		Short:   "helm-docs automatically generates markdown documentation for helm charts from requirements and values files",
-		Version: version,
-		Run:     run,
+		Use:           "helm-docs",
+		Short:         "helm-docs automatically generates markdown documentation for helm charts from requirements and values files",
+		Version:       version,
+		RunE:          run,
+		SilenceErrors: true, // to avoid double logging
 	}
 
 	logLevelUsage := fmt.Sprintf("Level of logs that should printed, one of (%s)", strings.Join(possibleLogLevels(), ", "))
