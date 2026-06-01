@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -22,8 +23,11 @@ import (
 // parallelProcessIterable runs the visitFn function on each element of the iterable, using
 // parallelism number of worker goroutines. The iterable may be a slice or a map. In the case of a
 // map, the argument passed to visitFn will be the key.
-func parallelProcessIterable(iterable interface{}, parallelism int, visitFn func(elem interface{})) {
+func parallelProcessIterable(iterable interface{}, parallelism int, visitFn func(elem interface{}) error) error {
 	workChan := make(chan interface{})
+	iterableValue := reflect.ValueOf(iterable)
+	numItems := iterableValue.Len()
+	errChan := make(chan error, numItems)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(parallelism)
@@ -32,12 +36,13 @@ func parallelProcessIterable(iterable interface{}, parallelism int, visitFn func
 		go func() {
 			defer wg.Done()
 			for elem := range workChan {
-				visitFn(elem)
+				err := visitFn(elem)
+				if err != nil {
+					errChan <- err
+				}
 			}
 		}()
 	}
-
-	iterableValue := reflect.ValueOf(iterable)
 
 	if iterableValue.Kind() == reflect.Map {
 		for _, key := range iterableValue.MapKeys() {
@@ -52,6 +57,13 @@ func parallelProcessIterable(iterable interface{}, parallelism int, visitFn func
 
 	close(workChan)
 	wg.Wait()
+	close(errChan)
+	allErrors := make([]error, 0, numItems)
+	for err := range errChan {
+		allErrors = append(allErrors, err)
+	}
+
+	return errors.Join(allErrors...)
 }
 
 func getDocumentationParsingConfigFromArgs() (helm.ChartValuesDocumentationParsingConfig, error) {
@@ -102,17 +114,21 @@ func readDocumentationInfoByChartPath(chartSearchRoot string, parallelism int) (
 		return nil, fmt.Errorf("error parsing the linting config%w", err)
 	}
 
-	parallelProcessIterable(chartDirs, parallelism, func(elem interface{}) {
+	err = parallelProcessIterable(chartDirs, parallelism, func(elem interface{}) error {
 		chartDir := elem.(string)
 		info, err := helm.ParseChartInformation(filepath.Join(chartSearchRoot, chartDir), documentationParsingConfig)
 		if err != nil {
-			log.Warnf("Error parsing information for chart %s, skipping: %s", chartDir, err)
-			return
+			return fmt.Errorf("error parsing information for chart %s, skipping: %w", chartDir, err)
 		}
 		documentationInfoByChartPathMu.Lock()
 		documentationInfoByChartPath[info.ChartDirectory] = info
 		documentationInfoByChartPathMu.Unlock()
+		return nil
 	})
+
+	if err != nil {
+		return nil, err
+	}
 
 	return documentationInfoByChartPath, nil
 }
@@ -142,7 +158,7 @@ func getChartToGenerate(documentationInfoByChartPath map[string]helm.ChartDocume
 	return documentationInfoToGenerate
 }
 
-func writeDocumentation(chartSearchRoot string, documentationInfoByChartPath map[string]helm.ChartDocumentationInfo, dryRun bool, parallelism int) {
+func writeDocumentation(chartSearchRoot string, documentationInfoByChartPath map[string]helm.ChartDocumentationInfo, dryRun bool, parallelism int) error {
 	templateFiles := viper.GetStringSlice("template-files")
 	badgeStyle := viper.GetString("badge-style")
 	skipVersionFooter := viper.GetBool("skip-version-footer")
@@ -152,23 +168,32 @@ func writeDocumentation(chartSearchRoot string, documentationInfoByChartPath map
 	documentDependencyValues := viper.GetBool("document-dependency-values")
 	documentationInfoToGenerate := getChartToGenerate(documentationInfoByChartPath)
 
-	parallelProcessIterable(documentationInfoToGenerate, parallelism, func(elem interface{}) {
+	err := parallelProcessIterable(documentationInfoToGenerate, parallelism, func(elem interface{}) error {
 		info := documentationInfoByChartPath[elem.(string)]
 		var err error
 		var dependencyValues []document.DependencyValues
 		if documentDependencyValues {
 			dependencyValues, err = document.GetDependencyValues(info, documentationInfoByChartPath)
 			if err != nil {
-				log.Warnf("Error evaluating dependency values for chart %s, skipping: %v", info.ChartDirectory, err)
-				return
+				return fmt.Errorf("error evaluating dependency values for chart %s, skipping: %v", info.ChartDirectory, err)
 			}
 		}
-		document.PrintDocumentation(info, chartSearchRoot, templateFiles, dryRun, version, badgeStyle, dependencyValues, skipVersionFooter)
+		err = document.PrintDocumentation(info, chartSearchRoot, templateFiles, dryRun, version, badgeStyle, dependencyValues, skipVersionFooter)
+		if err != nil {
+			return fmt.Errorf("error printing documentation for chart %s, skipping: %v", info.ChartDirectory, err)
+		}
+		return nil
 	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func helmDocs(_ *cobra.Command, _ []string) {
-	initializeCli()
+func helmDocs(cmd *cobra.Command, _ []string) error {
+	initializeCli(cmd)
 
 	chartSearchRoot := viper.GetString("chart-search-root")
 	dryRun := viper.GetBool("dry-run")
@@ -182,10 +207,15 @@ func helmDocs(_ *cobra.Command, _ []string) {
 
 	documentationInfoByChartPath, err := readDocumentationInfoByChartPath(chartSearchRoot, parallelism)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	writeDocumentation(chartSearchRoot, documentationInfoByChartPath, dryRun, parallelism)
+	err = writeDocumentation(chartSearchRoot, documentationInfoByChartPath, dryRun, parallelism)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func main() {

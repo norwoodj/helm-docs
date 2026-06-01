@@ -1,0 +1,4 @@
+apiVersion: v2
+name: invalid-template
+description: unit test for returning an error on invalid template
+version: "0.1.0"
