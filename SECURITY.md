@@ -9,16 +9,13 @@ please report it to us as described below.
 
 **Please do not report security vulnerabilities through public GitHub issues.**
 
-Instead, please report them in the [private vulnerability reporting](https://github.com/norwoodj/helm-docs/security/advisories).
-
-If you prefer to submit without logging in, send email to [norwood.john.m@gmail.com](mailto:norwood.john.m@gmail.com) or
-[nepo26.hn@gmail.com](mailto:nepo26.hn@gmail.com).  
+Instead, please report them in the [private vulnerability reporting](https://github.com/robmyersrobmyers/helm-docs/security/advisories).
 
 [//]: # ( If possible, encrypt your message with our PGP key )
 [//]: # (TODO Create a public PGP key and make it available for anyone that needs it )
 
-You should receive a response within 24 hours. If for some reason you do not, please follow up via email to
-ensure we received your original message.
+You should receive a response within 24 hours. If for some reason you do not, please follow up via GitHub
+to ensure we received your original message.
 
 Please include the requested information listed below (as much as you can provide) to help us better 
 understand the nature and scope of the possible issue:

@@ -5,6 +5,10 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   release:
     name: Release
@@ -29,15 +33,27 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Login to DockerHub
+      - name: Login to GHCR
         if: ${{ !env.ACT }}
         uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
         with:
-          username: ${{ secrets.DOCKER_HUB_USER }}
-          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine release args
+        id: release_args
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+        run: |
+          if [ -n "$SIGNING_KEY" ]; then
+            echo "args=release" >> "$GITHUB_OUTPUT"
+          else
+            echo "args=release --skip=sign" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Import GPG key
-        if: ${{ !env.ACT }}
+        if: ${{ !env.ACT && steps.release_args.outputs.args == 'release' }}
         id: import_gpg
         uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
         with:
@@ -47,10 +63,10 @@ jobs:
         if: ${{ !env.ACT }}
         uses: goreleaser/goreleaser-action@ec59f474b9834571250b370d4735c50f8e2d1e29 # v7.0.0
         env:
-          GITHUB_TOKEN: ${{ secrets.NORWOODJ_ORG_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
         with:
-          args: release
+          args: ${{ steps.release_args.outputs.args }}
 
       - name: Cleanup
         if: always()

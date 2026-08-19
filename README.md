@@ -2,7 +2,7 @@ This is a fork of github.com/norwoodj to facilitate rebuilding releases with upd
 
 helm-docs
 =========
-[![Go Report Card](https://goreportcard.com/badge/github.com/norwoodj/helm-docs)](https://goreportcard.com/report/github.com/norwoodj/helm-docs)
+[![Go Report Card](https://goreportcard.com/badge/github.com/robmyersrobmyers/helm-docs)](https://goreportcard.com/report/github.com/robmyersrobmyers/helm-docs)
 
 The helm-docs tool auto-generates documentation from helm charts into markdown files. The resulting
 files contain metadata about their respective chart and a table with each of the chart's values, their defaults, and an
@@ -58,26 +58,9 @@ like `statefulset.image.tag` are documented even without a description comment. 
 the final table will be described in detail later in this document.
 
 ## Installation
-helm-docs can be installed using [homebrew](https://brew.sh/):
-
-```bash
-brew install norwoodj/tap/helm-docs
-```
-
-or [scoop](https://scoop.sh):
-
-```bash
-scoop install helm-docs
-```
-
-or [mise](https://mise.jdx.dev):
-
-```bash
-mise use -g helm-docs@latest
-```
-
-This will download and install the [latest release](https://github.com/norwoodj/helm-docs/releases/latest)
-of the tool.
+This fork publishes binaries as [GitHub releases](https://github.com/robmyersrobmyers/helm-docs/releases/latest)
+and a container image at `ghcr.io/robmyersrobmyers/helm-docs`. It is not published to homebrew, scoop, or mise,
+since those point at the upstream [norwoodj/helm-docs](https://github.com/norwoodj/helm-docs) taps.
 
 To build from source in this repository:
 
@@ -89,7 +72,7 @@ go build
 Or install from source:
 
 ```bash
-go install github.com/norwoodj/helm-docs/cmd/helm-docs@latest
+go install github.com/robmyersrobmyers/helm-docs/cmd/helm-docs@latest
 ```
 
 ## Usage
@@ -114,7 +97,7 @@ There are several variants of `pre-commit` hooks to choose from depending on you
 ```yaml
 ---
 repos:
-  - repo: https://github.com/norwoodj/helm-docs
+  - repo: https://github.com/robmyersrobmyers/helm-docs
     rev:  ""
     hooks:
       - id: helm-docs
@@ -130,7 +113,7 @@ repos:
 ```yaml
 ---
 repos:
-  - repo: https://github.com/norwoodj/helm-docs
+  - repo: https://github.com/robmyersrobmyers/helm-docs
     rev:  ""
     hooks:
       - id: helm-docs-built
@@ -146,7 +129,7 @@ repos:
 ```yaml
 ---
 repos:
-  - repo: https://github.com/norwoodj/helm-docs
+  - repo: https://github.com/robmyersrobmyers/helm-docs
     rev:  ""
     hooks:
       - id: helm-docs-container
@@ -162,11 +145,11 @@ repos:
 ```yaml
 ---
 repos:
-  - repo: https://github.com/norwoodj/helm-docs
+  - repo: https://github.com/robmyersrobmyers/helm-docs
     rev:  ""
     hooks:
       - id: helm-docs-container
-        entry: jnorwood/helm-docs:x.y.z
+        entry: ghcr.io/robmyersrobmyers/helm-docs:x.y.z
         args:
           # Make the tool search for charts only under the `charts` directory
           - --chart-search-root=charts
@@ -194,7 +177,7 @@ You can mount a directory with charts under `/helm-docs` within the container.
 Then run:
 
 ```bash
-docker run --rm --volume "$(pwd):/helm-docs" -u $(id -u) jnorwood/helm-docs:latest
+docker run --rm --volume "$(pwd):/helm-docs" -u $(id -u) ghcr.io/robmyersrobmyers/helm-docs:latest
 ```
 
 ## Ignoring Chart Directories
