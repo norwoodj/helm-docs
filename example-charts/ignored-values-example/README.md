@@ -4,7 +4,7 @@
 
 Based on best-values-example
 
-**Homepage:** <https://github.com/norwoodj/helm-docs/tree/master/example-charts/ignored-values-example>
+**Homepage:** <https://github.com/robmyersrobmyers/helm-docs/tree/master/example-charts/ignored-values-example>
 
 ## Maintainers
 
@@ -14,14 +14,14 @@ Based on best-values-example
 
 ## Source Code
 
-* <https://github.com/norwoodj/helm-docs/tree/master/example-charts/ignored-values-example>
+* <https://github.com/robmyersrobmyers/helm-docs/tree/master/example-charts/ignored-values-example>
 
 ## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | config.databasesToCreate[0] | string | `"postgresql"` | default database for storage of database metadata |
-| config.databasesToCreate[1] | string | `"hashbash"` | database for the [hashbash](https://github.com/norwoodj/hashbash) project |
+| config.databasesToCreate[1] | string | `"hashbash"` | database for the [hashbash](https://github.com/robmyersrobmyers/hashbash) project |
 | config.usersToCreate[0] | object | `{"admin":true,"name":"root"}` | admin user |
 | config.usersToCreate[1] | object | `{"name":"hashbash","readwriteDatabases":["hashbash"]}` | user with access to the database with the same name |
 | configWithAllValuesIgnored | object | `{}` |  |

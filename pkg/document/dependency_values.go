@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 
-	"github.com/norwoodj/helm-docs/pkg/helm"
+	"github.com/robmyersrobmyers/helm-docs/pkg/helm"
 )
 
 type DependencyValues struct {

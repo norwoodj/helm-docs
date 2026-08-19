@@ -2,8 +2,8 @@ apiVersion: v2
 name: special-characters
 description: A chart demonstrating handling of special characters in values files
 version: "0.2.0"
-home: "https://github.com/norwoodj/helm-docs/tree/master/example-charts/special-characters"
-sources: ["https://github.com/norwoodj/helm-docs/tree/master/example-charts/special-characters"]
+home: "https://github.com/robmyersrobmyers/helm-docs/tree/master/example-charts/special-characters"
+sources: ["https://github.com/robmyersrobmyers/helm-docs/tree/master/example-charts/special-characters"]
 engine: gotpl
 type: application
 maintainers:

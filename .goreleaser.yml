@@ -45,80 +45,80 @@ signs:
 - artifacts: checksum
   args: [ '{{ if index .Env "GPG_FINGERPRINT"  }}-u {{ .Env.GPG_FINGERPRINT }}{{ else }}-s{{ end }}', "--output", "${signature}","--detach-sign", "${artifact}"]
 
-nfpms:
-- vendor: helm-docs
-  homepage: https://github.com/norwoodj/helm-docs
-  maintainer: norwoodj
-  description: A tool for automatically generating markdown documentation for helm charts
-  license: GPL-3.0-or-later
-  formats:
-  - deb
-  - rpm
-  file_name_template: >-
-    {{ .ProjectName }}_
-    {{- .Version}}_
-    {{- title .Os }}_
-    {{- if eq .Arch "amd64" }}x86_64
-    {{- else if eq .Arch "386" }}i386
-    {{- else if eq .Arch "arm" }}{{ .Arch }}{{ .Arm }}
-    {{- else }}{{ .Arch }}{{ end }}
-
-brews:
-  - repository:
-      owner: norwoodj
-      name: homebrew
-    directory: Formula
-    homepage: https://github.com/norwoodj/helm-docs
-    description: Automatically generate markdown documentation for helm charts
-    install: |
-      bin.install "helm-docs"
-    test: |
-      system "#{bin}/helm-docs --version"
-dockers:
-  - goos: linux
-    goarch: amd64
-    dockerfile: Dockerfile
-    use: buildx
-    build_flag_templates:
-      - --platform=linux/amd64
-    image_templates:
-      - jnorwood/{{ .ProjectName }}:{{ .Tag }}-amd64
-  - goos: linux
-    goarch: arm64
-    dockerfile: Dockerfile
-    use: buildx
-    build_flag_templates:
-      - --platform=linux/arm64
-    image_templates:
-      - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64
-  - goos: linux
-    goarch: arm
-    goarm: 6
-    dockerfile: Dockerfile
-    use: buildx
-    build_flag_templates:
-      - --platform=linux/arm/v6
-    image_templates:
-      - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v6
-  - goos: linux
-    goarch: arm
-    goarm: 7
-    dockerfile: Dockerfile
-    use: buildx
-    build_flag_templates:
-      - --platform=linux/arm/v7
-    image_templates:
-      - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v7
-docker_manifests:
-- name_template: jnorwood/{{ .ProjectName }}:{{ .Tag }}
-  image_templates:
-    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-amd64
-    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64
-    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v6
-    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v7
-- name_template: jnorwood/{{ .ProjectName }}:latest
-  image_templates:
-    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-amd64
-    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64
-    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v6
-    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v7
+#nfpms:
+#- vendor: helm-docs
+#  homepage: https://github.com/robmyersrobmyers/helm-docs
+#  maintainer: robmyersrobmyers
+#  description: A tool for automatically generating markdown documentation for helm charts
+#  license: GPL-3.0-or-later
+#  formats:
+#  - deb
+#  - rpm
+#  file_name_template: >-
+#    {{ .ProjectName }}_
+#    {{- .Version}}_
+#    {{- title .Os }}_
+#    {{- if eq .Arch "amd64" }}x86_64
+#    {{- else if eq .Arch "386" }}i386
+#    {{- else if eq .Arch "arm" }}{{ .Arch }}{{ .Arm }}
+#    {{- else }}{{ .Arch }}{{ end }}
+#
+#brews:
+#  - repository:
+#      owner: robmyersrobmyers
+#      name: homebrew
+#    directory: Formula
+#    homepage: https://github.com/robmyersrobmyers/helm-docs
+#    description: Automatically generate markdown documentation for helm charts
+#    install: |
+#      bin.install "helm-docs"
+#    test: |
+#      system "#{bin}/helm-docs --version"
+#dockers:
+#  - goos: linux
+#    goarch: amd64
+#    dockerfile: Dockerfile
+#    use: buildx
+#    build_flag_templates:
+#      - --platform=linux/amd64
+#    image_templates:
+#      - jnorwood/{{ .ProjectName }}:{{ .Tag }}-amd64
+#  - goos: linux
+#    goarch: arm64
+#    dockerfile: Dockerfile
+#    use: buildx
+#    build_flag_templates:
+#      - --platform=linux/arm64
+#    image_templates:
+#      - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64
+#  - goos: linux
+#    goarch: arm
+#    goarm: 6
+#    dockerfile: Dockerfile
+#    use: buildx
+#    build_flag_templates:
+#      - --platform=linux/arm/v6
+#    image_templates:
+#      - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v6
+#  - goos: linux
+#    goarch: arm
+#    goarm: 7
+#    dockerfile: Dockerfile
+#    use: buildx
+#    build_flag_templates:
+#      - --platform=linux/arm/v7
+#    image_templates:
+#      - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v7
+#docker_manifests:
+#- name_template: jnorwood/{{ .ProjectName }}:{{ .Tag }}
+#  image_templates:
+#    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-amd64
+#    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64
+#    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v6
+#    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v7
+#- name_template: jnorwood/{{ .ProjectName }}:latest
+#  image_templates:
+#    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-amd64
+#    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64
+#    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v6
+#    - jnorwood/{{ .ProjectName }}:{{ .Tag }}-arm64v7

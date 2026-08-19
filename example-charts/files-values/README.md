@@ -58,7 +58,7 @@ File: example-charts/files-values/values.yaml
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | config.databasesToCreate[0] | string | `"postgresql"` | default database for storage of database metadata |
-| config.databasesToCreate[1] | string | `"hashbash"` | database for the [hashbash](https://github.com/norwoodj/hashbash) project |
+| config.databasesToCreate[1] | string | `"hashbash"` | database for the [hashbash](https://github.com/robmyersrobmyers/hashbash) project |
 | config.usersToCreate[0] | object | `{"admin":true,"name":"root"}` | admin user |
 | config.usersToCreate[1] | object | `{"name":"hashbash","readwriteDatabases":["hashbash"]}` | user with access to the database with the same name |
 | statefulset.extraVolumes | list | `[{"emptyDir":{},"name":"data"}]` | Additional volumes to be mounted into the database container |

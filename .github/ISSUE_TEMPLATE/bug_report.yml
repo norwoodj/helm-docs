@@ -1,12 +1,11 @@
 name: 🐞 Bug Report
 description: File a new bug report
 title: '[Bug]: <title>'
-labels: 
+labels:
   - "bug"
   - "triage"
 assignees:
-  - "norwoodj"
-  - "Nepo26"
+  - "robmyersrobmyers"
 body:
   - type: markdown
     attributes:
@@ -14,7 +13,7 @@ body:
   - type: checkboxes
     attributes:
       label: 'Is there an existing issue for this?'
-      description: 'Please [search :mag: the issues](https://github.com/norwoodj/helm-docs/issues) to check if this bug has already been reported.'
+      description: 'Please [search :mag: the issues](https://github.com/robmyersrobmyers/helm-docs/issues) to check if this bug has already been reported.'
       options:
         - label: 'I have searched the existing issues'
           required: true
@@ -35,7 +34,7 @@ body:
       label: 'Reference Chart'
       description: |
         Please provide an example chart, be it the full code or just a reference to a repository.
-        
+
         > OBS.: :warning: _Remember to redact or remove any sensitive information!_
     validations:
       required: true
@@ -64,9 +63,9 @@ body:
       label: 'Link to `helm-docs` Logs'
       description: |
         Create a [Gist](https://gist.github.com)—which contains your _full_ `helm-docs` logs—and link it here.  Alternatively, you can attach a logfile to this issue (drag it into the "Further Information" field below).
-        
+
         Remember to use the following flag `--log-level debug`
-        
+
         > OBS.: :warning: _Remember to redact or remove any sensitive information!_
       placeholder: 'https://gist.github.com/...'
     validations:

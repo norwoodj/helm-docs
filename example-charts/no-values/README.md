@@ -4,7 +4,7 @@
 
 A very simple chart that doesn't even need any values for customization
 
-**Homepage:** <https://github.com/norwoodj/helm-docs/tree/master/example-charts/no-values>
+**Homepage:** <https://github.com/robmyersrobmyers/helm-docs/tree/master/example-charts/no-values>
 
 ## Maintainers
 
@@ -14,5 +14,5 @@ A very simple chart that doesn't even need any values for customization
 
 ## Source Code
 
-* <https://github.com/norwoodj/helm-docs/tree/master/example-charts/no-values>
+* <https://github.com/robmyersrobmyers/helm-docs/tree/master/example-charts/no-values>
 

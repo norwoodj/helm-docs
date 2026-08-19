@@ -56,11 +56,11 @@ application
 
 ## `chart.homepage`
 
-https://github.com/norwoodj/helm-docs/tree/master/example-charts/full-template
+https://github.com/robmyersrobmyers/helm-docs/tree/master/example-charts/full-template
 
 ## `chart.homepageLine`
 
-**Homepage:** <https://github.com/norwoodj/helm-docs/tree/master/example-charts/full-template>
+**Homepage:** <https://github.com/robmyersrobmyers/helm-docs/tree/master/example-charts/full-template>
 
 ## `chart.maintainersHeader`
 
@@ -86,13 +86,13 @@ https://github.com/norwoodj/helm-docs/tree/master/example-charts/full-template
 
 ## `chart.sourcesList`
 
-* <https://github.com/norwoodj/helm-docs/tree/master/example-charts/full-template>
+* <https://github.com/robmyersrobmyers/helm-docs/tree/master/example-charts/full-template>
 
 ## `chart.sourcesSection`
 
 ## Source Code
 
-* <https://github.com/norwoodj/helm-docs/tree/master/example-charts/full-template>
+* <https://github.com/robmyersrobmyers/helm-docs/tree/master/example-charts/full-template>
 
 ## `chart.kubeVersion`
 

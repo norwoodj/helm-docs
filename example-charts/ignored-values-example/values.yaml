@@ -22,7 +22,7 @@ config:
     # -- default database for storage of database metadata
     - postgresql
 
-    # -- database for the [hashbash](https://github.com/norwoodj/hashbash) project
+    # -- database for the [hashbash](https://github.com/robmyersrobmyers/hashbash) project
     - hashbash
 
   usersToCreate:

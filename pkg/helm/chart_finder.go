@@ -4,7 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/norwoodj/helm-docs/pkg/util"
+	"github.com/robmyersrobmyers/helm-docs/pkg/util"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )

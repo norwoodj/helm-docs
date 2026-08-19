@@ -4,7 +4,7 @@
 
 One of the best values parsing example charts here, exhibits several more complicated examples
 
-**Homepage:** <https://github.com/norwoodj/helm-docs/tree/master/example-charts/best-values-example>
+**Homepage:** <https://github.com/robmyersrobmyers/helm-docs/tree/master/example-charts/best-values-example>
 
 ## Maintainers
 
@@ -14,14 +14,14 @@ One of the best values parsing example charts here, exhibits several more compli
 
 ## Source Code
 
-* <https://github.com/norwoodj/helm-docs/tree/master/example-charts/best-values-example>
+* <https://github.com/robmyersrobmyers/helm-docs/tree/master/example-charts/best-values-example>
 
 ## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | config.databasesToCreate[0] | string | `"postgresql"` | default database for storage of database metadata |
-| config.databasesToCreate[1] | string | `"hashbash"` | database for the [hashbash](https://github.com/norwoodj/hashbash) project |
+| config.databasesToCreate[1] | string | `"hashbash"` | database for the [hashbash](https://github.com/robmyersrobmyers/hashbash) project |
 | config.usersToCreate[0] | object | `{"admin":true,"name":"root"}` | admin user |
 | config.usersToCreate[1] | object | `{"name":"hashbash","readwriteDatabases":["hashbash"]}` | user with access to the database with the same name |
 | statefulset.extraVolumes | list | `[{"emptyDir":{},"name":"data"}]` | Additional volumes to be mounted into the database container |

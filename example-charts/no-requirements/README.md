@@ -4,7 +4,7 @@
 
 A simple chart that installs, let's say PrometheusRules, that needs no sub-charts
 
-**Homepage:** <https://github.com/norwoodj/helm-docs/tree/master/example-charts/no-requirements>
+**Homepage:** <https://github.com/robmyersrobmyers/helm-docs/tree/master/example-charts/no-requirements>
 
 ## Maintainers
 
@@ -14,7 +14,7 @@ A simple chart that installs, let's say PrometheusRules, that needs no sub-chart
 
 ## Source Code
 
-* <https://github.com/norwoodj/helm-docs/tree/master/example-charts/no-requirements>
+* <https://github.com/robmyersrobmyers/helm-docs/tree/master/example-charts/no-requirements>
 
 ## Values
 

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/norwoodj/helm-docs/pkg/helm"
+	"github.com/robmyersrobmyers/helm-docs/pkg/helm"
 	"gopkg.in/yaml.v3"
 )
 

@@ -4,7 +4,7 @@
 
 A simple wrapper around the stable/nginx-ingress chart that adds a few of our conventions
 
-**Homepage:** <https://github.com/norwoodj/helm-docs/tree/master/example-charts/nginx-ingress>
+**Homepage:** <https://github.com/robmyersrobmyers/helm-docs/tree/master/example-charts/nginx-ingress>
 
 ## Maintainers
 
@@ -14,7 +14,7 @@ A simple wrapper around the stable/nginx-ingress chart that adds a few of our co
 
 ## Source Code
 
-* <https://github.com/norwoodj/helm-docs/tree/master/example-charts/nginx-ingress>
+* <https://github.com/robmyersrobmyers/helm-docs/tree/master/example-charts/nginx-ingress>
 
 ## Requirements
 

@@ -11,7 +11,7 @@ import (
 
 	"github.com/spf13/viper"
 
-	"github.com/norwoodj/helm-docs/pkg/document"
+	"github.com/robmyersrobmyers/helm-docs/pkg/document"
 )
 
 // BenchmarkHelmDocs benchmarks the entire helm-docs command by running on testdata.

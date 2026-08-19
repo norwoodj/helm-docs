@@ -4,7 +4,7 @@
 
 A chart demonstrating handling of special characters in values files
 
-**Homepage:** <https://github.com/norwoodj/helm-docs/tree/master/example-charts/special-characters>
+**Homepage:** <https://github.com/robmyersrobmyers/helm-docs/tree/master/example-charts/special-characters>
 
 ## Maintainers
 
@@ -14,7 +14,7 @@ A chart demonstrating handling of special characters in values files
 
 ## Source Code
 
-* <https://github.com/norwoodj/helm-docs/tree/master/example-charts/special-characters>
+* <https://github.com/robmyersrobmyers/helm-docs/tree/master/example-charts/special-characters>
 
 ## Values
 

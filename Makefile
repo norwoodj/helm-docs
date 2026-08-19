@@ -1,10 +1,10 @@
 .PHONY: helm-docs
 helm-docs:
-	go build github.com/norwoodj/helm-docs/cmd/helm-docs
+	go build github.com/robmyersrobmyers/helm-docs/cmd/helm-docs
 
 .PHONY: install
 install:
-	go install github.com/norwoodj/helm-docs/cmd/helm-docs
+	go install github.com/robmyersrobmyers/helm-docs/cmd/helm-docs
 
 .PHONY: generate-example-charts
 generate-example-charts: helm-docs

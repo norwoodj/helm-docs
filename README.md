@@ -1,3 +1,5 @@
+This is a fork of github.com/norwoodj to facilitate rebuilding releases with updated dependencies to quiet automated vulnerability warnings.
+
 helm-docs
 =========
 [![Go Report Card](https://goreportcard.com/badge/github.com/norwoodj/helm-docs)](https://goreportcard.com/report/github.com/norwoodj/helm-docs)

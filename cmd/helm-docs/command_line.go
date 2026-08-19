@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/norwoodj/helm-docs/pkg/document"
+	"github.com/robmyersrobmyers/helm-docs/pkg/document"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
