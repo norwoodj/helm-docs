@@ -33,7 +33,8 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
-          go-version-file: go.mod
+          #go-version-file: go.mod
+          go-version: 'stable'
 
       - name: Run Gosec Security Scanner
         uses: securego/gosec@master # don't pin, so the latest is pulled in
