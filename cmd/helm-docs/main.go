@@ -22,13 +22,13 @@ import (
 // parallelProcessIterable runs the visitFn function on each element of the iterable, using
 // parallelism number of worker goroutines. The iterable may be a slice or a map. In the case of a
 // map, the argument passed to visitFn will be the key.
-func parallelProcessIterable(iterable interface{}, parallelism int, visitFn func(elem interface{})) {
-	workChan := make(chan interface{})
+func parallelProcessIterable(iterable any, parallelism int, visitFn func(elem any)) {
+	workChan := make(chan any)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(parallelism)
 
-	for i := 0; i < parallelism; i++ {
+	for range parallelism {
 		go func() {
 			defer wg.Done()
 			for elem := range workChan {
@@ -45,7 +45,7 @@ func parallelProcessIterable(iterable interface{}, parallelism int, visitFn func
 		}
 	} else {
 		sliceLen := iterableValue.Len()
-		for i := 0; i < sliceLen; i++ {
+		for i := range sliceLen {
 			workChan <- iterableValue.Index(i).Interface()
 		}
 	}
@@ -102,7 +102,7 @@ func readDocumentationInfoByChartPath(chartSearchRoot string, parallelism int) (
 		return nil, fmt.Errorf("error parsing the linting config%w", err)
 	}
 
-	parallelProcessIterable(chartDirs, parallelism, func(elem interface{}) {
+	parallelProcessIterable(chartDirs, parallelism, func(elem any) {
 		chartDir := elem.(string)
 		info, err := helm.ParseChartInformation(filepath.Join(chartSearchRoot, chartDir), documentationParsingConfig)
 		if err != nil {
@@ -152,7 +152,7 @@ func writeDocumentation(chartSearchRoot string, documentationInfoByChartPath map
 	documentDependencyValues := viper.GetBool("document-dependency-values")
 	documentationInfoToGenerate := getChartToGenerate(documentationInfoByChartPath)
 
-	parallelProcessIterable(documentationInfoToGenerate, parallelism, func(elem interface{}) {
+	parallelProcessIterable(documentationInfoToGenerate, parallelism, func(elem any) {
 		info := documentationInfoByChartPath[elem.(string)]
 		var err error
 		var dependencyValues []document.DependencyValues

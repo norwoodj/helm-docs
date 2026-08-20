@@ -2,7 +2,7 @@ package document
 
 import (
 	"encoding/base64"
-	"io/ioutil"
+
 	"os"
 	"path"
 	"path/filepath"
@@ -51,7 +51,7 @@ func getFiles(dir string) (files, error) {
 
 func (f *fileEntry) GetData() []byte {
 	if f.data == nil {
-		data, err := ioutil.ReadFile(f.Path)
+		data, err := os.ReadFile(f.Path)
 		if err != nil {
 			log.Warnf("Error reading file contents for %s: %s", f.Path, err.Error())
 			return []byte{}
@@ -138,7 +138,7 @@ func (f files) Lines(path string) []string {
 	return strings.Split(string(entry.GetData()), "\n")
 }
 
-func toYAML(v interface{}) string {
+func toYAML(v any) string {
 	data, err := yaml.Marshal(v)
 	if err != nil {
 		// Swallow errors inside a template.

@@ -54,7 +54,7 @@ func formatNextObjectKeyPrefix(prefix string, key string) string {
 	return nextPrefix
 }
 
-func getTypeName(value interface{}) string {
+func getTypeName(value any) string {
 	switch value.(type) {
 	case bool:
 		return boolType
@@ -64,9 +64,9 @@ func getTypeName(value interface{}) string {
 		return intType
 	case string:
 		return stringType
-	case []interface{}:
+	case []any:
 		return listType
-	case map[string]interface{}:
+	case map[string]any:
 		return objectType
 	}
 
@@ -112,7 +112,7 @@ func parseNilValueType(key string, description helm.ChartValueDescription, autoD
 	}
 }
 
-func jsonMarshalNoEscape(key string, value interface{}) (string, error) {
+func jsonMarshalNoEscape(key string, value any) (string, error) {
 	outputBuffer := &bytes.Buffer{}
 	valueEncoder := json.NewEncoder(outputBuffer)
 	valueEncoder.SetEscapeHTML(false)
@@ -148,7 +148,7 @@ func getDescriptionFromNode(node *yaml.Node) helm.ChartValueDescription {
 
 func createValueRow(
 	key string,
-	value interface{},
+	value any,
 	description helm.ChartValueDescription,
 	autoDescription helm.ChartValueDescription,
 	column int,
@@ -222,7 +222,7 @@ func createValueRowsFromList(
 			return []valueRow{}, nil
 		}
 
-		emptyListRow, err := createValueRow(prefix, make([]interface{}, 0), description, autoDescription, key.Column, key.Line)
+		emptyListRow, err := createValueRow(prefix, make([]any, 0), description, autoDescription, key.Column, key.Line)
 		if err != nil {
 			return nil, err
 		}
@@ -246,7 +246,7 @@ func createValueRowsFromList(
 		documentLeafNodes = false
 	} else if hasDescription || (autoDescription.Description != "" && autoDescription.NotationType != "") {
 		// If it has NotationType described, then use that
-		var notationValue interface{}
+		var notationValue any
 		var err error
 		var listRow valueRow
 		switch autoDescription.NotationType {
@@ -315,7 +315,7 @@ func createValueRowsFromObject(
 			return []valueRow{}, nil
 		}
 
-		documentedRow, err := createValueRow(nextPrefix, make(map[string]interface{}), description, autoDescription, key.Column, key.Line)
+		documentedRow, err := createValueRow(nextPrefix, make(map[string]any), description, autoDescription, key.Column, key.Line)
 		return []valueRow{documentedRow}, err
 	}
 
@@ -336,7 +336,7 @@ func createValueRowsFromObject(
 	} else if hasDescription || (autoDescription.Description != "" && autoDescription.NotationType != "") {
 
 		// If it has NotationType described, then use that
-		var notationValue interface{}
+		var notationValue any
 		var err error
 		var objectRow valueRow
 		switch autoDescription.NotationType {
@@ -413,7 +413,7 @@ func createValueRowsFromField(
 		case strTag:
 			// extra check to see if the node is a string, but @notationType was declared
 			if autoDescription.NotationType != "" {
-				var notationValue interface{}
+				var notationValue any
 				var err error
 				var leafValueRow valueRow
 				switch autoDescription.NotationType {

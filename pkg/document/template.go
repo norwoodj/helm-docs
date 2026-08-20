@@ -2,7 +2,7 @@ package document
 
 import (
 	"fmt"
-	"io/ioutil"
+
 	"os"
 	"path/filepath"
 	"strings"
@@ -428,7 +428,7 @@ func getDocumentationTemplate(chartDirectory string, chartSearchRoot string, tem
 	log.Debugf("Using template files %s for chart %s", templateFiles, chartDirectory)
 	allTemplateContents := make([]byte, 0)
 	for _, templateFileForChart := range templateFilesForChart {
-		templateContents, err := ioutil.ReadFile(templateFileForChart)
+		templateContents, err := os.ReadFile(templateFileForChart)
 		if err != nil {
 			return "", err
 		}

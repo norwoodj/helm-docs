@@ -45,7 +45,7 @@ func BenchmarkHelmDocs(b *testing.B) {
 
 var _ viper.FlagValueSet = &testFlagSet{}
 
-type testFlagSet map[string]interface{}
+type testFlagSet map[string]any
 
 func (s testFlagSet) VisitAll(fn func(viper.FlagValue)) {
 	for k, v := range s {

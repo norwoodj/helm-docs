@@ -3,7 +3,7 @@ package helm
 import (
 	"bufio"
 	"fmt"
-	"io/ioutil"
+
 	"os"
 	"path/filepath"
 	"regexp"
@@ -83,7 +83,7 @@ func getYamlFileContents(filename string) ([]byte, error) {
 		return nil, err
 	}
 
-	yamlFileContents, err := ioutil.ReadFile(filename)
+	yamlFileContents, err := os.ReadFile(filename)
 	if err != nil {
 		panic(err)
 	}
