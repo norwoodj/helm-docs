@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/norwoodj/helm-docs/pkg/helm"
 	log "github.com/sirupsen/logrus"
@@ -77,6 +78,10 @@ func applyMarkDownFormat(output bytes.Buffer) bytes.Buffer {
 
 	re = regexp.MustCompile(`\n{3,}`)
 	outputString = re.ReplaceAllString(outputString, "\n\n")
+
+	// End the file with a single trailing newline so it doesn't fight tools
+	// that enforce that (for example pre-commit's end-of-file-fixer).
+	outputString = strings.TrimRight(outputString, "\n") + "\n"
 
 	output.Reset()
 	output.WriteString(outputString)
