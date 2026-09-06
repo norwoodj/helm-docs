@@ -8,3 +8,21 @@ controller:
     repository: nginx-ingress-controller
     # controller.image.tag -- The tag of the image of the controller
     tag: "18.0831"
+
+# image -- Image map
+image:
+  # image.registry -- Image registry
+  registry: docker.io
+  # image.repository -- Image repository
+  repository: lucernae/django-sample
+  # image.tag -- Image tag
+  tag: "3.1"
+  # image.pullPolicy -- Image pullPolicy
+  pullPolicy: IfNotPresent
+
+# labels -- (map) The deployment label
+# @notationType -- yaml
+labels:
+  user/workload: "true"
+  client-name: "my-boss"
+  project-name: "awesome-project"

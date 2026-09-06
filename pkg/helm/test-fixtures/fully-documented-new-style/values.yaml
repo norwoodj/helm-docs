@@ -1,0 +1,28 @@
+# -- The controller
+controller:
+  # -- The name of the controller
+  name: controller
+  # -- The image of the controller
+  image:
+    # -- The repository of the controller
+    repository: nginx-ingress-controller
+    # -- The tag of the image of the controller
+    tag: "18.0831"
+
+# -- Image map
+image:
+  # -- Image registry
+  registry: docker.io
+  # -- Image repository
+  repository: lucernae/django-sample
+  # -- Image tag
+  tag: "3.1"
+  # -- Image pullPolicy
+  pullPolicy: IfNotPresent
+
+# -- (map) The deployment label
+# @notationType -- yaml
+labels:
+  user/workload: "true"
+  client-name: "my-boss"
+  project-name: "awesome-project"

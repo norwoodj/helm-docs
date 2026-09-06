@@ -36,5 +36,5 @@ A simple wrapper around the stable/nginx-ingress chart that adds a few of our co
 | image.registry | string | `"docker.io"` | Image registry |
 | image.repository | string | `"lucernae/django-sample"` | Image repository |
 | image.tag | string | `"3.1"` | Image tag |
-| labels | map | `{"client-name":"my-boss","project-name":"awesome-project","user/workload":"true"}` | The deployment label |
+| labels | map | map[client-name:my-boss project-name:awesome-project user/workload:true] | The deployment label |
 

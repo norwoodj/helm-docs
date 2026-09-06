@@ -727,10 +727,7 @@ map
 			<td>
 				<div style="max-width: 300px;">
 <pre lang="yaml">
-user/workload: "true"
-client-name: "my-boss"
-project-name: "awesome-project"
-
+map[client-name:my-boss project-name:awesome-project user/workload:true]
 </pre>
 </div>
 			</td>
@@ -844,8 +841,7 @@ string
 			<td>
 				<div style="max-width: 300px;">
 <pre lang="yaml">
-- ReadWriteOnce
-
+[ReadWriteOnce]
 </pre>
 </div>
 			</td>
