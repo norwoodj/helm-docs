@@ -26,6 +26,11 @@ A simple wrapper around the stable/nginx-ingress chart that adds a few of our co
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| controller | object | `{"image":{"repository":"nginx-ingress-controller","tag":"18.0831"},"name":"controller"}` | The controller |
+| controller.image | object | `{"repository":"nginx-ingress-controller","tag":"18.0831"}` | The image of the controller |
+| controller.image.repository | string | `"nginx-ingress-controller"` | The repository of the controller |
+| controller.image.tag | string | `"18.0831"` | The tag of the image of the controller |
+| controller.name | string | `"controller"` | The name of the controller |
 | image | object | `{"pullPolicy":"IfNotPresent","registry":"docker.io","repository":"lucernae/django-sample","tag":"3.1"}` | Image map |
 | image.pullPolicy | string | `"IfNotPresent"` | Image pullPolicy |
 | image.registry | string | `"docker.io"` | Image registry |

@@ -1,3 +1,14 @@
+# -- The controller
+controller:
+  # -- The name of the controller
+  name: controller
+  # -- The image of the controller
+  image:
+    # -- The repository of the controller
+    repository: nginx-ingress-controller
+    # -- The tag of the image of the controller
+    tag: "18.0831"
+
 # -- Image map
 image:
   # -- Image registry
