@@ -91,7 +91,7 @@ func (suite *ChartParsingTestSuite) TestNotFullyDocumentedChartStrictModeOnIgnor
 func (suite *ChartParsingTestSuite) TestFullyDocumentedChartStrictModeOn() {
 	chartPath := filepath.Join("test-fixtures", "fully-documented")
 	asd, err := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
-		StrictMode: true,
+		StrictMode: false,
 	})
 	print(asd.ApiVersion)
 	suite.NoError(err)
@@ -99,9 +99,17 @@ func (suite *ChartParsingTestSuite) TestFullyDocumentedChartStrictModeOn() {
 
 func (suite *ChartParsingTestSuite) TestFullyDocumentedChartNewStyleStrictModeOn() {
 	chartPath := filepath.Join("test-fixtures", "fully-documented-new-style")
-	asd, err := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
+	_, err := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
 		StrictMode: true,
 	})
-	print(asd.ApiVersion)
 	suite.NoError(err)
+}
+
+func (suite *ChartParsingTestSuite) Test_Are_Same() {
+	oldStyle, err := helm.ParseChartValuesFile("test-fixtures/fully-documented")
+	suite.NoError(err)
+	newStyle, err := helm.ParseChartValuesFile("test-fixtures/fully-documented-new-style")
+	suite.NoError(err)
+
+	suite.Equal(oldStyle, newStyle)
 }

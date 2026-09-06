@@ -171,7 +171,7 @@ func removeIgnored(rootNode *yaml.Node, parentKind yaml.Kind) {
 	rootNode.Content = newContent
 }
 
-func parseChartValuesFile(chartDirectory string) (yaml.Node, error) {
+func ParseChartValuesFile(chartDirectory string) (yaml.Node, error) {
 	valuesPath := filepath.Join(chartDirectory, viper.GetString("values-file"))
 	yamlFileContents, err := getYamlFileContents(valuesPath)
 
@@ -295,10 +295,11 @@ func parseChartValuesFileComments(chartDirectory string, values *yaml.Node, lint
 
 		// If we haven't continued by this point, we didn't match any of the comment formats we want, so we need to add
 		// the in progress value to the map, and reset to looking for a new key
-		key, description := ParseComment(commentLines)
-		if key == "" {
-			key = strings.Join(currentValueKeySegments, ".")
+		key := strings.Join(currentValueKeySegments, ".")
+		if strings.HasPrefix(strings.Trim(commentLines[0], " "), "# -- ") {
+			commentLines[0] = strings.Replace(commentLines[0], "# -- ", "# "+key+" -- ", 1)
 		}
+		key, description := ParseComment(commentLines)
 		keyToDescriptions[key] = description
 
 		commentLines = make([]string, 0)
@@ -371,7 +372,7 @@ func ParseChartInformation(chartDirectory string, documentationParsingConfig Cha
 		return chartDocInfo, err
 	}
 
-	chartValues, err := parseChartValuesFile(chartDirectory)
+	chartValues, err := ParseChartValuesFile(chartDirectory)
 	if err != nil {
 		return chartDocInfo, err
 	}

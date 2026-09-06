@@ -1,17 +1,17 @@
-# controller -- The controller
-controller:
-  # controller.name -- The name of the controller
-  name: controller
-  # controller.image -- The image of the controller
-  image:
-    # controller.image.repository -- The repository of the controller
-    repository: nginx-ingress-controller
-    # controller.image.tag -- The tag of the image of the controller
-    tag: "18.0831"
-    # controller.image.tags -- (tpl/array) tags for the image to use
-    # @notationType -- tpl
-    tags:
-    # controller.image.tags[0]-- the first tag to use
-    - number one
-    # controller.image.tags[1] -- the second tag to use
-    - number two
+# image -- Image map
+image:
+  # image.registry -- Image registry
+  registry: docker.io
+  # image.repository -- Image repository
+  repository: lucernae/django-sample
+  # image.tag -- Image tag
+  tag: "3.1"
+  # image.pullPolicy -- Image pullPolicy
+  pullPolicy: IfNotPresent
+
+# labels -- (map) The deployment label
+# @notationType -- yaml
+labels:
+  user/workload: "true"
+  client-name: "my-boss"
+  project-name: "awesome-project"
