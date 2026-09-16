@@ -19,10 +19,3 @@ image:
   tag: "3.1"
   # image.pullPolicy -- Image pullPolicy
   pullPolicy: IfNotPresent
-
-# labels -- (map) The deployment label
-# @notationType -- yaml
-labels:
-  user/workload: "true"
-  client-name: "my-boss"
-  project-name: "awesome-project"
