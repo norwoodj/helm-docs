@@ -171,7 +171,7 @@ func removeIgnored(rootNode *yaml.Node, parentKind yaml.Kind) {
 	rootNode.Content = newContent
 }
 
-func ParseChartValuesFile(chartDirectory string) (yaml.Node, error) {
+func parseChartValuesFile(chartDirectory string) (yaml.Node, error) {
 	valuesPath := filepath.Join(chartDirectory, viper.GetString("values-file"))
 	yamlFileContents, err := getYamlFileContents(valuesPath)
 
@@ -372,7 +372,7 @@ func ParseChartInformation(chartDirectory string, documentationParsingConfig Cha
 		return chartDocInfo, err
 	}
 
-	chartValues, err := ParseChartValuesFile(chartDirectory)
+	chartValues, err := parseChartValuesFile(chartDirectory)
 	if err != nil {
 		return chartDocInfo, err
 	}

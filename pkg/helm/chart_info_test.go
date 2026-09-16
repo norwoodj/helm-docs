@@ -90,10 +90,9 @@ func (suite *ChartParsingTestSuite) TestNotFullyDocumentedChartStrictModeOnIgnor
 
 func (suite *ChartParsingTestSuite) TestFullyDocumentedChartStrictModeOn() {
 	chartPath := filepath.Join("test-fixtures", "fully-documented")
-	asd, err := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
+	_, err := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{
 		StrictMode: true,
 	})
-	print(asd.ApiVersion)
 	suite.NoError(err)
 }
 
