@@ -1531,6 +1531,31 @@ animals:
 	assert.Equal(t, yamlType, valuesRows[4].NotationType)
 }
 
+func TestExtractValueNotationTypeWithDescription(t *testing.T) {
+	helmValues := parseYamlValues(`
+	# -- The deployment label
+	# @notationType -- yaml
+labels:
+  client-name: my-boss
+# -- Access modes
+# @notationType -- yaml
+accessModes:
+  - ReadWriteOnce
+`)
+
+	descriptions := map[string]helm.ChartValueDescription{
+		"labels":      {Description: "External description"},
+		"accessModes": {Description: "External description"},
+	}
+
+	valuesRows, err := getSortedValuesTableRows(helmValues, descriptions)
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 2)
+	assert.Equal(t, "- ReadWriteOnce\n", valuesRows[0].Default)
+	assert.Equal(t, "client-name: my-boss\n", valuesRows[1].Default)
+}
+
 func TestExtractCustomDeclaredType(t *testing.T) {
 	helmValues := parseYamlValues(`
 animals:

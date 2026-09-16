@@ -234,7 +234,7 @@ func createValueRowsFromList(
 
 	// We have a nonempty list with a description, document it, and mark that leaf nodes underneath it should not be
 	// documented without descriptions
-	if hasDescription || (autoDescription.Description != "" && autoDescription.NotationType == "") {
+	if (hasDescription || autoDescription.Description != "") && autoDescription.NotationType == "" {
 		jsonableObject := convertHelmValuesToJsonable(values)
 		listRow, err := createValueRow(prefix, jsonableObject, description, autoDescription, key.Column, key.Line)
 
@@ -244,7 +244,7 @@ func createValueRowsFromList(
 
 		valueRows = append(valueRows, listRow)
 		documentLeafNodes = false
-	} else if hasDescription || (autoDescription.Description != "" && autoDescription.NotationType != "") {
+	} else if hasDescription || autoDescription.Description != "" {
 		// If it has NotationType described, then use that
 		var notationValue interface{}
 		var err error
@@ -323,7 +323,7 @@ func createValueRowsFromObject(
 
 	// We have a nonempty object with a description, document it, and mark that leaf nodes underneath it should not be
 	// documented without descriptions
-	if hasDescription || (autoDescription.Description != "" && autoDescription.NotationType == "") {
+	if (hasDescription || autoDescription.Description != "") && autoDescription.NotationType == "" {
 		jsonableObject := convertHelmValuesToJsonable(values)
 		objectRow, err := createValueRow(nextPrefix, jsonableObject, description, autoDescription, key.Column, key.Line)
 
@@ -333,7 +333,7 @@ func createValueRowsFromObject(
 
 		valueRows = append(valueRows, objectRow)
 		documentLeafNodes = false
-	} else if hasDescription || (autoDescription.Description != "" && autoDescription.NotationType != "") {
+	} else if hasDescription || autoDescription.Description != "" {
 
 		// If it has NotationType described, then use that
 		var notationValue interface{}

@@ -8,7 +8,7 @@ A simple wrapper around the stable/nginx-ingress chart that adds a few of our co
 
 ## Maintainers
 
-| Name | Email | Url |
+| Name | Email | URL |
 | ---- | ------ | --- |
 | John Norwood | <norwood.john.m@gmail.com> |  |
 
@@ -31,4 +31,9 @@ A simple wrapper around the stable/nginx-ingress chart that adds a few of our co
 | controller.image.repository | string | `"nginx-ingress-controller"` | The repository of the controller |
 | controller.image.tag | string | `"18.0831"` | The tag of the image of the controller |
 | controller.name | string | `"controller"` | The name of the controller |
+| image | object | `{"pullPolicy":"IfNotPresent","registry":"docker.io","repository":"lucernae/django-sample","tag":"3.1"}` | Image map |
+| image.pullPolicy | string | `"IfNotPresent"` | Image pullPolicy |
+| image.registry | string | `"docker.io"` | Image registry |
+| image.repository | string | `"lucernae/django-sample"` | Image repository |
+| image.tag | string | `"3.1"` | Image tag |
 
