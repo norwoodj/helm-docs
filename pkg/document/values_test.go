@@ -1533,14 +1533,14 @@ animals:
 
 func TestExtractValueNotationTypeWithDescription(t *testing.T) {
 	helmValues := parseYamlValues(`
-	# -- The deployment label
-	# @notationType -- yaml
+# -- The deployment label
+# @notationType -- yaml
 labels:
-  client-name: my-boss
+	client-name: my-boss
 # -- Access modes
 # @notationType -- yaml
 accessModes:
-  - ReadWriteOnce
+- ReadWriteOnce
 `)
 
 	descriptions := map[string]helm.ChartValueDescription{
