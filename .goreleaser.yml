@@ -50,7 +50,7 @@ nfpms:
   homepage: https://github.com/norwoodj/helm-docs
   maintainer: norwoodj
   description: A tool for automatically generating markdown documentation for helm charts
-  license: GPL-3.0-or-later
+  license: Apache-2.0
   formats:
   - deb
   - rpm
