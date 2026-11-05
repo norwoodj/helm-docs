@@ -26,8 +26,8 @@ A simple wrapper around the stable/nginx-ingress chart that adds a few of our co
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| controller | object | `{"image":{"repository":"nginx-ingress-controller","tag":"18.0831"},"name":"controller"}` | The controller |
-| controller.image | object | `{"repository":"nginx-ingress-controller","tag":"18.0831"}` | The image of the controller |
+| controller | object | <pre lang="yaml">image:<br>  repository: nginx-ingress-controller<br>  tag: &#34;18.0831&#34;<br>name: controller</pre> | The controller |
+| controller.image | object | <pre lang="yaml">repository: nginx-ingress-controller<br>tag: &#34;18.0831&#34;</pre> | The image of the controller |
 | controller.image.repository | string | `"nginx-ingress-controller"` | The repository of the controller |
 | controller.image.tag | string | `"18.0831"` | The tag of the image of the controller |
 | controller.name | string | `"controller"` | The name of the controller |

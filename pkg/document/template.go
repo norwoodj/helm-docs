@@ -217,11 +217,11 @@ func getValuesTableTemplates() string {
 	valuesSectionBuilder.WriteString("{{ end }}")
 
 	valuesSectionBuilder.WriteString(`{{ define "chart.valueDefaultColumnRenderMd" }}`)
-	valuesSectionBuilder.WriteString("{{ if .Default }}{{ .Default }}{{ else }}{{ .AutoDefault }}{{ end }}")
+	valuesSectionBuilder.WriteString("{{ if .Default }}{{ .Default | toMdDefault }}{{ else }}{{ .AutoDefault | toMdDefault }}{{ end }}")
 	valuesSectionBuilder.WriteString("{{ end }}")
 
 	valuesSectionBuilder.WriteString(`{{ define "chart.valueDescriptionColumnRenderMd" }}`)
-	valuesSectionBuilder.WriteString("{{ if .Description }}{{ .Description }}{{ else }}{{ .AutoDescription }}{{ end }}")
+	valuesSectionBuilder.WriteString("{{ if .Description }}{{ .Description | toMdTableCell }}{{ else }}{{ .AutoDescription | toMdTableCell }}{{ end }}")
 	valuesSectionBuilder.WriteString("{{ end }}")
 
 	valuesSectionBuilder.WriteString(`{{ define "chart.valuesTable" }}`)
@@ -283,14 +283,18 @@ func getValuesTableTemplates() string {
 	valuesSectionBuilder.WriteString("{{ end }}")
 
 	valuesSectionBuilder.WriteString(`{{ define "chart.valueDescriptionColumnRenderHtml" }}`)
-	valuesSectionBuilder.WriteString(`{{ template "chart.valueDescriptionColumnRenderMd" . }}`)
+	valuesSectionBuilder.WriteString("{{ if .Description }}{{ .Description | toHtmlTableCell }}{{ else }}{{ .AutoDescription | toHtmlTableCell }}{{ end }}")
 	valuesSectionBuilder.WriteString("{{ end }}")
 
 	valuesSectionBuilder.WriteString(`
 {{ define "chart.valueDefaultColumnRender" }}
 {{- $defaultValue := (default .Default .AutoDefault)  -}}
 {{- $notationType := .NotationType }}
-{{- if (and (hasPrefix "` + "`" + `" $defaultValue) (hasSuffix "` + "`" + `" $defaultValue) ) -}}
+{{- $yamlDefault := yamlDefault $defaultValue -}}
+{{- if $yamlDefault -}}
+{{- $defaultValue = html $yamlDefault -}}
+{{- $notationType = "yaml" }}
+{{- else if (and (hasPrefix "` + "`" + `" $defaultValue) (hasSuffix "` + "`" + `" $defaultValue) ) -}}
 {{- $defaultValue = (toPrettyJson (fromJson (trimAll "` + "`" + `" (default .Default .AutoDefault) ) ) ) -}}
 {{- $notationType = "json" }}
 {{- end -}}

@@ -1,0 +1,5 @@
+apiVersion: v2
+name: multiline-description
+description: Multiline @raw descriptions with code snippets rendered in the markdown values table
+version: "0.1.0"
+type: application

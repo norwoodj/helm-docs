@@ -17,7 +17,7 @@ This creates values, but sectioned into own section tables if a section comment 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | controller.ingressClass | string | `"nginx"` | You can also specify value comments like this |
-| controller.publishService | object | `{"enabled":false}` | This is a publishService |
+| controller.publishService | object | <pre lang="yaml">enabled: false</pre> | This is a publishService |
 | controller.replicas | int | `nil` | Number of nginx-ingress pods to load balance between |
 | ingress.host | string | `""` | Overrides the inherited section |
 
@@ -99,10 +99,8 @@ the chart will construct this list internally unless specified
 		<tr>
 			<td>controller.publishService</td>
 			<td>object</td>
-			<td><pre lang="json">
-{
-  "enabled": false
-}
+			<td><pre lang="yaml">
+enabled: false
 </pre>
 </td>
 			<td>This is a publishService</td>

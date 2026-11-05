@@ -83,20 +83,11 @@ func ParseComment(commentLines []string) (string, ChartValueDescription) {
 			continue
 		}
 
-		commentContinuationMatch := commentContinuationRegex.FindStringSubmatch(line)
-
-		if isRaw {
-
-			if len(commentContinuationMatch) > 1 {
-				c.Description += "\n" + commentContinuationMatch[2]
-			}
-			continue
-		} else {
-			if len(commentContinuationMatch) > 1 {
-				c.Description += " " + commentContinuationMatch[2]
-			}
-			continue
+		// every comment line is its own line; @raw is accepted but no longer changes anything
+		if commentContinuationMatch := commentContinuationRegex.FindStringSubmatch(line); len(commentContinuationMatch) > 1 {
+			c.Description += "\n" + commentContinuationMatch[2]
 		}
 	}
 	return valueKey, c
 }
+

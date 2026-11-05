@@ -9,7 +9,7 @@ A chart whose values file has dos line endings rather than unix ones
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | controller.publishService.enabled | bool | `false` | Whether to expose the ingress controller to the public world sdf |
-| controller.replicas | int | `2` | Number of nginx-ingress pods to load balance between sdf. Do not set this below 2. |
+| controller.replicas | int | `2` | Number of nginx-ingress pods to load balance between sdf.<br>Do not set this below 2. |
 | livenessProbe.httpGet.path | string | `"/healthz"` | This is the liveness check endpoint |
 | livenessProbe.httpGet.port | string | `"http"` |  |
 

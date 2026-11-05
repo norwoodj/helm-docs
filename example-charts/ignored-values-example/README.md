@@ -22,12 +22,12 @@ Based on best-values-example
 |-----|------|---------|-------------|
 | config.databasesToCreate[0] | string | `"postgresql"` | default database for storage of database metadata |
 | config.databasesToCreate[1] | string | `"hashbash"` | database for the [hashbash](https://github.com/norwoodj/hashbash) project |
-| config.usersToCreate[0] | object | `{"admin":true,"name":"root"}` | admin user |
-| config.usersToCreate[1] | object | `{"name":"hashbash","readwriteDatabases":["hashbash"]}` | user with access to the database with the same name |
+| config.usersToCreate[0] | object | <pre lang="yaml">admin: true<br>name: root</pre> | admin user |
+| config.usersToCreate[1] | object | <pre lang="yaml">name: hashbash<br>readwriteDatabases:<br>  - hashbash</pre> | user with access to the database with the same name |
 | configWithAllValuesIgnored | object | `{}` |  |
-| statefulset.extraVolumes | list | `[{"emptyDir":{},"name":"data"}]` | Additional volumes to be mounted into the database container |
-| statefulset.image.repository | string | `"jnorwood/postgresq"` | Image to use for deploying, must support an entrypoint which creates users/databases from appropriate config files |
+| statefulset.extraVolumes | list | <pre lang="yaml">- emptyDir: {}<br>  name: data</pre> | Additional volumes to be mounted into the database container |
+| statefulset.image.repository | string | `"jnorwood/postgresq"` | Image to use for deploying, must support an entrypoint<br>which creates users/databases from appropriate config files |
 | statefulset.image.tag | string | `"11"` |  |
-| statefulset.livenessProbe | object | `{"enabled":false}` | Configure the healthcheck for the database |
+| statefulset.livenessProbe | object | <pre lang="yaml">enabled: false</pre> | Configure the healthcheck for the database |
 | statefulset.podLabels | object | `{}` | The labels to be applied to instances of the database |
 

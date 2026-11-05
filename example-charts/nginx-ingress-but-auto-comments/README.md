@@ -26,17 +26,17 @@ A simple wrapper around the stable/nginx-ingress chart that adds a few of our co
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| controller.extraVolumes | list | `[{"configMap":{"name":"nginx-ingress-config"},"name":"config-volume"}]` | Additional volumes to be mounted into the ingress controller container |
+| controller.extraVolumes | list | <pre lang="yaml">- configMap:<br>    name: nginx-ingress-config<br>  name: config-volume</pre> | Additional volumes to be mounted into the ingress controller container |
 | controller.image.repository | string | `"nginx-ingress-controller"` |  |
 | controller.image.tag | string | `"18.0831"` |  |
 | controller.ingressClass | string | `"nginx"` | Name of the ingress class to route through this controller |
-| controller.livenessProbe | object | `{"httpGet":{"path":"/healthz","port":8080}}` | Configure the healthcheck for the ingress controller |
+| controller.livenessProbe | object | <pre lang="yaml">httpGet:<br>  path: /healthz<br>  port: 8080</pre> | Configure the healthcheck for the ingress controller |
 | controller.livenessProbe.httpGet.path | string | `"/healthz"` | This is the liveness check endpoint |
 | controller.name | string | `"controller"` |  |
 | controller.persistentVolumeClaims | list | `[]` | List of persistent volume claims to create |
-| controller.podLabels | object | A number of chart-specific labels | The labels to be applied to instances of the controller pod. By default, a number of labels will automatically be applied |
+| controller.podLabels | object | A number of chart-specific labels | The labels to be applied to instances of the controller pod.<br>By default, a number of labels will automatically be applied |
 | controller.publishService.enabled | bool | `false` | Whether to expose the ingress controller to the public world |
-| controller.replicas | int | `nil` | Number of nginx-ingress pods to load balance between. Do not set this below 2 |
+| controller.replicas | int | `nil` | Number of nginx-ingress pods to load balance between.<br>Do not set this below 2 |
 | controller.service.annotations."external-dns.alpha.kubernetes.io/hostname" | string | `"stupidchess.jmn23.com"` | Hostname to be assigned to the ELB for the service |
 | controller.service.type | string | `"LoadBalancer"` |  |
 

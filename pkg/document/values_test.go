@@ -1302,7 +1302,7 @@ animals:
 	assert.Equal(t, "The list of cats that _I_ own", valuesRows[0].AutoDefault)
 	assert.Equal(t, "", valuesRows[0].Default)
 	assert.Equal(t, "", valuesRows[0].Description)
-	assert.Equal(t, "The best kind of animal probably, allow me to list their many varied benefits. Cats are very funny, and quite friendly, in almost all cases", valuesRows[0].AutoDescription)
+	assert.Equal(t, "The best kind of animal probably, allow me to list their many varied benefits.\nCats are very funny, and quite friendly, in almost all cases", valuesRows[0].AutoDescription)
 }
 
 func TestAutoMultilineDescriptionWithoutValue(t *testing.T) {
@@ -1466,6 +1466,25 @@ animals:
 	assert.Equal(t, "The list of dogs that _I_ own", valuesRows[0].AutoDefault)
 	assert.Equal(t, "", valuesRows[0].Default)
 	assert.Equal(t, "I mean, dogs are quite nice too...\n\nList of default dogs:\n - Umbra\n - Penumbra\n - Somnus\n", valuesRows[0].Description)
+}
+
+func TestEveryLineBreaks(t *testing.T) {
+	helmValues := parseYamlValues(`
+db:
+  # -- (string) Postgresql user password.
+  # @default -- global.adminPassword
+  # Generated on first install.
+  password: x
+`)
+
+	valuesRows, err := getSortedValuesTableRows(helmValues, make(map[string]helm.ChartValueDescription))
+
+	assert.Nil(t, err)
+	assert.Len(t, valuesRows, 1)
+	assert.Equal(t, "db.password", valuesRows[0].Key)
+	assert.Equal(t, stringType, valuesRows[0].Type)
+	assert.Equal(t, "global.adminPassword", valuesRows[0].AutoDefault)
+	assert.Equal(t, "Postgresql user password.\nGenerated on first install.", valuesRows[0].AutoDescription)
 }
 
 func TestExtractValueNotationType(t *testing.T) {

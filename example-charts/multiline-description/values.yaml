@@ -1,0 +1,24 @@
+# -- Extra annotations for the pod
+# Every comment line is a new line in the table.
+# Code fences become pre blocks, so pipes and angle brackets inside them are safe:
+# ```yaml
+# podAnnotations:
+#   example.com/script: |
+#     echo "<hello>"
+# ```
+podAnnotations: {}
+
+# replicas -- Number of replicas
+# Explicit key comments work too.
+# ```bash
+# kubectl scale deploy/app --replicas=3
+# ```
+replicas: 1
+
+# -- A regular one-line description
+image: nginx
+
+# -- Postgresql user password.
+# @default -- a random 32 character string
+# Generated when installed for the first time.
+password: ""

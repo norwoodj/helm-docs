@@ -26,11 +26,11 @@ A simple wrapper around the stable/nginx-ingress chart that adds a few of our co
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| controller.extraVolumes | list | `[{"configMap":{"name":"nginx-ingress-config"},"name":"config-volume"}]` | Additional volumes to be mounted into the ingress controller container |
+| controller.extraVolumes | list | <pre lang="yaml">- configMap:<br>    name: nginx-ingress-config<br>  name: config-volume</pre> | Additional volumes to be mounted into the ingress controller container |
 | controller.image.repository | string | `"nginx-ingress-controller"` |  |
 | controller.image.tag | string | `"18.0831"` |  |
 | controller.ingressClass | string | `"nginx"` | Name of the ingress class to route through this controller |
-| controller.livenessProbe | object | `{"httpGet":{"path":"/healthz","port":8080}}` | Configure the healthcheck for the ingress controller |
+| controller.livenessProbe | object | <pre lang="yaml">httpGet:<br>  path: /healthz<br>  port: 8080</pre> | Configure the healthcheck for the ingress controller |
 | controller.livenessProbe.httpGet.path | string | `"/healthz"` | This is the liveness check endpoint |
 | controller.name | string | `"controller"` |  |
 | controller.persistentVolumeClaims | list | `[]` | List of persistent volume claims to create |
