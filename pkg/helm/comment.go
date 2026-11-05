@@ -8,6 +8,17 @@ const (
 	PrefixComment = "# --"
 )
 
+// ParseSection returns the value of the last `# @section --` line, or "" if there is none.
+func ParseSection(commentLines []string) string {
+	section := ""
+	for _, line := range commentLines {
+		if match := sectionRegex.FindStringSubmatch(line); len(match) > 1 {
+			section = match[1]
+		}
+	}
+	return section
+}
+
 func ParseComment(commentLines []string) (string, ChartValueDescription) {
 	var valueKey string
 	var c ChartValueDescription

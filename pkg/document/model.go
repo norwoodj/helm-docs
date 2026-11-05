@@ -133,7 +133,7 @@ func getUnsortedValueRows(document *yaml.Node, descriptions map[string]helm.Char
 		return nil, fmt.Errorf("values file must resolve to a map (was %d)", document.Content[0].Kind)
 	}
 
-	return createValueRowsFromField("", nil, document.Content[0], descriptions, true)
+	return createValueRowsFromField("", nil, document.Content[0], descriptions, true, "")
 }
 
 func getSectionedValueRows(valueRows []valueRow) sections {

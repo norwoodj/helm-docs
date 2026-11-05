@@ -134,16 +134,30 @@ func getDescriptionFromNode(node *yaml.Node) helm.ChartValueDescription {
 		return helm.ChartValueDescription{}
 	}
 
-	if !strings.Contains(node.HeadComment, helm.PrefixComment) {
-		return helm.ChartValueDescription{}
-	}
 	commentLines := strings.Split(node.HeadComment, "\n")
+	if !strings.Contains(node.HeadComment, helm.PrefixComment) {
+		// A bare `# @section -- X` on a parent key sets the section its children inherit.
+		return helm.ChartValueDescription{Section: helm.ParseSection(commentLines)}
+	}
 	keyFromComment, c := helm.ParseComment(commentLines)
 	if keyFromComment != "" {
-		return helm.ChartValueDescription{}
+		// Old-style `# key -- desc` (also `## -- desc`, parsed with key "#") is handled by the explicit line scan;
+		// keep only the section so children still inherit it.
+		return helm.ChartValueDescription{Section: helm.ParseSection(commentLines)}
 	}
 
 	return c
+}
+
+// inheritSection fills autoDescription.Section from the parent and returns the section this key's children inherit.
+func inheritSection(description helm.ChartValueDescription, autoDescription *helm.ChartValueDescription, parentSection string) string {
+	if autoDescription.Section == "" {
+		autoDescription.Section = parentSection
+	}
+	if description.Section != "" {
+		return description.Section
+	}
+	return autoDescription.Section
 }
 
 func createValueRow(
@@ -211,9 +225,11 @@ func createValueRowsFromList(
 	values *yaml.Node,
 	keysToDescriptions map[string]helm.ChartValueDescription,
 	documentLeafNodes bool,
+	parentSection string,
 ) ([]valueRow, error) {
 	description, hasDescription := keysToDescriptions[prefix]
 	autoDescription := getDescriptionFromNode(key)
+	section := inheritSection(description, &autoDescription, parentSection)
 
 	// If we encounter an empty list, it should be documented if no parent object or list had a description or if this
 	// list has a description
@@ -281,7 +297,7 @@ func createValueRowsFromList(
 	// Generate documentation rows for all list items and their potential sub-fields
 	for i, v := range values.Content {
 		nextPrefix := formatNextListKeyPrefix(prefix, i)
-		valueRowsForListField, err := createValueRowsFromField(nextPrefix, v, v, keysToDescriptions, documentLeafNodes)
+		valueRowsForListField, err := createValueRowsFromField(nextPrefix, v, v, keysToDescriptions, documentLeafNodes, section)
 
 		if err != nil {
 			return nil, err
@@ -299,9 +315,11 @@ func createValueRowsFromObject(
 	values *yaml.Node,
 	keysToDescriptions map[string]helm.ChartValueDescription,
 	documentLeafNodes bool,
+	parentSection string,
 ) ([]valueRow, error) {
 	description, hasDescription := keysToDescriptions[nextPrefix]
 	autoDescription := getDescriptionFromNode(key)
+	section := inheritSection(description, &autoDescription, parentSection)
 
 	if len(values.Content) == 0 {
 		// if the first level of recursion has no values, then there are no values at all, and so we return zero rows of documentation
@@ -373,7 +391,7 @@ func createValueRowsFromObject(
 		k := values.Content[i]
 		v := values.Content[i+1]
 		nextPrefix := formatNextObjectKeyPrefix(nextPrefix, k.Value)
-		valueRowsForObjectField, err := createValueRowsFromField(nextPrefix, k, v, keysToDescriptions, documentLeafNodes)
+		valueRowsForObjectField, err := createValueRowsFromField(nextPrefix, k, v, keysToDescriptions, documentLeafNodes, section)
 
 		if err != nil {
 			return nil, err
@@ -391,17 +409,19 @@ func createValueRowsFromField(
 	value *yaml.Node,
 	keysToDescriptions map[string]helm.ChartValueDescription,
 	documentLeafNodes bool,
+	parentSection string,
 ) ([]valueRow, error) {
 	switch value.Kind {
 	case yaml.MappingNode:
-		return createValueRowsFromObject(prefix, key, value, keysToDescriptions, documentLeafNodes)
+		return createValueRowsFromObject(prefix, key, value, keysToDescriptions, documentLeafNodes, parentSection)
 	case yaml.SequenceNode:
-		return createValueRowsFromList(prefix, key, value, keysToDescriptions, documentLeafNodes)
+		return createValueRowsFromList(prefix, key, value, keysToDescriptions, documentLeafNodes, parentSection)
 	case yaml.AliasNode:
-		return createValueRowsFromField(prefix, key, value.Alias, keysToDescriptions, documentLeafNodes)
+		return createValueRowsFromField(prefix, key, value.Alias, keysToDescriptions, documentLeafNodes, parentSection)
 	case yaml.ScalarNode:
 		autoDescription := getDescriptionFromNode(key)
 		description, hasDescription := keysToDescriptions[prefix]
+		inheritSection(description, &autoDescription, parentSection)
 		if !(documentLeafNodes || hasDescription || autoDescription.Description != "") {
 			return []valueRow{}, nil
 		}

@@ -423,6 +423,22 @@ service:
   port: 8080
 ```
 
+### Sections
+Mark a value with `# @section -- Name` to render it in its own table under that heading. A section set on a parent key
+is inherited by all of its children, and a child can override it with its own `@section`:
+
+```yaml
+# @section -- Ingress
+ingress:
+  # -- Enable ingress
+  enabled: false
+  # -- Hostname
+  # @section -- Networking
+  host: ""
+```
+
+See [here](./example-charts/sections/values.yaml) for an example.
+
 ### Spaces and Dots in keys
 In the old-style comment, if a key name contains any "." or " " characters, that section of the path must be quoted in
 description comments e.g.
