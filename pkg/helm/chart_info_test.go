@@ -94,3 +94,24 @@ func (suite *ChartParsingTestSuite) TestFullyDocumentedChartStrictModeOn() {
 	})
 	suite.NoError(err)
 }
+
+func (suite *ChartParsingTestSuite) TestExtraSectionsWithDescriptionAndDefault() {
+	chartPath := filepath.Join("test-fixtures", "extra-sections")
+	info, err := helm.ParseChartInformation(chartPath, helm.ChartValuesDocumentationParsingConfig{})
+	suite.Require().NoError(err)
+
+	pvc, ok := info.ChartValuesDescriptions["controller.persistentVolumeClaims"]
+	suite.Require().True(ok)
+	suite.Equal("List of persistent volume claims to create. For very long comments, break them into multiple lines.", pvc.Description)
+	suite.Equal("the chart will construct this list internally unless specified", pvc.Default)
+
+	replicas, ok := info.ChartValuesDescriptions["controller.replicas"]
+	suite.Require().True(ok)
+	suite.Equal("Number of replicas.", replicas.Description)
+
+	suite.Equal(map[string]string{
+		"Volume Claim Template": "The volume claim template is used to create a `PersistentVolumeClaim`.\n\n```\n( N_enclaves * 200 ) + ( N_keys * 200 ) = total number of bytes\n```",
+		"First Extra":           "First line.",
+		"Second Extra":          "Second line.",
+	}, info.Extras)
+}

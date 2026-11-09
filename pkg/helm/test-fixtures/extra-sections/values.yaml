@@ -1,0 +1,20 @@
+controller:
+  # controller.persistentVolumeClaims -- List of persistent volume claims to create.
+  # For very long comments, break them into multiple lines.
+  # @default -- the chart will construct this list internally unless specified
+  # @extra -- Volume Claim Template
+  # The volume claim template is used to create a `PersistentVolumeClaim`.
+  #
+  # ```
+  # ( N_enclaves * 200 ) + ( N_keys * 200 ) = total number of bytes
+  # ```
+  persistentVolumeClaims: []
+
+  # controller.replicas -- Number of replicas.
+  replicas: 1
+
+# @extra -- First Extra
+# First line.
+# @extra -- Second Extra
+# Second line.
+standalone: true

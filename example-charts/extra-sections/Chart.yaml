@@ -1,0 +1,9 @@
+apiVersion: v2
+name: extra-sections
+version: "1.0.0"
+type: application
+appVersion: "13.0.0"
+description: A chart for showing how to use extra sections
+home: "https://github.com/norwoodj/helm-docs/tree/master/example-charts/extra-sections"
+sources: ["https://github.com/norwoodj/helm-docs/tree/master/example-charts/extra-sections"]
+engine: gotpl
