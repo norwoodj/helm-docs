@@ -442,11 +442,24 @@ configMap:
 ```
 
 ### Extra sections
-You can define extra documentation (following the values) that can contain any markdown. This can be done
-using the `@extra -- <title>` tag. All comment after this will be rendered (with the give title) in the
-markdown file. Markdown supports anchors for each title (lowercase with hyphens), so you can link to the
-extra documentation from the values. This is often useful to provide more details and/or examples for a
-given value.
+You can define extra documentation (rendered after the values) that can contain any markdown. This can be done
+using the `@extra -- <title>` tag. All comment lines after this tag, up to the next non-comment line or the next
+`@extra` tag, are rendered under a heading with the given title. Markdown supports anchors for each title
+(lowercase with hyphens), so you can link to the extra documentation from the value descriptions. This is often
+useful to provide more details and/or examples for a given value.
+
+An `@extra` tag can follow the description of a value (and its `@default`, `@section`, ... tags). It ends the
+description of that value, so put it after all other tags:
+
+```yaml
+# -- Storage class to use. See [Storage](#storage) for details.
+# @default -- the cluster default
+# @extra -- Storage
+# Any markdown, including code blocks and lists.
+storageClass: ""
+```
+
+See [here](./example-charts/extra-sections/README.md) for an example.
 
 ### Advanced table rendering
 Some helm chart `values.yaml` uses complicated structure for the key/value
