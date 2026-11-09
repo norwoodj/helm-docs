@@ -251,8 +251,12 @@ func parseChartValuesFileComments(chartDirectory string, values *yaml.Node, lint
 
 	defer valuesFile.Close()
 
+	// Extra sections are collected in their own buffer, so an @extra block that
+	// follows a value description (and its @default, @section, ...) doesn't
+	// clobber the comment lines of that value.
 	extras := make(map[string]string)
 	currentExtra := ""
+	extraLines := make([]string, 0)
 	keyToDescriptions := make(map[string]ChartValueDescription)
 	scanner := bufio.NewScanner(valuesFile)
 	foundValuesComment := false
@@ -263,21 +267,25 @@ func parseChartValuesFileComments(chartDirectory string, values *yaml.Node, lint
 		currentLineIdx++
 		currentLine := scanner.Text()
 
+		if match := extraRegex.FindStringSubmatch(currentLine); len(match) == 2 && match[1] != "" {
+			if currentExtra != "" {
+				extras[currentExtra] = strings.Join(extraLines, "\n")
+			}
+			currentExtra = match[1]
+			extraLines = make([]string, 0)
+			continue
+		}
+
 		if currentExtra != "" {
-			match := extraContinuationRegex.FindStringSubmatch(currentLine)
-			if len(match) > 1 {
-				commentLines = append(commentLines, match[1])
+			if match := extraContinuationRegex.FindStringSubmatch(currentLine); len(match) > 1 {
+				extraLines = append(extraLines, match[1])
 				continue
 			}
-			extras[currentExtra] = strings.Join(commentLines, "\n")
-			commentLines = make([]string, 0)
+			// A non-comment line ends the extra section; the line itself is
+			// processed below (e.g. the value the preceding description belongs to).
+			extras[currentExtra] = strings.Join(extraLines, "\n")
+			extraLines = make([]string, 0)
 			currentExtra = ""
-		} else {
-			match := extraRegex.FindStringSubmatch(currentLine)
-			if len(match) == 2 && match[1] != "" {
-				currentExtra = match[1]
-				continue
-			}
 		}
 
 		// If we've not yet found a values comment with a key name, try and find one on each line
@@ -319,7 +327,7 @@ func parseChartValuesFileComments(chartDirectory string, values *yaml.Node, lint
 	}
 
 	if currentExtra != "" {
-		extras[currentExtra] = strings.Join(commentLines, "\n")
+		extras[currentExtra] = strings.Join(extraLines, "\n")
 	}
 
 	if lintingConfig.StrictMode {

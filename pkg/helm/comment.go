@@ -13,6 +13,18 @@ func ParseComment(commentLines []string) (string, ChartValueDescription) {
 	var c ChartValueDescription
 	var docStartIdx int
 
+	// An @extra section ends the value documentation. Everything from that
+	// line on belongs to the extra section and must not leak into the value.
+	for i, v := range commentLines {
+		if extraRegex.MatchString(v) {
+			commentLines = commentLines[:i]
+			break
+		}
+	}
+	if len(commentLines) == 0 {
+		return valueKey, c
+	}
+
 	// Work around https://github.com/norwoodj/helm-docs/issues/96 by considering only
 	// the last "group" of comment lines starting with '# --'.
 	lastIndex := 0
