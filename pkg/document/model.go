@@ -129,6 +129,11 @@ func getUnsortedValueRows(document *yaml.Node, descriptions map[string]helm.Char
 		return nil, fmt.Errorf("invalid node kind supplied: %d", document.Kind)
 	}
 
+	// An empty YAML document (for example, "---") has a null scalar root.
+	if document.Content[0].Kind == yaml.ScalarNode && document.Content[0].Tag == nullTag {
+		return nil, nil
+	}
+
 	if document.Content[0].Kind != yaml.MappingNode {
 		return nil, fmt.Errorf("values file must resolve to a map (was %d)", document.Content[0].Kind)
 	}
