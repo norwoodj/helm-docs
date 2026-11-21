@@ -230,3 +230,54 @@ func TestIncludesVersionFooter(t *testing.T) {
 		t.Errorf("generated documentation must contain the helm-docs version footer, got %s", doc)
 	}
 }
+
+func TestGeneratesDocumentationWithEmptySubchart(t *testing.T) {
+	root := t.TempDir()
+	child := filepath.Join("charts", "child")
+	if err := os.MkdirAll(filepath.Join(root, child), 0755); err != nil {
+		t.Fatal(err)
+	}
+	for name, contents := range map[string]string{
+		"Chart.yaml": "apiVersion: v2\nname: parent\nversion: 0.1.0\ndependencies:\n" +
+			"  - name: child\n    version: 0.1.0\n    repository: file://charts/child\n",
+		"values.yaml":                       "enabled: true\n",
+		filepath.Join(child, "Chart.yaml"):  "apiVersion: v2\nname: child\nversion: 0.1.0\n",
+		filepath.Join(child, "values.yaml"): "---\n",
+	} {
+		if err := os.WriteFile(filepath.Join(root, name), []byte(contents), 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := viper.BindFlagValues(testFlagSet{
+		"chart-search-root":          root,
+		"template-files":             "README.md.gotmpl",
+		"values-file":                "values.yaml",
+		"output-file":                "README.md",
+		"ignore-file":                ".helmdocsignore",
+		"log-level":                  "warn",
+		"sort-values-order":          document.AlphaNumSortOrder,
+		"sort-sections-order":        document.AlphaNumSortOrder,
+		"document-dependency-values": true,
+		"skip-version-footer":        true,
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	helmDocs(nil, nil)
+
+	for _, chart := range []string{".", child} {
+		docBytes, err := os.ReadFile(filepath.Join(root, chart, "README.md"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		doc := string(docBytes)
+		if chart == "." {
+			if !strings.Contains(doc, "| enabled | bool | `true` |") {
+				t.Errorf("parent documentation must include its values, got %s", doc)
+			}
+		} else if !strings.Contains(doc, "# child") || strings.Contains(doc, "## Values") {
+			t.Errorf("empty subchart documentation must have a header and no values section, got %s", doc)
+		}
+	}
+}
